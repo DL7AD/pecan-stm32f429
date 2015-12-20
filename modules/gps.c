@@ -8,7 +8,7 @@
 volatile gps_t lastPosition;
 volatile bool requireNewPosition;
 
-bool isGPSFixUpToDate() {
+bool isGPSFixUpToDate(void) {
 	return date2UnixTimestamp(lastPosition.time) + GPS_FIX_TIMEOUT >= getTime()/1000;
 }
 void switchGPS(bool on) {

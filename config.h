@@ -3,7 +3,6 @@
 
 #include "defines.h"
 #include "modules.h"
-#include "modules/pos.h"
 
 // Hardware definitions (which cant be changed easily)
 #define OSC_FREQ				26000000		/* Oscillator frequency */
@@ -40,7 +39,7 @@
 #define SAT_TLE2 				"2 25544  51.6441 238.8813 0008350 299.4829 139.1404 15.54920935976888"
 
 // Module definitions (can be any number of modules)
-#define MODULES { \
+#define MODULES() { \
 	MODULE_SD(); \
 	MODULE_CAM(); \
 	MODULE_GPS(); \

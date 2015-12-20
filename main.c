@@ -1,6 +1,9 @@
 #include "ch.h"
 #include "hal.h"
 
+#include "aprs.h"
+#include "time.h"
+#include "sgp4.h"
 #include "config.h"
 
 int main(void) {

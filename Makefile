@@ -115,7 +115,13 @@ CSRC = $(STARTUPSRC) \
        $(TESTSRC) \
        modules/gps.c \
        modules/pos.c \
+       modules/img.c \
+       modules/sat.c \
+       modules/tel.c \
+       modules/log.c \
        time.c \
+       sgp4.c \
+       aprs.c \
        main.c
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
