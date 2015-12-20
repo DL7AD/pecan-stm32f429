@@ -18,12 +18,14 @@
 
 
 // User configurations
-#define APRS_CALLSIGN			DL7AD			/* APRS callsign */
+#define APRS_CALLSIGN			"DL7AD"			/* APRS callsign */
 #define APRS_SSID				11				/* APRS SSID */
 #define APRS_SYMBOL				SYM_BALLOON		/* APRS symbol */
-#define APRS_PATH				WIDE1,WIDE2-1	/* APRS path */
-#define APRS_PATH_SAT			RS0ISS			/* APRS path */
+#define APRS_PATH				"WIDE1,WIDE2-1"	/* APRS path */
+#define APRS_PATH_SAT			"RS0ISS"		/* APRS path */
 #define APRS_TXDELAY			200				/* APRS preamble length */
+
+#define FSK_CALLSIGN			"D-11"			/* FSK callsign for RTTY and DominoEX */
 
 #define GPS_ACQUISITION_TIMEOUT	120				/* GPS acquisition timeout */
 #define GPS_FIX_TIMEOUT			120				/* GPS fix gets outdated after */
@@ -32,7 +34,8 @@
 #define LOG_CYCLE				120				/* Log cycle in minutes */
 #define LOG_TRX_NUM				6				/* Log message that are transmitted in one packet */
 
-#define CALLSIGN_APRS_FSK		D-11			/* FSK callsign for RTTY and DominoEX */
+#define SAT_TLE1 				"1 25544U 98067A   15353.57439117  .00014117  00000-0  21367-3 0  9990" /* ISS (ZARYA) */
+#define SAT_TLE2 				"2 25544  51.6441 238.8813 0008350 299.4829 139.1404 15.54920935976888"
 
 // Module definitions (can be any number of modules)
 #define MODULES { \
@@ -45,7 +48,7 @@
 	MODULE_TEL(120, SLEEP_BELOW_BATTVOLT(2.7), APRS_REGION_FREQ, PWR_10MW, MOD_AFSK, PROT_APRS); \
 	MODULE_LOG(120, SLEEP_BELOW_BATTVOLT(3.3), APRS_REGION_FREQ, PWR_10MW, MOD_AFSK, PROT_APRS); \
 	\
-	MODULE_SAT(60,  SLEEP_BELOW_BATTVOLT(3.0), 145825000, PWR_2W, MOD_AFSK, PROT_APRS, TLE1, TLE2); \
+	MODULE_SAT(60,  SLEEP_BELOW_BATTVOLT(3.0), 145825000, PWR_2W, MOD_AFSK, PROT_APRS, SAT_TLE1, SAT_TLE2); \
 	\
 	MODULE_IMG(0, SLEEP_BELOW_SOLBATTVOLT(0.5, 4.0), 434500000, PWR_10MW, MOD_2FSK, PROT_SSDV); \
 	MODULE_TEL(20, SLEEP_BELOW_SOLBATTVOLT(0.5, 4.0), 434500000, PWR_10MW, MOD_2FSK, PROT_UKHAS); \
