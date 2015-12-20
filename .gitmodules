@@ -1,3 +1,6 @@
 [submodule "ChibiOS"]
 	path = ChibiOS
 	url = git@github.com:ChibiOS/ChibiOS.git
+[submodule "ssdv"]
+	path = ssdv
+	url = git@github.com:fsphil/ssdv.git

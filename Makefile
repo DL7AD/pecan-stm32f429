@@ -118,6 +118,8 @@ CSRC = $(STARTUPSRC) \
        $(CHIBIOS)/os/various/shell.c \
        $(CHIBIOS)/os/hal/lib/streams/memstreams.c \
        $(CHIBIOS)/os/hal/lib/streams/chprintf.c \
+       ssdv/ssdv.c \
+       ssdv/rs8.c \
        modules/gps.c \
        modules/pos.c \
        modules/img.c \
