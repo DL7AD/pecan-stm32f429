@@ -2,6 +2,8 @@
 #define __CONFIG_H__
 
 #include "defines.h"
+#include "modules.h"
+#include "modules/pos.h"
 
 // Hardware definitions (which cant be changed easily)
 #define OSC_FREQ				26000000		/* Oscillator frequency */
