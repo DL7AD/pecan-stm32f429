@@ -26,18 +26,20 @@ int main(void) {
 	// Startup modules
 	MODULES();
 
-	ptime_t time;
+	/*ptime_t time;
 	time.year = 2015;
 	time.month = 12;
 	time.day = 20;
 	time.hour = 23;
 	time.minute = 40;
 	time.second = 30;
-	setTime(time);
+	setTime(time);*/
+
+	getLastGPSPosition();
 
 	while(true) {
-		ptime_t time = getTime();
-		chprintf((BaseSequentialStream*)&SD1, "%02d-%02d-%02d %02d:%02d:%02d %03d\r\n", time.year, time.month, time.day, time.hour, time.minute, time.second, time.millisecond);
+		//ptime_t time = getTime();
+		//chprintf((BaseSequentialStream*)&SD1, "%02d-%02d-%02d %02d:%02d:%02d %03d\r\n", time.year, time.month, time.day, time.hour, time.minute, time.second, time.millisecond);
 		chThdSleepMilliseconds(100);
 	}
 }

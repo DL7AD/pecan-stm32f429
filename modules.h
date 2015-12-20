@@ -56,9 +56,12 @@
 	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), NORMALPRIO, moduleLOG, &parm); \
 }
 
+#define MODULE_GPS() { \
+	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), NORMALPRIO, moduleGPS, NULL); \
+}
+
 #define MODULE_SD() (void)0; /* TODO */
 #define MODULE_CAM() (void)0; /* TODO */
-#define MODULE_GPS() (void)0; /* TODO */
 #define MODULE_SEN() (void)0; /* TODO */
 
 typedef enum {

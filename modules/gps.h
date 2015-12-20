@@ -15,5 +15,8 @@ typedef struct {
 	uint8_t ttff;
 } gps_t;
 
+gps_t getLastGPSPosition(void);
+THD_FUNCTION(moduleGPS, arg);
+
 #endif
 
