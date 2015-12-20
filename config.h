@@ -1,86 +1,9 @@
+#ifndef __CONFIG_H__
+#define __CONFIG_H__
 
+#include "defines.h"
 
-
-typedef struct {
-	int32_t cycletime;
-	(void*) cycleMethod;
-	uint8_t radio;
-	uint16_t power;
-	uint32_t frequency;
-	mod_t modulation;
-	(void*) sleepMethod;
-} module_params_t;
-
-#define MODULE_POS(CYCLE,PWRSAVE,FREQ,PWR,MOD,PROT) { \
-	module_params_t parm; \
-	parm.cycletime = CYCLE; \
-	parm.radio = RADIO; \
-	parm.power = PWR; \
-	parm.modulation = MOD; \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), NORMALPRIO, module_pos, NULL); \
-}
-
-#define MODULE_SAT(CYCLE,PWRSAVE,FREQ,PWR,MOD,PROT,TLE1,TLE2) { \
-	module_params_t parm; \
-	parm.cycletime = CYCLE; \
-	parm.radio = RADIO; \
-	parm.power = PWR; \
-	parm.modulation = MOD; \
-	parm.cycleMethod = sgp4_visible(TLE1, TLE2); \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), NORMALPRIO, module_pos, NULL); \
-}
-
-#define MODULE_TEL(CYCLE,PWRSAVE,FREQ,PWR,MOD,PROT) { \
-	module_params_t parm; \
-	parm.cycletime = CYCLE; \
-	parm.radio = RADIO; \
-	parm.power = PWR; \
-	parm.modulation = MOD; \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), NORMALPRIO, module_tel, NULL); \
-}
-
-#define MODULE_IMG(CYCLE,PWRSAVE,FREQ,PWR,MOD,PROT) { \
-	module_params_t parm; \
-	parm.cycletime = CYCLE; \
-	parm.radio = RADIO; \
-	parm.power = PWR; \
-	parm.modulation = MOD; \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), NORMALPRIO, module_img, NULL); \
-}
-
-#define MODULE_LOG(CYCLE,PWRSAVE,FREQ,PWR,MOD,PROT) { \
-	module_params_t parm; \
-	parm.cycletime = CYCLE; \
-	parm.radio = RADIO; \
-	parm.power = PWR; \
-	parm.modulation = MOD; \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), NORMALPRIO, module_log, NULL); \
-}
-
-#define MOD_ACTIVE	0
-#define MOD_SLEEP	1
-
-#define MOD_2FSK	0
-#define MOD_AFSK	1
-
-#define PWR_1MW		1
-#define PWR_10MW	10
-#define PWR_50MW	17
-#define PWR_100MW	20
-#define PWR_1W		30
-#define PWR_2W		33
-
-#define APRS_REGION_FREQ		getAPRSRegionFrequency(void)
-#define SYM_BALLOON				/O
-#define SYM_SMALLAIRCRAFT		/'
-#define SYM_SATELLITE			\S
-
-# Sleep functions
-void SLEEP_BELOW_BATTVOLT(v)			{ getBatteryVoltage() < (v) ? MOD_SLEEP : MOD_ACTIVE; }
-void SLEEP_BELOW_SOLVOLT(v)				{ getSolarVoltage() < (v) ? MOD_SLEEP : MOD_ACTIVE; }
-void SLEEP_BELOW_SOLBATTVOLT(sol, batt)	{ getSolarVoltage() < (sol) || getBatteryVoltage() < (batt) ? MOD_SLEEP : MOD_ACTIVE; }
-
-# Hardware definitions
+// Hardware definitions (which cant be changed easily)
 #define OSC_FREQ				26000000		/* Oscillator frequency */
 #define CAM_AVAIL				TRUE			/* Camera available */
 #define GPS_AVAIL				TRUE			/* uBlox MAX7/8 GNSS receiver available */
@@ -94,7 +17,7 @@ void SLEEP_BELOW_SOLBATTVOLT(sol, batt)	{ getSolarVoltage() < (sol) || getBatter
 #define CHECK_RADIO2_BAND(f)	(420000000 <= f && f <= 450000000) /* Frequency range of Radio 2 */
 
 
-# User definitions
+// User configurations
 #define APRS_CALLSIGN			DL7AD			/* APRS callsign */
 #define APRS_SSID				11				/* APRS SSID */
 #define APRS_SYMBOL				SYM_BALLOON		/* APRS symbol */
@@ -111,7 +34,7 @@ void SLEEP_BELOW_SOLBATTVOLT(sol, batt)	{ getSolarVoltage() < (sol) || getBatter
 
 #define CALLSIGN_APRS_FSK		D-11			/* FSK callsign for RTTY and DominoEX */
 
-# Module definitions (can be any number of modules)
+// Module definitions (can be any number of modules)
 #define MODULES { \
 	MODULE_SD(); \
 	MODULE_CAM(); \
@@ -128,15 +51,4 @@ void SLEEP_BELOW_SOLBATTVOLT(sol, batt)	{ getSolarVoltage() < (sol) || getBatter
 	MODULE_TEL(20, SLEEP_BELOW_SOLBATTVOLT(0.5, 4.0), 434500000, PWR_10MW, MOD_2FSK, PROT_UKHAS); \
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
+#endif
