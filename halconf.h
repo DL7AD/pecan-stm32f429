@@ -88,6 +88,7 @@
 
 /**
  * @brief   Enables the ICU subsystem.
+
  */
 #if !defined(HAL_USE_ICU) || defined(__DOXYGEN__)
 #define HAL_USE_ICU                 FALSE
@@ -102,6 +103,7 @@
 
 /**
  * @brief   Enables the MMC_SPI subsystem.
+
  */
 #if !defined(HAL_USE_MMC_SPI) || defined(__DOXYGEN__)
 #define HAL_USE_MMC_SPI             FALSE
@@ -118,7 +120,7 @@
  * @brief   Enables the RTC subsystem.
  */
 #if !defined(HAL_USE_RTC) || defined(__DOXYGEN__)
-#define HAL_USE_RTC                 FALSE
+#define HAL_USE_RTC                 TRUE
 #endif
 
 /**
@@ -132,7 +134,7 @@
  * @brief   Enables the SERIAL subsystem.
  */
 #if !defined(HAL_USE_SERIAL) || defined(__DOXYGEN__)
-#define HAL_USE_SERIAL              FALSE
+#define HAL_USE_SERIAL              TRUE
 #endif
 
 /**
@@ -153,7 +155,7 @@
  * @brief   Enables the UART subsystem.
  */
 #if !defined(HAL_USE_UART) || defined(__DOXYGEN__)
-#define HAL_USE_UART                TRUE
+#define HAL_USE_UART                FALSE
 #endif
 
 /**
@@ -262,6 +264,7 @@
  * @brief   Include support for MMC cards.
  * @note    MMC support is not yet implemented so this option must be kept
  *          at @p FALSE.
+
  */
 #if !defined(SDC_MMC_SUPPORT) || defined(__DOXYGEN__)
 #define SDC_MMC_SUPPORT             FALSE
@@ -287,7 +290,7 @@
  *          default configuration.
  */
 #if !defined(SERIAL_DEFAULT_BITRATE) || defined(__DOXYGEN__)
-#define SERIAL_DEFAULT_BITRATE      38400
+#define SERIAL_DEFAULT_BITRATE      115200
 #endif
 
 /**

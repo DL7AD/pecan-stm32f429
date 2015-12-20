@@ -1,7 +1,7 @@
 #include "ch.h"
 #include "hal.h"
 
-#include "time.h"
+#include "ptime.h"
 #include "config.h"
 #include "gps.h"
 
@@ -9,7 +9,7 @@ volatile gps_t lastPosition;
 volatile bool requireNewPosition;
 
 bool isGPSFixUpToDate(void) {
-	return date2UnixTimestamp(lastPosition.time) + GPS_FIX_TIMEOUT >= getTime()/1000;
+	return date2UnixTimestamp(lastPosition.time) + GPS_FIX_TIMEOUT >= date2UnixTimestamp(getTime())/1000;
 }
 void switchGPS(bool on) {
 	// TODO: switch GPS

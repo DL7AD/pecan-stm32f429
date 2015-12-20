@@ -4,7 +4,9 @@
 #include "ch.h"
 #include "hal.h"
 
-#define APRS_REGION_FREQ		getAPRSRegionFrequency()
+#define APRS_REGION_FREQ		getAPRSRegionFrequency
+#define APRS_ISS_FREQ			getAPRSISSFrequency
+#define CUSTOM_FREQ				getCustomFrequency
 #define SYM_BALLOON				"/O"
 #define SYM_SMALLAIRCRAFT		"/'"
 #define SYM_SATELLITE			"\S"

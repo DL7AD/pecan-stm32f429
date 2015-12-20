@@ -4,6 +4,6 @@
 #include "ch.h"
 #include "hal.h"
 
-uint32_t getAPRSRegionFrequency(void);
+
 
 #endif

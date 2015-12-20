@@ -1,8 +1,10 @@
 #ifndef __GPS_H__
 #define __GPS_H__
 
+#include "ptime.h"
+
 typedef struct {
-	date_t time;
+	ptime_t time;
 	float latitude;
 	float longitude;
 	uint16_t altitude;

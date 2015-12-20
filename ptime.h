@@ -11,10 +11,12 @@ typedef struct {
 	uint8_t hour;
 	uint8_t minute;
 	uint8_t second;
-} date_t;
+	uint16_t millisecond;
+} ptime_t;
 
-uint64_t date2UnixTimestamp(date_t time);
-date_t unixTimestamp2Date(uint64_t time);
-uint64_t getTime(void);
+uint64_t date2UnixTimestamp(ptime_t time);
+ptime_t unixTimestamp2Date(uint64_t time);
+ptime_t getTime(void);
+void setTime(ptime_t date);
 
 #endif

@@ -8,6 +8,7 @@
 #include "modules/tel.h"
 #include "modules/log.h"
 #include "sgp4.h"
+#include "radio.h"
 
 #define MODULE_POS(CYCLE,PWRSAVE,FREQ,PWR,MOD,PROT) { \
 	module_params_t parm; \
@@ -63,7 +64,7 @@
 typedef enum {
 	MOD_ACTIVE,
 	MOD_SLEEP
-} mode_t;
+} pmode_t;
 
 typedef enum {
 	MOD_2FSK,
@@ -81,9 +82,9 @@ typedef enum {
 
 typedef struct {
 	int32_t cycletime; // 0=continuous, -1=refer to cycleMethod
-	void* cycleMethod; // True=Method should perform cycle
+	void* cycleMethod;
 	power_t power;
-	uint32_t frequency;
+	void* frequency;
 	modulation_t modulation;
 	void* sleepMethod;
 } module_params_t;
