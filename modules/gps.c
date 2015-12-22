@@ -1,13 +1,15 @@
 #include "ch.h"
 #include "hal.h"
+#include "trace.h"
 
 #include "ptime.h"
 #include "config.h"
 #include "gps.h"
-#include "chprintf.h"
 
 volatile gps_t lastPosition;
 volatile bool requireNewPosition;
+volatile char lineBuffer[128];
+volatile uint32_t linePos;
 
 const SerialConfig gps_config =
 {
@@ -24,19 +26,23 @@ bool isGPSFixUpToDate(void) {
 void switchGPS(bool on) {
 
 	if(on) { // Switch GPS on
-			chprintf((BaseSequentialStream*)&SD1, "LLL");
+
 		// Init UART
+		TRACE_INFO("init gps uart");
 		sdStart(&SD2, &gps_config);
 
 		// Switch MOSFET
+		TRACE_INFO("switch on gps");
 		palClearPad(GPIOE, 7);
 
 	} else { // Switch GPS off
 
 		// Deinit UART
+		TRACE_INFO("deinit gps uart");
 		sdStop(&SD2);
 
 		// Switch MOSFET
+		TRACE_INFO("switch off gps");
 		palSetPad(GPIOE, 7);
 	}
 }
@@ -44,10 +50,21 @@ void switchGPS(bool on) {
 bool processGPSData(void) {
 
 	uint8_t b = sdGetTimeout(&SD2, 0); // Get data non blocking
-	if(!b)
+	if(b == 0xFF)
 		return false;
 
-	// TODO: Process variable b (UART)
+	if(b != 10 && b != 13 && linePos < sizeof(lineBuffer)-1) {
+
+		lineBuffer[linePos++] = b; // Append buffer
+
+	} else if(linePos > 10) { // LF/CF received
+
+		lineBuffer[linePos] = 0; // Mark end of string
+
+		TRACE_INFO("received NMEA %s", lineBuffer);
+		linePos = 0; // Clear buffer
+
+	}
 
 	return false;
 }
@@ -76,31 +93,39 @@ gps_t getLastGPSPosition(void) {
 THD_FUNCTION(moduleGPS, arg) {
 	(void)arg;
 
+	TRACE_INFO("startup module gps");
+
 	// Initialize pins
 	palSetPadMode(GPIOE, 7, PAL_MODE_OUTPUT_PUSHPULL);	// GPS_OFF
 	palSetPadMode(GPIOA, 2, PAL_MODE_ALTERNATE(7));		// UART TXD
 	palSetPadMode(GPIOA, 3, PAL_MODE_ALTERNATE(7));		// UART RXD
 
-	if(requireNewPosition) {
-		requireNewPosition = false; // TODO: Implement interrupt handling
+	while(true) {
+		if(requireNewPosition) {
+			requireNewPosition = false; // TODO: Implement interrupt handling
 
-		switchGPS(true); // Switch on GPS
+			TRACE_INFO("gps position outdated");
 
-		bool lock;
-		uint32_t counter = 0;
-		do {
-			lock = processGPSData(); // Process byte
-			chThdSleepMilliseconds(1);
-		} while(!lock && counter++ <= GPS_ACQUISITION_TIMEOUT*1000);
+			switchGPS(true); // Switch on GPS
+
+			bool lock;
+			uint32_t counter = 0;
+			do {
+				lock = processGPSData(); // Process byte
+				chThdSleepMilliseconds(1);
+			} while(!lock && counter++ <= GPS_ACQUISITION_TIMEOUT*1000);
 		
-		lastPosition.ttff = counter/1000; // Setting time to first fix
+			lastPosition.ttff = counter/1000; // Setting time to first fix
+			TRACE_INFO("gps sampling finished");
+			TRACE_INFO("gps ttff %d", lastPosition.ttff);
 
-		if(lastPosition.ttff < GPS_ACQUISITION_TIMEOUT) { // Fix sampled in time
-			switchGPS(false);
-		} else { // GPS lost (could not get a valid fix in time)
-			requireNewPosition = true; // Try to get a valid fix again
+			if(lastPosition.ttff < GPS_ACQUISITION_TIMEOUT) { // Fix sampled in time
+				switchGPS(false);
+			} else { // GPS lost (could not get a valid fix in time)
+				requireNewPosition = true; // Try to get a valid fix again
+			}
 		}
+		chThdSleepMilliseconds(100);
 	}
-	chThdSleepMilliseconds(100);
 }
 
