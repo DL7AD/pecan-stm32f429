@@ -49,7 +49,7 @@ ptime_t unixTimestamp2Date(uint64_t time) {
 		}
 	}
 
-	for(date.month=1; (date.year%4 ? nonLeapYear[date.month] : leapYear[date.month])*86400<=dateRaw; date.month++);
+	for(date.month=1; (date.year%4 ? nonLeapYear[date.month] : (uint32_t)(leapYear[date.month])*86400)<=dateRaw; date.month++);
 	dateRaw -= (date.year%4 ? nonLeapYear[date.month-1] : leapYear[date.month-1])*86400;
 
 	date.day    = (dateRaw / 86400) + 1;

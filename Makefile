@@ -121,10 +121,10 @@ CSRC = $(STARTUPSRC) \
        ssdv/ssdv.c \
        ssdv/rs8.c \
        modules/gps.c \
-       modules/pos.c \
-       modules/img.c \
-       modules/sat.c \
-       modules/tel.c \
+       modules/position.c \
+       modules/image.c \
+       modules/satellite.c \
+       modules/telemetry.c \
        modules/log.c \
        trace.c \
        modules.c \

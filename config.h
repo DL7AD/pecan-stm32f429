@@ -41,30 +41,19 @@
 // Module definitions (can be any number of modules)
 #define MODULES() { \
 	MODULE_SD(); \
-	chThdSleepMilliseconds(1); \
 	MODULE_CAM(); \
-	chThdSleepMilliseconds(1); \
 	MODULE_GPS(); \
-	chThdSleepMilliseconds(1); \
 	MODULE_SEN(); \
-	chThdSleepMilliseconds(1); \
 	MODULE_RADIO(); \
-	chThdSleepMilliseconds(1); \
 	\
-	module_params_t pos,tel,log,sat,img,te2; \
-	MODULE_POS(pos, 120, NULL, APRS_REGION_FREQ, 10, MOD_AFSK, PROT_APRS); \
-	chThdSleepMilliseconds(1); \
-	MODULE_TEL(tel, 120, NULL, APRS_REGION_FREQ, 10, MOD_AFSK, PROT_APRS); \
-	chThdSleepMilliseconds(1); \
-	MODULE_LOG(log, 120, NULL, APRS_REGION_FREQ, 10, MOD_AFSK, PROT_APRS); \
-	chThdSleepMilliseconds(1); \
+	MODULE_POSITION(120, NULL, APRS_REGION_FREQ, 10, MOD_AFSK, PROT_APRS); \
+	MODULE_TELEMETRY(120, NULL, APRS_REGION_FREQ, 10, MOD_AFSK, PROT_APRS); \
+	MODULE_LOG(120, NULL, APRS_REGION_FREQ, 10, MOD_AFSK, PROT_APRS); \
 	\
-	MODULE_SAT(sat, 60,  NULL, APRS_ISS_FREQ, 33, MOD_AFSK, PROT_APRS, SAT_TLE1, SAT_TLE2); \
-	chThdSleepMilliseconds(1); \
+	MODULE_SATELLITE(60,  NULL, APRS_ISS_FREQ, 33, MOD_AFSK, PROT_APRS, SAT_TLE1, SAT_TLE2); \
 	\
-	MODULE_IMG(img, 1,   NULL, CUSTOM_FREQ, 10, MOD_2FSK, PROT_SSDV); \
-	chThdSleepMilliseconds(1); \
-	MODULE_TEL(te2, 20,  NULL, CUSTOM_FREQ, 10, MOD_2FSK, PROT_UKHAS); \
+	MODULE_IMAGE(0,   NULL, CUSTOM_FREQ, 10, MOD_2FSK, PROT_SSDV); \
+	MODULE_TELEMETRY(20,  NULL, CUSTOM_FREQ, 10, MOD_2FSK, PROT_UKHAS); \
 }
 
 #endif
