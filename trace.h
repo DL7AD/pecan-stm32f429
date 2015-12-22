@@ -28,5 +28,7 @@ extern mutex_t trace_mtx;
 #define TRACE_WARN(format, args...) TRACE_BASE(format, 'W', ##args)
 #define TRACE_ERROR(format, args...) TRACE_BASE(format, 'E', ##args)
 
+#define TRACE_TAB "                 "
+
 #endif
 

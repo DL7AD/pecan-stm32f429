@@ -7,16 +7,31 @@
 uint32_t (*fptr)();
 
 THD_FUNCTION(modulePOS, arg) {
+	// Params
+	module_params_t* parm = (module_params_t*)arg;
 
-	// Print infos (atomic)
-	TRACE_INFO("startup module position");
-	TRACE_INFO("> Cycle: %d", ((module_params_t*)arg)->cycle);
+	// Print infos
 	fptr = ((module_params_t*)arg)->frequencyMethod;
-	TRACE_INFO("> Power: %d", ((module_params_t*)arg)->power);
-	TRACE_INFO("> Frequency: %d", (*fptr)() );
-	TRACE_INFO("> Modulation: %s", VAL2MOULATION(((module_params_t*)arg)->modulation));
-	TRACE_INFO("> Protocol: %s", VAL2PROTOCOL(((module_params_t*)arg)->protocol));
+	TRACE_INFO(	"startup module position\r\n"
+				"%s > Cycle: %d sec\r\n"
+				"%s > Power: %d dBm\r\n"
+				"%s > Frequency: %d.%03d MHz (current)\r\n"
+				"%s > Modulation: %s\r\n"
+				"%s > Protocol: %s",
+				TRACE_TAB, parm->cycle,
+				TRACE_TAB, parm->power,
+				TRACE_TAB, (*fptr)()/1000000, ((*fptr)()%1000000)/1000,
+				TRACE_TAB, VAL2MOULATION(parm->modulation),
+				TRACE_TAB, VAL2PROTOCOL(parm->protocol)
+	);
 
-	TRACE_WARN("module position not implemented"); // FIXME
+	systime_t time = chVTGetSystemTimeX();
+	while(true) {
+		TRACE_INFO("Do module position cycle");
+		TRACE_WARN("module position not fully implemented"); // FIXME
+
+		time += S2ST(parm->cycle); // Wait until this time
+		chThdSleepUntil(time);
+	}
 }
 

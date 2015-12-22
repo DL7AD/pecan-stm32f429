@@ -35,14 +35,14 @@ int main(void) {
 	time.hour = 23;
 	time.minute = 40;
 	time.second = 30;
-	setTime(time);
-	ptime_t time = getTime();
-	chprintf((BaseSequentialStream*)&SD1, "%02d-%02d-%02d %02d:%02d:%02d %03d\r\n", time.year, time.month, time.day, time.hour, time.minute, time.second, time.millisecond); */
+	setTime(time); */
 
 	getLastGPSPosition();
 
-	while(true) {
-		chThdSleepMilliseconds(100);
+	while(true) { // Print time every 60 seconds
+		ptime_t time = getTime();
+		TRACE_INFO("Current time: %02d-%02d-%02d %02d:%02d:%02d %03d", time.year, time.month, time.day, time.hour, time.minute, time.second, time.millisecond);
+		chThdSleepMilliseconds(60000);
 	}
 }
 
