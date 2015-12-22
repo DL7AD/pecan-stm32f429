@@ -7,57 +7,64 @@
 #include "modules/sat.h"
 #include "modules/tel.h"
 #include "modules/log.h"
+#include "modules/radio.h"
 #include "sgp4.h"
-#include "radio.h"
 
-#define MODULE_POS(CYCLE,PWRSAVE,FREQ,PWR,MOD,PROT) { \
-	module_params_t parm; \
-	parm.cycletime = CYCLE; \
-	parm.frequency = FREQ; \
-	parm.power = PWR; \
-	parm.modulation = MOD; \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), NORMALPRIO, modulePOS, &parm); \
+#define MODULE_POS(PARM,CYCLE,SLEEP,FREQ,PWR,MOD,PROT) { \
+	PARM.cycle = CYCLE; \
+	PARM.frequencyMethod = FREQ; \
+	PARM.power = PWR; \
+	PARM.modulation = MOD; \
+	PARM.protocol = PROT; \
+	PARM.sleepMethod = SLEEP; \
+	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), NORMALPRIO, modulePOS, &PARM); \
 }
 
-#define MODULE_SAT(CYCLE,PWRSAVE,FREQ,PWR,MOD,PROT,TLE1,TLE2) { \
-	module_params_t parm; \
-	parm.cycletime = CYCLE; \
-	parm.frequency = FREQ; \
-	parm.power = PWR; \
-	parm.modulation = MOD; \
-	parm.cycleMethod = sgp4_visible; \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), NORMALPRIO, moduleSAT, &parm); \
+#define MODULE_SAT(PARM,CYCLE,SLEEP,FREQ,PWR,MOD,PROT,TLE1,TLE2) { \
+	PARM.cycle = CYCLE; \
+	PARM.frequencyMethod = FREQ; \
+	PARM.power = PWR; \
+	PARM.modulation = MOD; \
+	PARM.protocol = PROT; \
+	PARM.sleepMethod = sgp4_visible; \
+	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), NORMALPRIO, moduleSAT, &PARM); \
 }
 
-#define MODULE_TEL(CYCLE,PWRSAVE,FREQ,PWR,MOD,PROT) { \
-	module_params_t parm; \
-	parm.cycletime = CYCLE; \
-	parm.frequency = FREQ; \
-	parm.power = PWR; \
-	parm.modulation = MOD; \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), NORMALPRIO, moduleTEL, &parm); \
+#define MODULE_TEL(PARM,CYCLE,SLEEP,FREQ,PWR,MOD,PROT) { \
+	PARM.cycle = CYCLE; \
+	PARM.frequencyMethod = FREQ; \
+	PARM.power = PWR; \
+	PARM.modulation = MOD; \
+	PARM.sleepMethod = SLEEP; \
+	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), NORMALPRIO, moduleTEL, &PARM); \
 }
 
-#define MODULE_IMG(CYCLE,PWRSAVE,FREQ,PWR,MOD,PROT) { \
-	module_params_t parm; \
-	parm.cycletime = CYCLE; \
-	parm.frequency = FREQ; \
-	parm.power = PWR; \
-	parm.modulation = MOD; \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), NORMALPRIO, moduleIMG, &parm); \
+#define MODULE_IMG(PARM,CYCLE,SLEEP,FREQ,PWR,MOD,PROT) { \
+	PARM.cycle = CYCLE; \
+	PARM.frequencyMethod = FREQ; \
+	PARM.power = PWR; \
+	PARM.modulation = MOD; \
+	PARM.protocol = PROT; \
+	PARM.sleepMethod = SLEEP; \
+	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), NORMALPRIO, moduleIMG, &PARM); \
 }
 
-#define MODULE_LOG(CYCLE,PWRSAVE,FREQ,PWR,MOD,PROT) { \
-	module_params_t parm; \
-	parm.cycletime = CYCLE; \
-	parm.frequency = FREQ; \
-	parm.power = PWR; \
-	parm.modulation = MOD; \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), NORMALPRIO, moduleLOG, &parm); \
+#define MODULE_LOG(PARM,CYCLE,SLEEP,FREQ,PWR,MOD,PROT) { \
+	PARM.cycle = CYCLE; \
+	PARM.frequencyMethod = FREQ; \
+	PARM.power = PWR; \
+	PARM.modulation = MOD; \
+	PARM.protocol = PROT; \
+	PARM.sleepMethod = SLEEP; \
+	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), NORMALPRIO, moduleLOG, &PARM); \
 }
 
 #define MODULE_GPS() { \
 	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), NORMALPRIO, moduleGPS, NULL); \
+}
+
+#define MODULE_RADIO() { \
+	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), NORMALPRIO, moduleRADIO, NULL); \
 }
 
 #define MODULE_SD() (void)0; /* TODO */
@@ -67,7 +74,7 @@
 typedef enum {
 	MOD_ACTIVE,
 	MOD_SLEEP
-} pmode_t;
+} smode_t;
 
 typedef enum {
 	MOD_2FSK,
@@ -75,21 +82,26 @@ typedef enum {
 } modulation_t;
 
 typedef enum {
-	PWR_1MW,
-	PWR_10MW,
-	PWR_50MW,
-	PWR_100MW,
-	PWR_1W,
-	PWR_2W
-} power_t;
+	PROT_RAW,
+	PROT_SSDV,
+	PROT_APRS,
+	PROT_UKHAS
+} protocol_t;
+
+extern char *SMODE_STRING[];
+extern char *MOULATION_STRING[];
+extern char *PROTOCOL_STRING[];
+#define VAL2SMODE(v) SMODE_STRING[v]
+#define VAL2MOULATION(v) MOULATION_STRING[v]
+#define VAL2PROTOCOL(v) PROTOCOL_STRING[v]
 
 typedef struct {
-	int32_t cycletime; // 0=continuous, -1=refer to cycleMethod
-	void* cycleMethod;
-	power_t power;
-	void* frequency;
+	int32_t cycle; // Cycletime in seconds
+	uint8_t power; // Radio power in dBm
+	void* frequencyMethod; // Method which returns the frequency
 	modulation_t modulation;
-	void* sleepMethod;
+	protocol_t protocol;
+	void* sleepMethod; // Method which returns MOD_ACTIVE or MOD_SLEEP
 } module_params_t;
 
 #endif

@@ -61,7 +61,7 @@ bool processGPSData(void) {
 
 		lineBuffer[linePos] = 0; // Mark end of string
 
-		TRACE_INFO("received NMEA %s", lineBuffer);
+		//TRACE_INFO("received NMEA %s", lineBuffer);
 		linePos = 0; // Clear buffer
 
 	}
@@ -94,6 +94,7 @@ THD_FUNCTION(moduleGPS, arg) {
 	(void)arg;
 
 	TRACE_INFO("startup module gps");
+	TRACE_WARN("module position not completely implemented"); // FIXME
 
 	// Initialize pins
 	palSetPadMode(GPIOE, 7, PAL_MODE_OUTPUT_PUSHPULL);	// GPS_OFF

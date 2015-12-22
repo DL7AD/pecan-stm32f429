@@ -8,4 +8,6 @@ uint32_t getAPRSRegionFrequency(void);
 uint32_t getAPRSISSFrequency(void);
 uint32_t getCustomFrequency(void);
 
+THD_FUNCTION(moduleRADIO, arg);
+
 #endif

@@ -127,6 +127,7 @@ CSRC = $(STARTUPSRC) \
        modules/tel.c \
        modules/log.c \
        trace.c \
+       modules.c \
        ptime.c \
        radio.c \
        sgp4.c \

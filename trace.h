@@ -17,15 +17,16 @@ extern mutex_t trace_mtx;
 
 #define TRACE_BASE(format, type, args...) { \
 	chMtxLock(&trace_mtx); \
-	chprintf((BaseSequentialStream*)&SD1, "[%8d.%04d] %c", chVTGetSystemTimeX()/CH_CFG_ST_FREQUENCY, chVTGetSystemTimeX()%CH_CFG_ST_FREQUENCY, type); \
+	chprintf((BaseSequentialStream*)&SD1, "[%8d.%04d] %c ", chVTGetSystemTimeX()/CH_CFG_ST_FREQUENCY, chVTGetSystemTimeX()%CH_CFG_ST_FREQUENCY, type); \
 	chprintf((BaseSequentialStream*)&SD1, format, ##args); \
 	chprintf((BaseSequentialStream*)&SD1, "\r\n"); \
 	chMtxUnlock(&trace_mtx); \
 }
 
-#define TRACE_INFO(format, args...)  TRACE_BASE(format, 'I', ##args)
-#define TRACE_ERROR(format, args...) TRACE_BASE(format, 'E', ##args)
 #define TRACE_DEBUG(format, args...) TRACE_BASE(format, 'D', ##args)
+#define TRACE_INFO(format, args...)  TRACE_BASE(format, 'I', ##args)
+#define TRACE_WARN(format, args...) TRACE_BASE(format, 'W', ##args)
+#define TRACE_ERROR(format, args...) TRACE_BASE(format, 'E', ##args)
 
 #endif
 

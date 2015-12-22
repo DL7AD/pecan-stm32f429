@@ -41,18 +41,30 @@
 // Module definitions (can be any number of modules)
 #define MODULES() { \
 	MODULE_SD(); \
+	chThdSleepMilliseconds(1); \
 	MODULE_CAM(); \
+	chThdSleepMilliseconds(1); \
 	MODULE_GPS(); \
+	chThdSleepMilliseconds(1); \
 	MODULE_SEN(); \
+	chThdSleepMilliseconds(1); \
+	MODULE_RADIO(); \
+	chThdSleepMilliseconds(1); \
 	\
-	MODULE_POS(120, SLEEP_BELOW_BATTVOLT(2.7), APRS_REGION_FREQ, PWR_10MW, MOD_AFSK, PROT_APRS); \
-	MODULE_TEL(120, SLEEP_BELOW_BATTVOLT(2.7), APRS_REGION_FREQ, PWR_10MW, MOD_AFSK, PROT_APRS); \
-	MODULE_LOG(120, SLEEP_BELOW_BATTVOLT(3.3), APRS_REGION_FREQ, PWR_10MW, MOD_AFSK, PROT_APRS); \
+	module_params_t pos,tel,log,sat,img,te2; \
+	MODULE_POS(pos, 120, NULL, APRS_REGION_FREQ, 10, MOD_AFSK, PROT_APRS); \
+	chThdSleepMilliseconds(1); \
+	MODULE_TEL(tel, 120, NULL, APRS_REGION_FREQ, 10, MOD_AFSK, PROT_APRS); \
+	chThdSleepMilliseconds(1); \
+	MODULE_LOG(log, 120, NULL, APRS_REGION_FREQ, 10, MOD_AFSK, PROT_APRS); \
+	chThdSleepMilliseconds(1); \
 	\
-	MODULE_SAT(60,  SLEEP_BELOW_BATTVOLT(3.0), APRS_ISS_FREQ, PWR_2W, MOD_AFSK, PROT_APRS, SAT_TLE1, SAT_TLE2); \
+	MODULE_SAT(sat, 60,  NULL, APRS_ISS_FREQ, 33, MOD_AFSK, PROT_APRS, SAT_TLE1, SAT_TLE2); \
+	chThdSleepMilliseconds(1); \
 	\
-	MODULE_IMG(0, SLEEP_BELOW_SOLBATTVOLT(0.5, 4.0), CUSTOM_FREQ, PWR_10MW, MOD_2FSK, PROT_SSDV); \
-	MODULE_TEL(20, SLEEP_BELOW_SOLBATTVOLT(0.5, 4.0), CUSTOM_FREQ, PWR_10MW, MOD_2FSK, PROT_UKHAS); \
+	MODULE_IMG(img, 1,   NULL, CUSTOM_FREQ, 10, MOD_2FSK, PROT_SSDV); \
+	chThdSleepMilliseconds(1); \
+	MODULE_TEL(te2, 20,  NULL, CUSTOM_FREQ, 10, MOD_2FSK, PROT_UKHAS); \
 }
 
 #endif
