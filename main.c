@@ -41,8 +41,8 @@ int main(void) {
 
 	while(true) { // Print time every 60 seconds
 		ptime_t time = getTime();
-		TRACE_INFO("Current time: %02d-%02d-%02d %02d:%02d:%02d %03d", time.year, time.month, time.day, time.hour, time.minute, time.second, time.millisecond);
-		chThdSleepMilliseconds(60000);
+		TRACE_INFO("Current time: %02d-%02d-%02d %02d:%02d:%02d:%03d", time.year, time.month, time.day, time.hour, time.minute, time.second, time.millisecond);
+		chThdSleepMilliseconds(30000);
 	}
 }
 

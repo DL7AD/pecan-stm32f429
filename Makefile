@@ -126,6 +126,7 @@ CSRC = $(STARTUPSRC) \
        modules/satellite.c \
        modules/telemetry.c \
        modules/log.c \
+       drivers/max.c \
        trace.c \
        modules.c \
        ptime.c \
@@ -199,10 +200,10 @@ AOPT =
 TOPT = -mthumb -DTHUMB
 
 # Define C warning options here
-CWARN = -Wall -Wextra -Wundef -Wstrict-prototypes
+CWARN = -Wall -Wextra -Wundef -Wstrict-prototypes -std=c99
 
 # Define C++ warning options here
-CPPWARN = -Wall -Wextra -Wundef
+CPPWARN = -Wall -Wextra -Wundef -std=c99
 
 #
 # Compiler settings

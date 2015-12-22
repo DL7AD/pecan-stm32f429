@@ -5,11 +5,12 @@
 #include "ptime.h"
 #include "config.h"
 #include "gps.h"
+#include "drivers/max.h"
 
-volatile gps_t lastPosition;
-volatile bool requireNewPosition;
-volatile char lineBuffer[128];
-volatile uint32_t linePos;
+gps_fix_t lastPosition;
+bool requireNewPosition;
+char lineBuffer[128];
+uint32_t linePos;
 
 const SerialConfig gps_config =
 {
@@ -20,7 +21,7 @@ const SerialConfig gps_config =
 };
 
 bool isGPSFixUpToDate(void) {
-	return date2UnixTimestamp(lastPosition.time) + GPS_FIX_TIMEOUT*1000 >= date2UnixTimestamp(getTime()) && lastPosition.time.year != 0;
+	return lastPosition.time + GPS_FIX_TIMEOUT*1000 >= date2UnixTimestamp(getTime()) && lastPosition.time != 0;
 }
 
 void switchGPS(bool on) {
@@ -28,48 +29,56 @@ void switchGPS(bool on) {
 	if(on) { // Switch GPS on
 
 		// Init UART
-		TRACE_INFO("init gps uart");
+		TRACE_INFO("Init GPS UART");
 		sdStart(&SD2, &gps_config);
 
 		// Switch MOSFET
-		TRACE_INFO("switch on gps");
+		TRACE_INFO("Switch on GPS");
 		palClearPad(GPIOE, 7);
+		
+		// Wait for GPS startup
+		chThdSleepMilliseconds(3000);
+
+		TRACE_INFO("Initialize GPS");
+		if(gps_disable_nmea_output()) {
+			TRACE_INFO("Disable NMEA output OK");
+		} else {
+			TRACE_ERROR("Disable NMEA output FAILED");
+		}
+		if(gps_set_gps_only()) {
+			TRACE_INFO("Set GPS only OK");
+		} else {
+			TRACE_ERROR("Set GPS only FAILED");
+		}
+		if(gps_set_airborne_model()) {
+			TRACE_INFO("Set airborne model OK");
+		} else {
+			TRACE_ERROR("Set airborne model FAILED");
+		}
+		if(gps_set_power_save()) {
+			TRACE_INFO("Configure power save OK");
+		} else {
+			TRACE_ERROR("Configure power save FAILED");
+		}
+		if(gps_power_save(0)) {
+			TRACE_INFO("Disable power save OK");
+		} else {
+			TRACE_ERROR("Disable power save FAILED");
+		}
 
 	} else { // Switch GPS off
 
 		// Deinit UART
-		TRACE_INFO("deinit gps uart");
+		TRACE_INFO("Deinit gps uart");
 		sdStop(&SD2);
 
 		// Switch MOSFET
-		TRACE_INFO("switch off gps");
+		TRACE_INFO("Switch off gps");
 		palSetPad(GPIOE, 7);
 	}
 }
 
-bool processGPSData(void) {
-
-	uint8_t b = sdGetTimeout(&SD2, 0); // Get data non blocking
-	if(b == 0xFF)
-		return false;
-
-	if(b != 10 && b != 13 && linePos < sizeof(lineBuffer)-1) {
-
-		lineBuffer[linePos++] = b; // Append buffer
-
-	} else if(linePos > 10) { // LF/CF received
-
-		lineBuffer[linePos] = 0; // Mark end of string
-
-		//TRACE_INFO("received NMEA %s", lineBuffer);
-		linePos = 0; // Clear buffer
-
-	}
-
-	return false;
-}
-
-gps_t getLastGPSPosition(void) {
+gps_fix_t getLastGPSPosition(void) {
 	if(isGPSFixUpToDate()) { // GPS position up to date
 
 		return lastPosition;
@@ -93,8 +102,7 @@ gps_t getLastGPSPosition(void) {
 THD_FUNCTION(moduleGPS, arg) {
 	(void)arg;
 
-	TRACE_INFO("startup module gps");
-	TRACE_WARN("module position not completely implemented"); // FIXME
+	TRACE_INFO("Startup module GPS");
 
 	// Initialize pins
 	palSetPadMode(GPIOE, 7, PAL_MODE_OUTPUT_PUSHPULL);	// GPS_OFF
@@ -105,22 +113,21 @@ THD_FUNCTION(moduleGPS, arg) {
 		if(requireNewPosition) {
 			requireNewPosition = false; // TODO: Implement interrupt handling
 
-			TRACE_INFO("gps position outdated");
+			TRACE_INFO("GPS position outdated");
 
 			switchGPS(true); // Switch on GPS
 
-			bool lock;
 			uint32_t counter = 0;
 			do {
-				lock = processGPSData(); // Process byte
-				chThdSleepMilliseconds(1);
-			} while(!lock && counter++ <= GPS_ACQUISITION_TIMEOUT*1000);
+				gps_get_fix(&lastPosition);
+				chThdSleepMilliseconds(500);
+			} while(!lastPosition.type && counter++ <= GPS_ACQUISITION_TIMEOUT*2);
 		
-			lastPosition.ttff = counter/1000; // Setting time to first fix
-			TRACE_INFO("gps sampling finished");
-			TRACE_INFO("gps ttff %d", lastPosition.ttff);
+			uint32_t ttff = counter/2; // Setting time to first fix
+			TRACE_INFO("GPS sampling finished");
+			TRACE_INFO("GPS TTFF %d", ttff);
 
-			if(lastPosition.ttff < GPS_ACQUISITION_TIMEOUT) { // Fix sampled in time
+			if(ttff < GPS_ACQUISITION_TIMEOUT) { // Fix sampled in time
 				switchGPS(false);
 			} else { // GPS lost (could not get a valid fix in time)
 				requireNewPosition = true; // Try to get a valid fix again
