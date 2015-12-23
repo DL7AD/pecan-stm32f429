@@ -74,6 +74,12 @@ typedef enum {
 	PROT_UKHAS
 } protocol_t;
 
+typedef struct {
+	char msg[256];
+	uint32_t freq;
+	modulation_t mod;
+} radioMSG_t;
+
 extern char *SMODE_STRING[];
 extern char *MOULATION_STRING[];
 extern char *PROTOCOL_STRING[];

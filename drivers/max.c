@@ -38,7 +38,7 @@ uint8_t gps_receive_ack(uint8_t class_id, uint8_t msg_id) {
 
 	/* runs until ACK/NAK packet is received, possibly add a timeout.
 	 * can crash if a message ACK is missed (watchdog resets */
-	for(int try=0; try<10; try++) {
+	for(int try=0; try<100; try++) {
 		// TODO: while(!(UCA0IFG & UCRXIFG));
 		// TODO: UCA0IFG &= ~UCRXIFG;
 		rx_byte = sdGetTimeout(&SD2, 100);
@@ -77,7 +77,7 @@ uint16_t gps_receive_payload(uint8_t class_id, uint8_t msg_id, unsigned char *pa
 	uint16_t payload_len = 0;
 
 	// TODO: UCA0IFG &= ~UCRXIFG;
-	while(1) {
+	for(int try=0; try<100; try++) {
 		// TODO: while(!(UCA0IFG & UCRXIFG));
 		// TODO: UCA0IFG &= ~UCRXIFG;
 		rx_byte = sdGetTimeout(&SD2, 100);
@@ -116,6 +116,7 @@ uint16_t gps_receive_payload(uint8_t class_id, uint8_t msg_id, unsigned char *pa
 				state = UBX_A;
 		}
 	}
+	return 0;
 }
 
 /* 
@@ -127,7 +128,7 @@ uint16_t gps_receive_payload(uint8_t class_id, uint8_t msg_id, unsigned char *pa
  * argument is call by reference to avoid large stack allocations
  *
  */
-void gps_get_fix(gps_fix_t *fix) {
+void gps_get_fix(gpsFix_t *fix) {
 	static uint8_t response[92];	/* PVT response length is 92 bytes */
 	uint8_t pvt[] = {0xB5, 0x62, 0x01, 0x07, 0x00, 0x00, 0x08, 0x19};
 	int32_t alt_tmp;
@@ -138,14 +139,13 @@ void gps_get_fix(gps_fix_t *fix) {
 	fix->num_svs = response[23];
 	fix->type = response[20];
 
-	ptime_t time;
-	time.year = response[4] + (response[5] << 8);
-	time.month = response[6];
-	time.day = response[7];
-	time.hour = response[8];
-	time.minute = response[9];
-	time.second = response[10];
-	fix->time = date2UnixTimestamp(time);
+	fix->time.year = response[4] + (response[5] << 8);
+	fix->time.month = response[6];
+	fix->time.day = response[7];
+	fix->time.hour = response[8];
+	fix->time.minute = response[9];
+	fix->time.second = response[10];
+	fix->systime = chVTGetSystemTimeX();
 
 	fix->lat = (int32_t) (
 			(uint32_t)(response[28]) + ((uint32_t)(response[29]) << 8) + ((uint32_t)(response[30]) << 16) + ((uint32_t)(response[31]) << 24)

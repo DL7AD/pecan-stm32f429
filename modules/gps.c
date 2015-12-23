@@ -7,7 +7,7 @@
 #include "gps.h"
 #include "drivers/max.h"
 
-gps_fix_t lastPosition;
+gpsFix_t lastPosition;
 bool requireNewPosition;
 char lineBuffer[128];
 uint32_t linePos;
@@ -21,7 +21,7 @@ const SerialConfig gps_config =
 };
 
 bool isGPSFixUpToDate(void) {
-	return lastPosition.time + GPS_FIX_TIMEOUT*1000 >= date2UnixTimestamp(getTime()) && lastPosition.time != 0;
+	return ST2S(chVTGetSystemTimeX() - lastPosition.systime) <= GPS_FIX_TIMEOUT && lastPosition.type == 3;
 }
 
 void switchGPS(bool on) {
@@ -69,27 +69,29 @@ void switchGPS(bool on) {
 	} else { // Switch GPS off
 
 		// Deinit UART
-		TRACE_INFO("Deinit gps uart");
+		TRACE_INFO("Deinit GPS uart");
 		sdStop(&SD2);
 
 		// Switch MOSFET
-		TRACE_INFO("Switch off gps");
+		TRACE_INFO("Switch off GPS");
 		palSetPad(GPIOE, 7);
 	}
 }
 
-gps_fix_t getLastGPSPosition(void) {
+gpsFix_t getLastGPSPosition(void) {
 	if(isGPSFixUpToDate()) { // GPS position up to date
 
+		TRACE_INFO("GPS position up to date");
 		return lastPosition;
 
 	} else { // GPS position outdated
 
 		// Acquire new fix and wait until new fix sampled (or timeout)
+		TRACE_INFO("GPS position outdated");
 		requireNewPosition = true;
 		uint32_t counter = 0;
-		while(!isGPSFixUpToDate() && GPS_ACQUISITION_TIMEOUT < counter++)
-			chThdSleepMilliseconds(1000);
+		while(!isGPSFixUpToDate() && GPS_ACQUISITION_TIMEOUT > counter++)
+			chThdSleepMilliseconds(100);
 
 		return lastPosition;
 
@@ -106,28 +108,31 @@ THD_FUNCTION(moduleGPS, arg) {
 
 	// Initialize pins
 	palSetPadMode(GPIOE, 7, PAL_MODE_OUTPUT_PUSHPULL);	// GPS_OFF
-	palSetPadMode(GPIOA, 2, PAL_MODE_ALTERNATE(7));		// UART TXD
-	palSetPadMode(GPIOA, 3, PAL_MODE_ALTERNATE(7));		// UART RXD
+	palSetPadMode(GPIOD, 5, PAL_MODE_ALTERNATE(7));		// UART TXD
+	palSetPadMode(GPIOD, 6, PAL_MODE_ALTERNATE(7));		// UART RXD
 
 	while(true) {
 		if(requireNewPosition) {
 			requireNewPosition = false; // TODO: Implement interrupt handling
 
-			TRACE_INFO("GPS position outdated");
-
 			switchGPS(true); // Switch on GPS
 
-			uint32_t counter = 0;
+			// Search for GPS satellites
+			systime_t start = chVTGetSystemTimeX();
 			do {
+				TRACE_INFO("Query GPS");
 				gps_get_fix(&lastPosition);
-				chThdSleepMilliseconds(500);
-			} while(!lastPosition.type && counter++ <= GPS_ACQUISITION_TIMEOUT*2);
-		
-			uint32_t ttff = counter/2; // Setting time to first fix
-			TRACE_INFO("GPS sampling finished");
-			TRACE_INFO("GPS TTFF %d", ttff);
 
-			if(ttff < GPS_ACQUISITION_TIMEOUT) { // Fix sampled in time
+				chThdSleepMilliseconds(100);
+			} while(lastPosition.type != 0x3 && chVTGetSystemTimeX() <= start + S2ST(GPS_ACQUISITION_TIMEOUT)); // Do as long no GPS lock and within timeout
+
+			setTime(lastPosition.time); // Calibrate RTC
+
+			lastPosition.ttff = ST2S(chVTGetSystemTimeX()-start); // Setting time to first fix
+			TRACE_INFO("GPS sampling finished");
+			TRACE_GPSFIX(&lastPosition);
+
+			if(lastPosition.ttff < GPS_ACQUISITION_TIMEOUT) { // Fix sampled in time
 				switchGPS(false);
 			} else { // GPS lost (could not get a valid fix in time)
 				requireNewPosition = true; // Try to get a valid fix again

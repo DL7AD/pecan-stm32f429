@@ -23,25 +23,13 @@ int main(void) {
 	// Trace Init
 	TRACE_INIT();
 
-	TRACE_INFO("startup");
+	TRACE_INFO("Startup");
 
 	// Startup modules
 	MODULES();
 
-	/* ptime_t time;
-	time.year = 2015;
-	time.month = 12;
-	time.day = 20;
-	time.hour = 23;
-	time.minute = 40;
-	time.second = 30;
-	setTime(time); */
-
-	getLastGPSPosition();
-
-	while(true) { // Print time every 60 seconds
-		ptime_t time = getTime();
-		TRACE_INFO("Current time: %02d-%02d-%02d %02d:%02d:%02d:%03d", time.year, time.month, time.day, time.hour, time.minute, time.second, time.millisecond);
+	while(true) { // Print time every 30 seconds
+		PRINT_TIME();
 		chThdSleepMilliseconds(30000);
 	}
 }

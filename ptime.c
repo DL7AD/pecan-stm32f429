@@ -1,4 +1,5 @@
 #include "ptime.h"
+#include "trace.h"
 
 const uint16_t nonLeapYear[] = {0,31,59,90,120,151,181,212,243,273,304,334,365};
 const uint16_t leapYear[] = {0,31,60,91,121,152,182,213,244,274,305,335,366};
@@ -29,7 +30,7 @@ uint64_t date2UnixTimestamp(ptime_t time) {
 			timeC += 31536000;
 		}
 	}
-
+	TRACE_DEBUG("Return %d", (timeC * 1000 + time.millisecond));
 	return timeC * 1000 + time.millisecond;
 }
 
@@ -66,7 +67,7 @@ ptime_t getTime(void) {
 	rtcGetTime(&RTCD1, &timespec);
 
 	ptime_t date;
-	date.year = timespec.year;
+	date.year = timespec.year + 2000;
 	date.month = timespec.month;
 	date.day = timespec.day;
 	date.hour = timespec.millisecond / 3600000;
@@ -84,20 +85,8 @@ void setTime(ptime_t date) {
 	timespec.day = date.day;
 	timespec.millisecond = date.hour * 3600000 + date.minute * 60000 + date.second * 1000 + date.millisecond;
 
+	TRACE_INFO("Calibrate RTC");
+	PRINT_TIME();
 	rtcSetTime(&RTCD1, &timespec);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
