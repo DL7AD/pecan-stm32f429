@@ -22,13 +22,13 @@ int main(void) {
 
 	// Trace Init
 	TRACE_INIT();
-	TRACE_INFO("Startup");
+	TRACE_INFO("MAIN > Startup");
 
 	// Startup modules
 	MODULES();
 
 	while(true) { // Print time every 30 seconds
-		PRINT_TIME();
+		PRINT_TIME("MAIN");
 		chThdSleepMilliseconds(30000);
 	}
 }

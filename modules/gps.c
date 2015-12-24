@@ -38,52 +38,52 @@ void switchGPS(bool on) {
 	if(on) { // Switch GPS on
 
 		// Init UART
-		TRACE_INFO("Init GPS UART");
+		TRACE_INFO("GPS  > Init GPS UART");
 		sdStart(&SD2, &gps_config);
 
 		// Switch MOSFET
-		TRACE_INFO("Switch on GPS");
+		TRACE_INFO("GPS  > Switch on");
 		palClearPad(GPIOE, 7);
 		
 		// Wait for GPS startup
 		chThdSleepMilliseconds(3000);
 
 		// Configure GPS
-		TRACE_INFO("Initialize GPS");
+		TRACE_INFO("GPS  > Initialize GPS");
 		if(gps_disable_nmea_output()) {
-			TRACE_INFO("GPS Disable NMEA output OK");
+			TRACE_INFO("GPS  > Disable NMEA output OK");
 		} else {
-			TRACE_ERROR("GPS Disable NMEA output FAILED");
+			TRACE_ERROR("GPS  > Disable NMEA output FAILED");
 		}
 		if(gps_set_gps_only()) {
-			TRACE_INFO("GPS Set GPS only OK");
+			TRACE_INFO("GPS  > Set GPS only OK");
 		} else {
-			TRACE_ERROR("GPS Set GPS only FAILED");
+			TRACE_ERROR("GPS  > Set GPS only FAILED");
 		}
 		if(gps_set_airborne_model()) {
-			TRACE_INFO("GPS Set airborne model OK");
+			TRACE_INFO("GPS  > Set airborne model OK");
 		} else {
-			TRACE_ERROR("GPS Set airborne model FAILED");
+			TRACE_ERROR("GPS  > Set airborne model FAILED");
 		}
 		if(gps_set_power_save()) {
-			TRACE_INFO("GPS Configure power save OK");
+			TRACE_INFO("GPS  > Configure power save OK");
 		} else {
-			TRACE_ERROR("GPS Configure power save FAILED");
+			TRACE_ERROR("GPS  > Configure power save FAILED");
 		}
 		if(gps_power_save(0)) {
-			TRACE_INFO("GPS Disable power save OK");
+			TRACE_INFO("GPS  > Disable power save OK");
 		} else {
-			TRACE_ERROR("GPS Disable power save FAILED");
+			TRACE_ERROR("GPS  > Disable power save FAILED");
 		}
 
 	} else { // Switch GPS off
 
 		// Deinit UART
-		TRACE_INFO("Deinit GPS uart");
+		TRACE_INFO("GPS  > Deinit UART");
 		sdStop(&SD2);
 
 		// Switch MOSFET
-		TRACE_INFO("Switch off GPS");
+		TRACE_INFO("GPS  > Switch off");
 		palSetPad(GPIOE, 7);
 
 	}
@@ -101,12 +101,12 @@ gpsFix_t getLastGPSPosition(systime_t timeout) {
 
 	if(isGPSFixUpToDate()) { // GPS position up to date
 
-		TRACE_INFO("GPS position up to date");
+		TRACE_INFO("GPS  > GPS position up to date");
 		return lastPosition;
 
 	} else { // GPS position outdated, Acquire new fix and wait until new fix sampled (or timeout)
 
-		TRACE_INFO("GPS position outdated");
+		TRACE_INFO("GPS  > GPS position outdated");
 
 		// Wakeup GPS thread to search for GPS
 		requireNewPosition = true;
@@ -116,9 +116,9 @@ gpsFix_t getLastGPSPosition(systime_t timeout) {
 			chThdSleepMilliseconds(100);
 
 		if(!isGPSFixUpToDate() && start+timeout < chVTGetSystemTimeX()) {
-			TRACE_INFO("GPS position sampling TIMEOUT");
+			TRACE_INFO("GPS  > GPS position sampling TIMEOUT");
 		} else {
-			TRACE_INFO("GPS position sampling OK");
+			TRACE_INFO("GPS  > GPS position sampling OK");
 		}
 
 		return lastPosition;
@@ -132,7 +132,7 @@ gpsFix_t getLastGPSPosition(systime_t timeout) {
 THD_FUNCTION(moduleGPS, arg) {
 	(void)arg;
 
-	TRACE_INFO("Startup module GPS");
+	TRACE_INFO("GPS  > Startup module");
 
 	// Initialize pins
 	palSetPadMode(GPIOE, 7, PAL_MODE_OUTPUT_PUSHPULL);	// GPS_OFF
@@ -147,7 +147,7 @@ THD_FUNCTION(moduleGPS, arg) {
 			// Search for GPS satellites
 			systime_t start = chVTGetSystemTimeX();
 			do {
-				TRACE_INFO("Query GPS");
+				TRACE_INFO("GPS  > Polling");
 				gps_get_fix(&lastPosition);
 				chThdSleepMilliseconds(100);
 			} while(lastPosition.type != 0x3 && chVTGetSystemTimeX() <= start + S2ST(120)); // Do as long no GPS lock and within timeout (120 seconds)
@@ -162,10 +162,10 @@ THD_FUNCTION(moduleGPS, arg) {
 				switchGPS(false); // Switch off GPS
 				requireNewPosition = false; // Mark no new position needed TODO: Implement interrupt handling
 
-				TRACE_INFO("GPS sampling finished GPS LOCK");
+				TRACE_INFO("GPS  > GPS sampling finished GPS LOCK");
 				TRACE_GPSFIX(&lastPosition);
 			} else {
-				TRACE_INFO("GPS sampling finished GPS LOSS");
+				TRACE_INFO("GPS  > GPS sampling finished GPS LOSS");
 			}
 		}
 		chThdSleepMilliseconds(100);

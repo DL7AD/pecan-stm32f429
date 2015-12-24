@@ -8,19 +8,19 @@
 THD_FUNCTION(modulePOS, arg) {
 	// Print infos
 	module_params_t* parm = (module_params_t*)arg;
-	TRACE_INFO("Startup module POSITION");
-	TRACE_MODULE_INFO(parm, "POSITION");
+	TRACE_INFO("POS  > Startup module POSITION");
+	TRACE_MODULE_INFO(parm, "POS", "POSITION");
 
 	systime_t time = chVTGetSystemTimeX();
 	while(true)
 	{
-		TRACE_INFO("Do module POSITION cycle");
-		TRACE_WARN("Module POSITION not implemented"); // FIXME
+		TRACE_INFO("POS  > Do module POSITION cycle");
+		TRACE_WARN("POS  > Module POSITION not implemented"); // FIXME
 
-		TRACE_INFO("Get GPS position");
+		TRACE_INFO("POS  > Get GPS position");
 		getLastGPSPosition(S2ST(parm->cycle-1)); // Timeout max. cycle time - 1sec
 
-		TRACE_INFO("Transmit GPS position");
+		TRACE_INFO("POS  > Transmit GPS position");
 
 		radioMSG_t msg;
 		uint32_t (*fptr)(void);
@@ -50,7 +50,7 @@ THD_FUNCTION(modulePOS, arg) {
 				break;
 
 			default:
-				TRACE_ERROR("Unsupported protocol selected for module POSITION");
+				TRACE_ERROR("POS  > Unsupported protocol selected for module POSITION");
 		}
 
 		time += S2ST(parm->cycle); // Wait until this time

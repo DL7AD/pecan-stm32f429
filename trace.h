@@ -4,7 +4,8 @@
 #include "ch.h"
 #include "hal.h"
 #include "chprintf.h"
-#include <math.h>
+#include "ptime.h"
+//#include <math.h>
 
 extern mutex_t trace_mtx;
 
@@ -31,18 +32,18 @@ extern mutex_t trace_mtx;
 #define TRACE_WARN(format, args...) TRACE_BASE(format, 'W', ##args)
 #define TRACE_ERROR(format, args...) TRACE_BASE(format, 'E', ##args)
 
-#define TRACE_TAB "                  "
+#define TRACE_TAB "                         "
 
-#define TRACE_MODULE_INFO(parm, name) { \
+#define TRACE_MODULE_INFO(parm, thd, name) { \
 	uint32_t (*fptr)(void); \
 	fptr = (parm)->frequencyMethod; \
-	TRACE_INFO(	"Module %s info\r\n" \
-		"%s > Cycle: %d sec\r\n" \
-		"%s > Power: %d dBm\r\n" \
-		"%s > Frequency: %d.%03d MHz (current)\r\n" \
-		"%s > Modulation: %s\r\n" \
-		"%s > Protocol: %s", \
-		name, \
+	TRACE_INFO(	"%-4s > Module %s info\r\n" \
+		"%s Cycle: %d sec\r\n" \
+		"%s Power: %d dBm\r\n" \
+		"%s Frequency: %d.%03d MHz (current)\r\n" \
+		"%s Modulation: %s\r\n" \
+		"%s Protocol: %s", \
+		thd, name, \
 		TRACE_TAB, (parm)->cycle, \
 		TRACE_TAB, (parm)->power, \
 		TRACE_TAB, (*fptr)()/1000000, ((*fptr)()%1000000)/1000, \
@@ -66,6 +67,11 @@ extern mutex_t trace_mtx;
 		TRACE_TAB, (fix)->alt, \
 		TRACE_TAB, (fix)->ttff \
 	); \
+}
+
+#define PRINT_TIME(thd) { \
+	ptime_t time = getTime(); \
+	TRACE_INFO("%-4s > Current time: %02d-%02d-%02d %02d:%02d:%02d:%03d", thd, time.year, time.month, time.day, time.hour, time.minute, time.second, time.millisecond); \
 }
 
 #endif

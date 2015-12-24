@@ -7,14 +7,14 @@
 THD_FUNCTION(moduleIMG, arg) {
 	// Print infos
 	module_params_t* parm = (module_params_t*)arg;
-	TRACE_INFO("Startup module IMAGE");
-	TRACE_MODULE_INFO(parm, "IMAGE");
+	TRACE_INFO("IMG  > Startup module IMAGE");
+	TRACE_MODULE_INFO(parm, "IMG", "IMAGE");
 
 	systime_t time = chVTGetSystemTimeX();
 	while(true)
 	{
-		TRACE_INFO("Do module IMAGE cycle");
-		TRACE_WARN("Module IMAGE not implemented"); // FIXME
+		TRACE_INFO("IMG  > Do module IMAGE cycle");
+		TRACE_WARN("IMG  > Module IMAGE not implemented"); // FIXME
 
 		time += S2ST(parm->cycle); // Wait until this time
 		chThdSleepUntil(time);

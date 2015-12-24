@@ -20,10 +20,10 @@ THD_FUNCTION(moduleRADIO, arg) {
 	(void)arg;
 
 	// Print infos
-	TRACE_INFO("Startup module RADIO");
+	TRACE_INFO("RAD  > Startup module RADIO");
 
 	// Setup mailbox
-	TRACE_INFO("Setup radio mailbox");
+	TRACE_INFO("RAD  > Setup radio mailbox");
 	chMBObjectInit(&radioMBP, (msg_t*)buf, sizeof(buf));
 
 	while(true)
@@ -31,7 +31,7 @@ THD_FUNCTION(moduleRADIO, arg) {
 		radioMSG_t msg;
 		msg_t status = chMBFetch(&radioMBP, (msg_t*)&msg, 0);
 		if(status == MSG_OK) {
-			TRACE_INFO(	"Transmit on radio\r\n"
+			TRACE_INFO(	"RAD  > Transmit on radio\r\n"
 						"%s > Message %s\r\n"
 						"%s > Radio %d\r\n"
 						"%s > Frequency %d MHz\r\n"
