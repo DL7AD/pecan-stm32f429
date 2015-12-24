@@ -18,7 +18,7 @@ THD_FUNCTION(modulePOS, arg) {
 		TRACE_WARN("Module POSITION not implemented"); // FIXME
 
 		TRACE_INFO("Get GPS position");
-		getLastGPSPosition();
+		getLastGPSPosition(S2ST(parm->cycle-1)); // Timeout max. cycle time - 1sec
 
 		TRACE_INFO("Transmit GPS position");
 

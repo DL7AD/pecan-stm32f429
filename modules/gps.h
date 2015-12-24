@@ -4,7 +4,7 @@
 #include "ptime.h"
 #include "drivers/max.h"
 
-gpsFix_t getLastGPSPosition(void);
+gpsFix_t getLastGPSPosition(systime_t timeout);
 THD_FUNCTION(moduleGPS, arg);
 
 #endif

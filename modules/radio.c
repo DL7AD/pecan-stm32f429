@@ -23,7 +23,7 @@ THD_FUNCTION(moduleRADIO, arg) {
 	TRACE_INFO("Startup module RADIO");
 
 	// Setup mailbox
-	TRACE_INFO("Setup mailbox");
+	TRACE_INFO("Setup radio mailbox");
 	chMBObjectInit(&radioMBP, (msg_t*)buf, sizeof(buf));
 
 	while(true)

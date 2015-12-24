@@ -22,7 +22,6 @@ int main(void) {
 
 	// Trace Init
 	TRACE_INIT();
-
 	TRACE_INFO("Startup");
 
 	// Startup modules

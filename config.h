@@ -13,10 +13,12 @@
 #define RADIO2_AVAIL			TRUE			/* Radio 2 available */
 #define BME280_AVAIL			TRUE			/* BME280 air pressure sensor available */
 #define MPU9250_AVAIL			TRUE			/* MPU9250 9 axis sensor available */
+#define PAC1720_AVAIL			TRUE			/* PAC1720 current sensor available */
 
-#define CHECK_RADIO1_BAND(f)	(144000000 <= f && f <= 148000000) /* Frequency range of Radio 1 */
-#define CHECK_RADIO2_BAND(f)	(420000000 <= f && f <= 450000000) /* Frequency range of Radio 2 */
-
+#define RADIO1_MIN_FREQ			144000000		/* Min. Frequency range of Radio 1 */
+#define RADIO1_MAX_FREQ			148000000		/* Min. Frequency range of Radio 1 */
+#define RADIO2_MIN_FREQ			420000000		/* Min. Frequency range of Radio 2 */
+#define RADIO2_MAX_FREQ			450000000		/* Min. Frequency range of Radio 2 */
 
 // User configurations
 #define APRS_CALLSIGN			"DL7AD"			/* APRS callsign */
@@ -28,8 +30,7 @@
 
 #define FSK_CALLSIGN			"D-11"			/* FSK callsign for RTTY and DominoEX */
 
-#define GPS_ACQUISITION_TIMEOUT	120				/* GPS acquisition timeout */
-#define GPS_FIX_TIMEOUT			120				/* GPS fix gets outdated after */
+#define GPS_FIX_TIMEOUT			5				/* GPS fix gets outdated after */
 
 #define LOG_SIZE				14				/* Log size in days */
 #define LOG_CYCLE				120				/* Log cycle in minutes */
@@ -39,6 +40,7 @@
 #define SAT_TLE2 				"2 25544  51.6441 238.8813 0008350 299.4829 139.1404 15.54920935976888"
 
 // Module definitions (can be any number of modules)
+#if 0
 #define MODULES() { \
 	MODULE_SD(); \
 	chThdSleepMilliseconds(100); \
@@ -63,6 +65,17 @@
 	MODULE_IMAGE(300, NULL, CUSTOM_FREQ, 10, MOD_2FSK, PROT_SSDV); \
 	chThdSleepMilliseconds(100); \
 	MODULE_TELEMETRY(20, NULL, CUSTOM_FREQ, 10, MOD_2FSK, PROT_UKHAS); \
+	chThdSleepMilliseconds(100); \
+}
+#endif
+
+#define MODULES() { \
+	MODULE_GPS(); \
+	chThdSleepMilliseconds(100); \
+	MODULE_RADIO(); \
+	chThdSleepMilliseconds(100); \
+	\
+	MODULE_POSITION(120, NULL, APRS_REGION_FREQ, 10, MOD_AFSK, PROT_APRS); \
 	chThdSleepMilliseconds(100); \
 }
 
