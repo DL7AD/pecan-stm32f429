@@ -158,13 +158,14 @@ THD_FUNCTION(moduleGPS, arg) {
 			// Set TTFF
 			lastPosition.ttff = ST2S(chVTGetSystemTimeX() - start);
 
-			// Tracing
-			TRACE_INFO("GPS sampling finished");
-			TRACE_GPSFIX(&lastPosition);
-
 			if(lastPosition.ttff < 120) { // GPS locked
 				switchGPS(false); // Switch off GPS
 				requireNewPosition = false; // Mark no new position needed TODO: Implement interrupt handling
+
+				TRACE_INFO("GPS sampling finished GPS LOCK");
+				TRACE_GPSFIX(&lastPosition);
+			} else {
+				TRACE_INFO("GPS sampling finished GPS LOSS");
 			}
 		}
 		chThdSleepMilliseconds(100);
