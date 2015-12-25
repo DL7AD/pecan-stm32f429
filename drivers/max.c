@@ -128,13 +128,14 @@ uint16_t gps_receive_payload(uint8_t class_id, uint8_t msg_id, unsigned char *pa
  * argument is call by reference to avoid large stack allocations
  *
  */
-void gps_get_fix(gpsFix_t *fix) {
+bool gps_get_fix(gpsFix_t *fix) {
 	static uint8_t response[92];	/* PVT response length is 92 bytes */
 	uint8_t pvt[] = {0xB5, 0x62, 0x01, 0x07, 0x00, 0x00, 0x08, 0x19};
 	int32_t alt_tmp;
 
 	gps_transmit_string(pvt, sizeof(pvt));
-	gps_receive_payload(0x01, 0x07, response);
+	if(!gps_receive_payload(0x01, 0x07, response))
+		return false;
 
 	fix->num_svs = response[23];
 	fix->type = response[20];
@@ -163,7 +164,7 @@ void gps_get_fix(gpsFix_t *fix) {
 	} else {
 		fix->alt = (uint16_t) alt_tmp;
 	}
-			
+	return true;
 }
 
 /* 

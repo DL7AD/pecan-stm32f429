@@ -118,8 +118,10 @@ CSRC = $(STARTUPSRC) \
        $(CHIBIOS)/os/various/shell.c \
        $(CHIBIOS)/os/hal/lib/streams/memstreams.c \
        $(CHIBIOS)/os/hal/lib/streams/chprintf.c \
-       ssdv/ssdv.c \
-       ssdv/rs8.c \
+       protocols/ssdv/ssdv.c \
+       protocols/ssdv/rs8.c \
+       protocols/aprs/aprs.c \
+       protocols/aprs/ax25.c \
        modules/gps.c \
        modules/position.c \
        modules/image.c \
@@ -129,10 +131,10 @@ CSRC = $(STARTUPSRC) \
        drivers/max.c \
        trace.c \
        modules.c \
+       base64.c \
        ptime.c \
        radio.c \
        sgp4.c \
-       aprs.c \
        main.c
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global

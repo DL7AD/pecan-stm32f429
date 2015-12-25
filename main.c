@@ -2,7 +2,6 @@
 #include "hal.h"
 #include "chprintf.h"
 
-#include "aprs.h"
 #include "ptime.h"
 #include "config.h"
 #include "trace.h"

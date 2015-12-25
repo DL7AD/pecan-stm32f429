@@ -2,5 +2,5 @@
 	path = ChibiOS
 	url = git@github.com:ChibiOS/ChibiOS.git
 [submodule "ssdv"]
-	path = ssdv
+	path = protocols/ssdv
 	url = git@github.com:fsphil/ssdv.git

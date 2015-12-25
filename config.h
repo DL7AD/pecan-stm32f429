@@ -26,7 +26,7 @@
 #define APRS_SYMBOL				SYM_BALLOON		/* APRS symbol */
 #define APRS_PATH				"WIDE1,WIDE2-1"	/* APRS path */
 #define APRS_PATH_SAT			"RS0ISS"		/* APRS path */
-#define APRS_TXDELAY			200				/* APRS preamble length */
+#define APRS_TXDELAY			200				/* APRS preamble length in ms */
 
 #define FSK_CALLSIGN			"D-11"			/* FSK callsign for RTTY and DominoEX */
 
@@ -40,6 +40,7 @@
 #define SAT_TLE2 				"2 25544  51.6441 238.8813 0008350 299.4829 139.1404 15.54920935976888"
 
 // Module definitions (can be any number of modules)
+#if 0
 #define MODULES() { \
 	MODULE_SD(); \
 	chThdSleepMilliseconds(100); \
@@ -66,8 +67,8 @@
 	MODULE_TELEMETRY(20, NULL, CUSTOM_FREQ, 10, MOD_2FSK, PROT_UKHAS); \
 	chThdSleepMilliseconds(100); \
 }
+#endif
 
-#if 0
 #define MODULES() { \
 	MODULE_GPS(); \
 	chThdSleepMilliseconds(100); \
@@ -77,7 +78,6 @@
 	MODULE_POSITION(120, NULL, APRS_REGION_FREQ, 10, MOD_AFSK, PROT_APRS); \
 	chThdSleepMilliseconds(100); \
 }
-#endif
 
 #endif
 

@@ -28,19 +28,48 @@ THD_FUNCTION(moduleRADIO, arg) {
 
 	while(true)
 	{
-		radioMSG_t msg;
+		// Receive message
+		radioMSG_t *msg;
 		msg_t status = chMBFetch(&radioMBP, (msg_t*)&msg, 0);
-		if(status == MSG_OK) {
-			TRACE_INFO(	"RAD  > Transmit on radio\r\n"
-						"%s > Message %s\r\n"
-						"%s > Radio %d\r\n"
-						"%s > Frequency %d MHz\r\n"
-						"%s > Modulation %s",
-						TRACE_TAB, msg.msg,
-						TRACE_TAB, 10,
-						TRACE_TAB, msg.freq,
-						TRACE_TAB, VAL2MOULATION(msg.mod)
-			);
+
+		if(status == MSG_OK) { // Message available
+
+			// Determine suitable radio
+			uint32_t radio = 0;
+			if(inRadio1band(msg->freq)) {
+				radio = 1;
+			} else if(inRadio2band(msg->freq)) {
+				radio = 2;
+			}
+
+			if(radio) { // Radio found
+
+				TRACE_INFO(	"RAD  > Transmit on radio\r\n"
+							"%s Radio %d\r\n"
+							"%s Frequency %d MHz\r\n"
+							"%s Power %d dBm\r\n"
+							"%s Modulation %s",
+							TRACE_TAB, radio,
+							TRACE_TAB, msg->freq,
+							TRACE_TAB, msg->power,
+							TRACE_TAB, VAL2MOULATION(msg->mod)
+				);
+				TRACE_BIN(msg->msg, msg->bin_len);
+
+			} else { // Error
+
+				TRACE_ERROR("RAD  > No radio available for this frequency\r\n"
+							"%s Radio %d\r\n"
+							"%s Frequency %d MHz\r\n"
+							"%s Power %d dBm\r\n"
+							"%s Modulation %s",
+							TRACE_TAB, 10,
+							TRACE_TAB, msg->freq,
+							TRACE_TAB, msg->power,
+							TRACE_TAB, VAL2MOULATION(msg->mod)
+				);
+
+			}
 		}
 		chThdSleepMilliseconds(100);
 	}

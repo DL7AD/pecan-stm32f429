@@ -20,16 +20,6 @@ const SerialConfig gps_config =
 };
 
 /**
-  * Returns the validity of the existing fix. The fix is up to date if it the
-  * time past last sampling is not larger than GPS_FIX_TIMEOUT and has GPS
-  * locked. This can be configured in the config file.
-  * @return GPS fix data in lastPosition locked and up to date
-  */
-bool isGPSFixUpToDate(void) {
-	return ST2S(chVTGetSystemTimeX() - lastPosition.systime) <= GPS_FIX_TIMEOUT && lastPosition.type == 3 && lastPosition.num_svs >= 5;
-}
-
-/**
   * Switched GPS on and off. Also initializes UART and GPS
   * @param on On
   */
@@ -99,7 +89,7 @@ gpsFix_t getLastGPSPosition(systime_t timeout) {
 
 	systime_t start = chVTGetSystemTimeX(); // Mark time for timeout
 
-	if(isGPSFixUpToDate()) { // GPS position up to date
+	if(isGPSFixUpToDate(&lastPosition)) { // GPS position up to date
 
 		TRACE_INFO("GPS  > GPS position up to date");
 		return lastPosition;
@@ -112,10 +102,10 @@ gpsFix_t getLastGPSPosition(systime_t timeout) {
 		requireNewPosition = true;
 
 		// Wait for new fix
-		while(!isGPSFixUpToDate() && start+timeout >= chVTGetSystemTimeX())
+		while(!isGPSFixUpToDate(&lastPosition) && start+timeout >= chVTGetSystemTimeX())
 			chThdSleepMilliseconds(100);
 
-		if(!isGPSFixUpToDate() && start+timeout < chVTGetSystemTimeX()) {
+		if(!isGPSFixUpToDate(&lastPosition) && start+timeout < chVTGetSystemTimeX()) {
 			TRACE_INFO("GPS  > GPS position sampling TIMEOUT");
 		} else {
 			TRACE_INFO("GPS  > GPS position sampling OK");
@@ -139,6 +129,9 @@ THD_FUNCTION(moduleGPS, arg) {
 	palSetPadMode(GPIOD, 5, PAL_MODE_ALTERNATE(7));		// UART TXD
 	palSetPadMode(GPIOD, 6, PAL_MODE_ALTERNATE(7));		// UART RXD
 
+	// Serial ID counter for APRS
+	uint32_t id = 0;
+
 	while(true) {
 		if(requireNewPosition) {
 			// Switch on GPS and configure GPS/UART
@@ -147,15 +140,19 @@ THD_FUNCTION(moduleGPS, arg) {
 			// Search for GPS satellites
 			systime_t start = chVTGetSystemTimeX();
 			do {
-				TRACE_INFO("GPS  > Polling");
-				gps_get_fix(&lastPosition);
+				if(gps_get_fix(&lastPosition)) {
+					TRACE_INFO("GPS  > Polling OK");
+				} else {
+					TRACE_INFO("GPS  > Polling FAILED");
+				}
 				chThdSleepMilliseconds(100);
 			} while(lastPosition.type != 0x3 && chVTGetSystemTimeX() <= start + S2ST(120)); // Do as long no GPS lock and within timeout (120 seconds)
 
 			// Calibrate RTC
 			setTime(lastPosition.time);
 
-			// Set TTFF
+			// Set TTFF & ID
+			lastPosition.id = ++id;
 			lastPosition.ttff = ST2S(chVTGetSystemTimeX() - start);
 
 			if(lastPosition.ttff < 120) { // GPS locked

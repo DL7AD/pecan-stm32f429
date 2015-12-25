@@ -75,9 +75,11 @@ typedef enum {
 } protocol_t;
 
 typedef struct {
-	char msg[256];
-	uint32_t freq;
-	modulation_t mod;
+	uint8_t *msg;		// Message
+	uint32_t bin_len;	// Binary length
+	uint32_t freq;		// Frequency
+	uint8_t power;		// Power
+	modulation_t mod;	// Modulation
 } radioMSG_t;
 
 extern char *SMODE_STRING[];

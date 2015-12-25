@@ -53,13 +53,13 @@ extern mutex_t trace_mtx;
 }
 
 #define TRACE_GPSFIX(fix) { \
-	TRACE_INFO(	"New GPS Fix\r\n"\
-		"%s > GPS Time: %04d-%02d-%02d %02d:%02d:%02d\r\n" \
-		"%s > Sats: %d (used for solution)\r\n" \
-		"%s > Latitude: %d.%07ddeg\r\n" \
-		"%s > Longitude: %d.%07ddeg\r\n" \
-		"%s > Altitude: %d Meter\r\n" \
-		"%s > TTFF: %d Seconds", \
+	TRACE_INFO(	"GPS  > New GPS Fix\r\n"\
+		"%s GPS Time: %04d-%02d-%02d %02d:%02d:%02d\r\n" \
+		"%s Sats: %d (used for solution)\r\n" \
+		"%s Latitude: %d.%07ddeg\r\n" \
+		"%s Longitude: %d.%07ddeg\r\n" \
+		"%s Altitude: %d Meter\r\n" \
+		"%s TTFF: %d Seconds", \
 		TRACE_TAB, (fix)->time.year, (fix)->time.month, (fix)->time.day, (fix)->time.hour, (fix)->time.minute, (fix)->time.second, \
 		TRACE_TAB, (fix)->num_svs, \
 		TRACE_TAB, (fix)->lat/10000000, (fix)->lat%10000000, \
@@ -67,6 +67,16 @@ extern mutex_t trace_mtx;
 		TRACE_TAB, (fix)->alt, \
 		TRACE_TAB, (fix)->ttff \
 	); \
+}
+
+#define TRACE_BIN(data, len) { \
+	chMtxLock(&trace_mtx); \
+	chprintf((BaseSequentialStream*)&SD1, "[%8d.%04d][I] ", chVTGetSystemTimeX()/CH_CFG_ST_FREQUENCY, chVTGetSystemTimeX()%CH_CFG_ST_FREQUENCY); \
+	chprintf((BaseSequentialStream*)&SD1, "RAD  > Transmit binary data (%d bits)\r\n", len); \
+	for(uint32_t i=0; i<(len+7)/8; i+=8) \
+		chprintf((BaseSequentialStream*)&SD1, "%s 0x%03x ... 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\r\n", \
+		TRACE_TAB, i, data[i], data[i+1], data[i+2], data[i+3], data[i+4], data[i+5], data[i+6], data[i+7]); \
+	chMtxUnlock(&trace_mtx); \
 }
 
 #define PRINT_TIME(thd) { \
