@@ -3,7 +3,7 @@
 
 #include "modules/position.h"
 #include "modules/image.h"
-#include "modules/gps.h"
+#include "modules/tracking.h"
 #include "modules/satellite.h"
 #include "modules/telemetry.h"
 #include "modules/log.h"
@@ -45,8 +45,10 @@
 	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), NORMALPRIO, moduleLOG, parm); \
 }
 
-#define MODULE_GPS() { \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), NORMALPRIO, moduleGPS, NULL); \
+#define MODULE_TRACKING(CYCLE) { \
+	module_params_t* parm = chHeapAlloc(NULL, sizeof(module_params_t)); \
+	parm->cycle = CYCLE; \
+	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), NORMALPRIO, moduleTRACKING, parm); \
 }
 
 #define MODULE_RADIO() { \

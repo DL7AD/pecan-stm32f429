@@ -7,6 +7,15 @@
 #include "max.h"
 #include "trace.h"
 
+// Serial driver configuration for GPS
+const SerialConfig gps_config =
+{
+	9600,	// baud rate
+	0,		// CR1 register
+	0,		// CR2 register
+	0		// CR3 register
+};
+
 /* 
  * gps_transmit_string
  *
@@ -146,7 +155,6 @@ bool gps_get_fix(gpsFix_t *fix) {
 	fix->time.hour = response[8];
 	fix->time.minute = response[9];
 	fix->time.second = response[10];
-	fix->systime = chVTGetSystemTimeX();
 
 	fix->lat = (int32_t) (
 			(uint32_t)(response[28]) + ((uint32_t)(response[29]) << 8) + ((uint32_t)(response[30]) << 16) + ((uint32_t)(response[31]) << 24)
@@ -325,4 +333,64 @@ uint8_t gps_power_save(int on) {
 	gps_transmit_string(cfg, sizeof(cfg));
 	return gps_receive_ack(0x06, 0x09);
 }*/
+
+void GPS_Init(void) {
+
+	// Initialize pins
+	TRACE_INFO("GPS  > Init pins");
+	palSetPadMode(GPIOE, 7, PAL_MODE_OUTPUT_PUSHPULL);	// GPS_OFF
+	palSetPadMode(GPIOD, 5, PAL_MODE_ALTERNATE(7));		// UART TXD
+	palSetPadMode(GPIOD, 6, PAL_MODE_ALTERNATE(7));		// UART RXD
+
+	// Init UART
+	TRACE_INFO("GPS  > Init GPS UART");
+	sdStart(&SD2, &gps_config);
+
+	// Switch MOSFET
+	TRACE_INFO("GPS  > Switch on");
+	palClearPad(GPIOE, 7);
+	
+	// Wait for GPS startup
+	chThdSleepMilliseconds(3000);
+
+	// Configure GPS
+	TRACE_INFO("GPS  > Initialize GPS");
+	if(gps_disable_nmea_output()) {
+		TRACE_INFO("GPS  > Disable NMEA output OK");
+	} else {
+		TRACE_ERROR("GPS  > Disable NMEA output FAILED");
+	}
+	if(gps_set_gps_only()) {
+		TRACE_INFO("GPS  > Set GPS only OK");
+	} else {
+		TRACE_ERROR("GPS  > Set GPS only FAILED");
+	}
+	if(gps_set_airborne_model()) {
+		TRACE_INFO("GPS  > Set airborne model OK");
+	} else {
+		TRACE_ERROR("GPS  > Set airborne model FAILED");
+	}
+	if(gps_set_power_save()) {
+		TRACE_INFO("GPS  > Configure power save OK");
+	} else {
+		TRACE_ERROR("GPS  > Configure power save FAILED");
+	}
+	if(gps_power_save(0)) {
+		TRACE_INFO("GPS  > Disable power save OK");
+	} else {
+		TRACE_ERROR("GPS  > Disable power save FAILED");
+	}
+}
+
+void GPS_Deinit(void) {
+
+	// Deinit UART
+	TRACE_INFO("GPS  > Deinit UART");
+	sdStop(&SD2);
+
+	// Switch MOSFET
+	TRACE_INFO("GPS  > Switch off");
+	palSetPad(GPIOE, 7);
+
+}
 

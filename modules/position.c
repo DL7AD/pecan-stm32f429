@@ -4,7 +4,6 @@
 #include "trace.h"
 #include "modules.h"
 #include "radio.h"
-#include "gps.h"
 #include "../protocols/aprs/aprs.h"
 
 THD_FUNCTION(modulePOS, arg) {
@@ -17,10 +16,10 @@ THD_FUNCTION(modulePOS, arg) {
 	while(true)
 	{
 		TRACE_INFO("POS  > Do module POSITION cycle");
-		TRACE_WARN("POS  > Module POSITION not implemented"); // FIXME
+		TRACE_WARN("POS  > Module POSITION not fully implemented"); // FIXME
 
-		TRACE_INFO("POS  > Get GPS position");
-		gpsFix_t gpsFix = getLastGPSPosition(S2ST(parm->cycle-1)); // Timeout max. cycle time - 1sec
+		TRACE_INFO("POS  > Get last track point");
+		trackPoint_t *trackPoint = getLastTrackPoint();
 
 		TRACE_INFO("POS  > Transmit GPS position");
 
@@ -34,7 +33,7 @@ THD_FUNCTION(modulePOS, arg) {
 				msg.mod = MOD_AFSK;
 				msg.freq = (*fptr)();
 				msg.power = parm->power;
-				msg.bin_len = aprs_encode_position(&msg.msg, &gpsFix);
+				msg.bin_len = aprs_encode_position(&msg.msg, trackPoint);
 
 				chMBPost(&radioMBP, (msg_t)&msg, 0);
 				break;

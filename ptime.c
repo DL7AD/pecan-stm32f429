@@ -85,7 +85,7 @@ void setTime(ptime_t date) {
 	timespec.day = date.day;
 	timespec.millisecond = date.hour * 3600000 + date.minute * 60000 + date.second * 1000 + date.millisecond;
 
-	TRACE_INFO("Calibrate RTC");
+	TRACE_INFO("GPS  > Calibrate RTC");
 	PRINT_TIME("RTC");
 	rtcSetTime(&RTCD1, &timespec);
 }

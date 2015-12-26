@@ -122,7 +122,7 @@ CSRC = $(STARTUPSRC) \
        protocols/ssdv/rs8.c \
        protocols/aprs/aprs.c \
        protocols/aprs/ax25.c \
-       modules/gps.c \
+       modules/tracking.c \
        modules/position.c \
        modules/image.c \
        modules/satellite.c \

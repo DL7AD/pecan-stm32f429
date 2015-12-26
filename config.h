@@ -46,7 +46,7 @@
 	chThdSleepMilliseconds(100); \
 	MODULE_CAM(); \
 	chThdSleepMilliseconds(100); \
-	MODULE_GPS(); \
+	MODULE_TRACKING(); \
 	chThdSleepMilliseconds(100); \
 	MODULE_SEN(); \
 	chThdSleepMilliseconds(100); \
@@ -70,13 +70,11 @@
 #endif
 
 #define MODULES() { \
-	MODULE_GPS(); \
-	chThdSleepMilliseconds(100); \
+	MODULE_TRACKING(120); \
 	MODULE_RADIO(); \
-	chThdSleepMilliseconds(100); \
+	chThdSleepMilliseconds(1000); \
 	\
 	MODULE_POSITION(120, NULL, APRS_REGION_FREQ, 10, MOD_AFSK, PROT_APRS); \
-	chThdSleepMilliseconds(100); \
 }
 
 #endif

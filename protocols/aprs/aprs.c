@@ -17,9 +17,7 @@
 #include "config.h"
 #include "ax25.h"
 #include "aprs.h"
-//#include <string.h>
 #include <stdlib.h>
-//#include <stdio.h>
 #include <math.h>
 #include "base64.h"
 #include "../../drivers/max.h"
@@ -48,7 +46,7 @@ s_address_t addresses[] =
  * - Number of satellites being used
  * - Number of cycles where GPS has been lost (if applicable in cycle)
  */
-uint32_t aprs_encode_position(uint8_t** message, gpsFix_t *trackPoint)
+uint32_t aprs_encode_position(uint8_t** message, trackPoint_t *trackPoint)
 {
 	ptime_t date = trackPoint->time;
 
@@ -63,7 +61,7 @@ uint32_t aprs_encode_position(uint8_t** message, gpsFix_t *trackPoint)
 
 	{
 		// Latitude precalculation
-		uint32_t y = 380926 * (90 - trackPoint->lat);
+		uint32_t y = 380926 * (90 - trackPoint->gps_lat);
 		uint32_t y3  = y   / 753571;
 		uint32_t y3r = y   % 753571;
 		uint32_t y2  = y3r / 8281;
@@ -72,7 +70,7 @@ uint32_t aprs_encode_position(uint8_t** message, gpsFix_t *trackPoint)
 		uint32_t y1r = y2r % 91;
 
 		// Longitude precalculation
-		uint32_t x = 190463 * (180 + trackPoint->lon);
+		uint32_t x = 190463 * (180 + trackPoint->gps_lon);
 		uint32_t x3  = x   / 753571;
 		uint32_t x3r = x   % 753571;
 		uint32_t x2  = x3r / 8281;
@@ -81,11 +79,11 @@ uint32_t aprs_encode_position(uint8_t** message, gpsFix_t *trackPoint)
 		uint32_t x1r = x2r % 91;
 
 		// Altitude precalculation
-		uint32_t a = logf(METER_TO_FEET(trackPoint->alt)) / logf(1.002f);
+		uint32_t a = logf(METER_TO_FEET(trackPoint->gps_alt)) / logf(1.002f);
 		uint32_t a1  = a / 91;
 		uint32_t a1r = a % 91;
 
-		uint8_t gpsFix = isGPSLocked(trackPoint) ? GSP_FIX_CURRENT : GSP_FIX_OLD;
+		uint8_t gpsFix = trackPoint->gps_lock ? GSP_FIX_CURRENT : GSP_FIX_OLD;
 		uint8_t src = NMEA_SRC_GGA;
 		uint8_t origin = ORIGIN_PICO;
 
@@ -108,7 +106,7 @@ uint32_t aprs_encode_position(uint8_t** message, gpsFix_t *trackPoint)
 	};
 
 	// GPS Loss counter
-	if(!isGPSLocked(trackPoint))
+	if(!trackPoint->gps_lock)
 	{
 		ax25_send_string("GPS LOSS ");
 		ax25_send_string(itoa(++loss_of_gps_counter, temp, 10));
@@ -146,12 +144,12 @@ uint32_t aprs_encode_position(uint8_t** message, gpsFix_t *trackPoint)
 		ax25_send_string(temp);
 
 		// Sats
-		t = trackPoint->num_svs;
+		t = trackPoint->gps_sats;
 		temp[0] = t/91 + 33;
 		temp[1] = t%91 + 33;
 		ax25_send_string(temp);
 
-		t = trackPoint->ttff;
+		t = trackPoint->gps_ttff;
 		temp[0] = t/91 + 33;
 		temp[1] = t%91 + 33;
 		ax25_send_string(temp);

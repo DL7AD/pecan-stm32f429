@@ -47,7 +47,7 @@ typedef enum {
 	CONFIG_BITS
 } config_t;
 
-uint32_t aprs_encode_position(uint8_t** message, gpsFix_t *trackPoint);
+uint32_t aprs_encode_position(uint8_t** message, trackPoint_t *trackPoint);
 uint32_t aprs_encode_telemetry_configuration(uint8_t** message, config_t type);
 uint32_t aprs_encode_log(uint8_t** message);
 uint32_t aprs_encode_image(uint8_t** message, image_t *image);

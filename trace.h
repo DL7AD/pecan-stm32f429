@@ -58,14 +58,12 @@ extern mutex_t trace_mtx;
 		"%s Sats: %d (used for solution)\r\n" \
 		"%s Latitude: %d.%07ddeg\r\n" \
 		"%s Longitude: %d.%07ddeg\r\n" \
-		"%s Altitude: %d Meter\r\n" \
-		"%s TTFF: %d Seconds", \
+		"%s Altitude: %d Meter" \
 		TRACE_TAB, (fix)->time.year, (fix)->time.month, (fix)->time.day, (fix)->time.hour, (fix)->time.minute, (fix)->time.second, \
 		TRACE_TAB, (fix)->num_svs, \
 		TRACE_TAB, (fix)->lat/10000000, (fix)->lat%10000000, \
 		TRACE_TAB, (fix)->lon/10000000, (fix)->lon%10000000, \
-		TRACE_TAB, (fix)->alt, \
-		TRACE_TAB, (fix)->ttff \
+		TRACE_TAB, (fix)->alt \
 	); \
 }
 
