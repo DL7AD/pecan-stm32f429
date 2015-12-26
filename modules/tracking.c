@@ -45,7 +45,6 @@ THD_FUNCTION(moduleTRACKING, arg) {
 		GPS_Init();
 		gpsFix_t gpsFix;
 
-		systime_t start = chVTGetSystemTimeX();
 		do {
 			chThdSleepMilliseconds(100);
 			if(gps_get_fix(&gpsFix)) {
@@ -53,7 +52,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 			} else {
 				TRACE_INFO("GPS  > Polling FAILED");
 			}
-		} while(!isGPSLocked(&gpsFix) && chVTGetSystemTimeX() <= start + S2ST(parm->cycle-5)); // Do as long no GPS lock and within timeout, timeout=cycle-5sec (-5sec in order to keep synchronization)
+		} while(!isGPSLocked(&gpsFix) && chVTGetSystemTimeX() <= time + S2ST(parm->cycle-2)); // Do as long no GPS lock and within timeout, timeout=cycle-1sec (-1sec in order to keep synchronization)
 
 		// Trace GPS result TODO: Do a rework. Add more information and rename it to track point
 		if(isGPSLocked(&gpsFix)) {
@@ -78,7 +77,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 		newTrackPoint->gps_lon = gpsFix.lon;
 		newTrackPoint->gps_alt = gpsFix.alt;
 		newTrackPoint->gps_sats = gpsFix.num_svs;
-		newTrackPoint->gps_ttff = ST2S(chVTGetSystemTimeX() - start);
+		newTrackPoint->gps_ttff = ST2S(chVTGetSystemTimeX() - time);
 
 		// Power management TODO: Implement this!
 		newTrackPoint->adc_solar = 0;
@@ -107,8 +106,10 @@ THD_FUNCTION(moduleTRACKING, arg) {
 		lastTrackPoint = newTrackPoint;
 		id++;
 
+		TRACE_DEBUG("BLA1");
 		time += S2ST(parm->cycle); // Wait until this time
 		chThdSleepUntil(time);
+		TRACE_DEBUG("BLA2");
 	}
 }
 
