@@ -49,7 +49,6 @@ uint8_t gps_receive_ack(uint8_t class_id, uint8_t msg_id, uint16_t timeout) {
 	while(chVTGetSystemTimeX() <= sTimeout) {
 
 		rx_byte = sdGetTimeout(&SD2, sTimeout - chVTGetSystemTimeX());
-
 		if (rx_byte == ack[match_count] || rx_byte == nak[match_count]) {
 			if (match_count == 3) {	/* test ACK/NAK byte */
 				if (rx_byte == ack[match_count]) {
@@ -340,9 +339,10 @@ void GPS_Init(void) {
 
 	// Initialize pins
 	TRACE_INFO("GPS  > Init pins");
+	palSetPadMode(GPIOE, 12, PAL_MODE_OUTPUT_PUSHPULL);	// GPS_RESET
 	palSetPadMode(GPIOE, 7, PAL_MODE_OUTPUT_PUSHPULL);	// GPS_OFF
-	palSetPadMode(GPIOD, 5, PAL_MODE_ALTERNATE(7));		// UART TXD
-	palSetPadMode(GPIOD, 6, PAL_MODE_ALTERNATE(7));		// UART RXD
+	palSetPadMode(GPIOA, 2, PAL_MODE_ALTERNATE(7));		// UART TXD
+	palSetPadMode(GPIOA, 3, PAL_MODE_ALTERNATE(7));		// UART RXD
 
 	// Init UART
 	TRACE_INFO("GPS  > Init GPS UART");
@@ -350,7 +350,8 @@ void GPS_Init(void) {
 
 	// Switch MOSFET
 	TRACE_INFO("GPS  > Switch on");
-	palClearPad(GPIOE, 7);
+	palSetPad(GPIOE, 12);	// Pull up GPS_RESET
+	palClearPad(GPIOE, 7);	// Switch on GPS
 	
 	// Wait for GPS startup
 	chThdSleepMilliseconds(3000);

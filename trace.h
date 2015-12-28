@@ -8,22 +8,23 @@
 //#include <math.h>
 
 extern mutex_t trace_mtx;
+extern const SerialConfig uart_config;
 
 #define TRACE_INIT() { \
-	sdStart(&SD1, &sc1_config); \
-	palSetPadMode(GPIOA, 9,  PAL_MODE_ALTERNATE(7)); /* Must be changed to PA0 and PA1 when Pecan Pico 7 is used instead of discovery board */ \
-	palSetPadMode(GPIOA, 10, PAL_MODE_ALTERNATE(7)); \
+	sdStart(&SD4, &uart_config); \
+	palSetPadMode(GPIOA, 0, PAL_MODE_ALTERNATE(8)); \
+	palSetPadMode(GPIOA, 1, PAL_MODE_ALTERNATE(8)); \
 	chMtxObjectInit(&trace_mtx); \
 	chMtxLock(&trace_mtx); \
-	chprintf((BaseSequentialStream*)&SD1, "\r\n"); \
+	chprintf((BaseSequentialStream*)&SD4, "\r\n"); \
 	chMtxUnlock(&trace_mtx); \
 }
 
 #define TRACE_BASE(format, type, args...) { \
 	chMtxLock(&trace_mtx); \
-	chprintf((BaseSequentialStream*)&SD1, "[%8d.%04d][%c] ", chVTGetSystemTimeX()/CH_CFG_ST_FREQUENCY, chVTGetSystemTimeX()%CH_CFG_ST_FREQUENCY, type); \
-	chprintf((BaseSequentialStream*)&SD1, (format), ##args); \
-	chprintf((BaseSequentialStream*)&SD1, "\r\n"); \
+	chprintf((BaseSequentialStream*)&SD4, "[%8d.%04d][%c] ", chVTGetSystemTimeX()/CH_CFG_ST_FREQUENCY, chVTGetSystemTimeX()%CH_CFG_ST_FREQUENCY, type); \
+	chprintf((BaseSequentialStream*)&SD4, (format), ##args); \
+	chprintf((BaseSequentialStream*)&SD4, "\r\n"); \
 	chMtxUnlock(&trace_mtx); \
 }
 
@@ -69,10 +70,10 @@ extern mutex_t trace_mtx;
 
 #define TRACE_BIN(data, len) { \
 	chMtxLock(&trace_mtx); \
-	chprintf((BaseSequentialStream*)&SD1, "[%8d.%04d][I] ", chVTGetSystemTimeX()/CH_CFG_ST_FREQUENCY, chVTGetSystemTimeX()%CH_CFG_ST_FREQUENCY); \
-	chprintf((BaseSequentialStream*)&SD1, "RAD  > Transmit binary data (%d bits)\r\n", len); \
+	chprintf((BaseSequentialStream*)&SD4, "[%8d.%04d][I] ", chVTGetSystemTimeX()/CH_CFG_ST_FREQUENCY, chVTGetSystemTimeX()%CH_CFG_ST_FREQUENCY); \
+	chprintf((BaseSequentialStream*)&SD4, "RAD  > Transmit binary data (%d bits)\r\n", len); \
 	for(uint32_t i=0; i<(len+7)/8; i+=8) \
-		chprintf((BaseSequentialStream*)&SD1, "%s 0x%03x ... 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\r\n", \
+		chprintf((BaseSequentialStream*)&SD4, "%s 0x%03x ... 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\r\n", \
 		TRACE_TAB, i, data[i], data[i+1], data[i+2], data[i+3], data[i+4], data[i+5], data[i+6], data[i+7]); \
 	chMtxUnlock(&trace_mtx); \
 }

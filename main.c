@@ -6,13 +6,7 @@
 #include "config.h"
 #include "trace.h"
 
-const SerialConfig sc1_config =
-{
-    115200,     // baud rate
-    0,          // CR1 register
-    0,          // CR2 register
-    0           // CR3 register
-};
+uint32_t counter = 0;
 
 int main(void) {
 	// Startup RTOS
@@ -26,9 +20,16 @@ int main(void) {
 	// Startup modules
 	MODULES();
 
-	while(true) { // Print time every 30 seconds
-		PRINT_TIME("MAIN");
-		chThdSleepMilliseconds(30000);
+    palSetPadMode(GPIOE, 3, PAL_MODE_OUTPUT_PUSHPULL);
+
+	while(1) {
+		palTogglePad(GPIOE, 3); // Toggle LED to show: I'M ALIVE
+
+		if(counter%60 == 0) // Print time every 30 seconds
+			PRINT_TIME("MAIN");
+
+		chThdSleepMilliseconds(500);
+		counter++;
 	}
 }
 
