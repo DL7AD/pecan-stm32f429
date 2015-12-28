@@ -138,6 +138,7 @@ void sendAFSK(radio_t radio, radioMSG_t *msg) {
 		lastSystemTime++;
 	}
 
+	TRACE_INFO("RAD  > Shutdown Si4x6x");
 	radioShutdown(radio);	// Shutdown radio
 	palSetPad(GPIOC, 15);	// Switch of monitor LED
 }

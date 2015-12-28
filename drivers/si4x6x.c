@@ -9,12 +9,19 @@
 #include "si4x6x.h"
 #include "../modules.h"
 
-static const SPIConfig ls_spicfg = {
+static const SPIConfig ls_spicfg1 = {
 	NULL,
-	GPIOB,
-	12,
+	GPIOA,
+	11,
 	SPI_CR1_BR_2 | SPI_CR1_BR_1
 };
+static const SPIConfig ls_spicfg2 = {
+	NULL,
+	GPIOB,
+	0,
+	SPI_CR1_BR_2 | SPI_CR1_BR_1
+};
+#define getSPIDriver(radio) (radio == RADIO_2M ? &ls_spicfg1 : &ls_spicfg2)
 
 /**
  * Initializes Si446x transceiver chip. Adjustes the frequency which is shifted by variable
@@ -96,12 +103,10 @@ void Si446x_write(radio_t radio, uint16_t* txData, uint32_t len) {
 
 	// SPI transfer
 	spiAcquireBus(&SPID2);
-	RADIO_CS_SET(radio, false);
-	spiStart(&SPID2, &ls_spicfg);
+	spiStart(&SPID2, getSPIDriver(radio));
 	spiSelect(&SPID2);
 	spiExchange(&SPID2, len, txData, rxData);
 	spiUnselect(&SPID2);
-	RADIO_CS_SET(radio, true);
 	spiReleaseBus(&SPID2);
 
 	// Reqest ACK by Si446x
@@ -113,12 +118,10 @@ void Si446x_write(radio_t radio, uint16_t* txData, uint32_t len) {
 
 		// SPI transfer
 		spiAcquireBus(&SPID2);
-		RADIO_CS_SET(radio, false);
-		spiStart(&SPID2, &ls_spicfg);
+		spiStart(&SPID2, getSPIDriver(radio));
 		spiSelect(&SPID2);
 		spiExchange(&SPID2, 1, rx_ready, rxData);
 		spiUnselect(&SPID2);
-		RADIO_CS_SET(radio, true);
 		spiReleaseBus(&SPID2);
 
 		if(rxData[0] != 0xFF) // Si not finished, wait for it
@@ -134,12 +137,10 @@ void Si446x_read(radio_t radio, uint16_t* txData, uint32_t txlen, uint16_t* rxDa
 	uint16_t null_spi[txlen];
 	// SPI transfer
 	spiAcquireBus(&SPID2);
-	RADIO_CS_SET(radio, false);
-	spiStart(&SPID2, &ls_spicfg);
+	spiStart(&SPID2, getSPIDriver(radio));
 	spiSelect(&SPID2);
 	spiExchange(&SPID2, txlen, txData, null_spi);
 	spiUnselect(&SPID2);
-	RADIO_CS_SET(radio, true);
 	spiReleaseBus(&SPID2);
 
 	// Reqest ACK by Si446x
@@ -152,12 +153,10 @@ void Si446x_read(radio_t radio, uint16_t* txData, uint32_t txlen, uint16_t* rxDa
 
 		// SPI transfer
 		spiAcquireBus(&SPID2);
-		RADIO_CS_SET(radio, false);
-		spiStart(&SPID2, &ls_spicfg);
+		spiStart(&SPID2, getSPIDriver(radio));
 		spiSelect(&SPID2);
 		spiExchange(&SPID2, rxlen, rx_ready, rxData);
 		spiUnselect(&SPID2);
-		RADIO_CS_SET(radio, true);
 		spiReleaseBus(&SPID2);
 
 		if(rxData[0] != 0xFF) // Si not finished, wait for it

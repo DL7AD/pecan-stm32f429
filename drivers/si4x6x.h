@@ -6,7 +6,7 @@
 #include "../defines.h"
 #include "../modules.h"
 
-#define RADIO_SDN_SET(radio, state)	(radio == RADIO_2M ? palWritePad(GPIOA, 12, !state) : palWritePad(GPIOB, 12, state))
+#define RADIO_SDN_SET(radio, state)	(radio == RADIO_2M ? palWritePad(GPIOA, 12, state) : palWritePad(GPIOB, 12, state))
 #define RADIO_CS_SET(radio, state)	(radio == RADIO_2M ? palWritePad(GPIOA, 11, state) : palWritePad(GPIOB, 0, state))
 #define RF_GPIO0_SET(radio, state)	(radio == RADIO_2M ? palWritePad(GPIOA, 9, state) : palWritePad(GPIOE, 13, state))
 #define RF_GPIO1_SET(radio, state)	(radio == RADIO_2M ? palWritePad(GPIOA, 10, state) : palWritePad(GPIOE, 14, state))
