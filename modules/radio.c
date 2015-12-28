@@ -139,7 +139,7 @@ void sendAFSK(radio_t radio, radioMSG_t *msg) {
 	}
 
 	radioShutdown(radio);	// Shutdown radio
-
+	palSetPad(GPIOC, 15);	// Switch of monitor LED
 }
 
 bool afsk_handler(radio_t radio, radioMSG_t *msg) {

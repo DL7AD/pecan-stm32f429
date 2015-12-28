@@ -1,5 +1,5 @@
 # List of all the board related files.
-BOARDSRC = ${CHIBIOS}/os/hal/boards/ST_STM32F429I_DISCOVERY/board.c
+BOARDSRC = board_pecanpico7a/board.c
 
 # Required include directories
-BOARDINC = ${CHIBIOS}/os/hal/boards/ST_STM32F429I_DISCOVERY
+BOARDINC = board_pecanpico7a/
