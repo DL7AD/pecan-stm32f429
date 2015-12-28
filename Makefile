@@ -129,6 +129,7 @@ CSRC = $(STARTUPSRC) \
        modules/telemetry.c \
        modules/log.c \
        drivers/max.c \
+       drivers/si4x6x.c \
        trace.c \
        modules.c \
        base64.c \

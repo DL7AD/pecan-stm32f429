@@ -1,7 +1,19 @@
 #include "ch.h"
 #include "hal.h"
+#include "defines.h"
 #include "trace.h"
 #include "modules.h"
+#include "radio.h"
+#include "../drivers/si4x6x.h"
+
+
+#define TX_CPU_CLOCK			10200
+#define CLOCK_PER_TICK			1
+#define PLAYBACK_RATE			(TX_CPU_CLOCK / CLOCK_PER_TICK) // Tickrate 46.875 kHz
+#define BAUD_RATE				1200
+#define SAMPLES_PER_BAUD		(PLAYBACK_RATE / BAUD_RATE) // 52.083333333 / 26.041666667
+#define PHASE_DELTA_1200		(10066329600 / CLOCK_PER_TICK / PLAYBACK_RATE) // Fixed point 9.7 // 1258 / 2516
+#define PHASE_DELTA_2200		(18454937600 / CLOCK_PER_TICK / PLAYBACK_RATE) // 2306 / 4613
 
 mailbox_t radioMBP;
 radioMSG_t buf[10];
@@ -35,11 +47,11 @@ THD_FUNCTION(moduleRADIO, arg) {
 		if(status == MSG_OK) { // Message available
 
 			// Determine suitable radio
-			uint32_t radio = 0;
+			radio_t radio = 0;
 			if(inRadio1band(msg->freq)) {
-				radio = 1;
+				radio = RADIO_2M;
 			} else if(inRadio2band(msg->freq)) {
-				radio = 2;
+				radio = RADIO_70CM;
 			}
 
 			if(radio) { // Radio found
@@ -55,6 +67,17 @@ THD_FUNCTION(moduleRADIO, arg) {
 							TRACE_TAB, VAL2MOULATION(msg->mod)
 				);
 				TRACE_BIN(msg->msg, msg->bin_len);
+				switch(msg->mod) {
+					case MOD_2FSK:
+						//send2FSK(radio, msg); TODO: Implement!
+						break;
+					case MOD_AFSK:
+						sendAFSK(radio, msg);
+						break;
+					case MOD_CW:
+						//sendCW(radio, msg); TODO: Implement!
+						break;
+				}
 
 			} else { // Error
 
@@ -73,5 +96,84 @@ THD_FUNCTION(moduleRADIO, arg) {
 		}
 		chThdSleepMilliseconds(100);
 	}
+}
+
+// Module globals
+static uint16_t current_byte;
+static uint16_t current_sample_in_baud;		// 1 bit = SAMPLES_PER_BAUD samples
+static uint32_t phase_delta;				// 1200/2200 for standard AX.25
+static uint32_t phase;						// Fixed point 9.7 (2PI = TABLE_SIZE)
+static uint32_t packet_pos;					// Next bit to be sent out
+static volatile bool modem_busy = false;	// Is timer running
+static radio_t cradio;						// Current radio
+
+void sendAFSK(radio_t radio, radioMSG_t *msg) {
+	// Initialize Monitor
+	palSetPadMode(GPIOC, 15, PAL_MODE_OUTPUT_PUSHPULL);
+
+	// Initialize radio
+	TRACE_INFO("RAD  > Initialize Si4x6x")
+	Si446x_Init(radio, MOD_AFSK);
+
+	// Set radio power and frequency
+	TRACE_INFO("RAD  > Tune Si4x6x")
+	radioTune(radio, msg->freq, msg->power);
+
+	// Initialize variables for AFSK
+	phase_delta = PHASE_DELTA_1200;
+	phase = 0;
+	packet_pos = 0;
+	current_sample_in_baud = 0;
+	cradio = radio;
+	modem_busy = true;
+
+	// Start timer
+	systime_t lastSystemTime = chVTGetSystemTimeX();
+	while(afsk_handler(radio, msg)) { // Task
+		// Synchronization
+		uint32_t i=0;
+		while(chVTGetSystemTimeX() == lastSystemTime)
+			while(i<0xFF)
+				i++;
+		lastSystemTime++;
+	}
+
+	radioShutdown(radio);	// Shutdown radio
+
+}
+
+bool afsk_handler(radio_t radio, radioMSG_t *msg) {
+	// Monitor
+	palTogglePad(GPIOC, 15);
+
+	// If done sending packet
+	if(packet_pos == msg->bin_len) {
+		return false;
+	}
+
+	// If sent SAMPLES_PER_BAUD already, go to the next bit
+	if (current_sample_in_baud == 0) {    // Load up next bit
+		if ((packet_pos & 7) == 0) {          // Load up next byte
+			current_byte = msg->msg[packet_pos >> 3];
+		} else {
+			current_byte = current_byte / 2;  // ">>1" forces int conversion
+		}
+
+		if ((current_byte & 1) == 0) {
+			// Toggle tone (1200 <> 2200)
+			phase_delta ^= (PHASE_DELTA_1200 ^ PHASE_DELTA_2200);
+		}
+	}
+
+	phase += phase_delta;
+
+	MOD_GPIO_SET(radio, ((phase >> 7) & 0xFF) > 127);
+
+	if(++current_sample_in_baud == SAMPLES_PER_BAUD) {
+		current_sample_in_baud = 0;
+		packet_pos++;
+	}
+
+	return true;
 }
 

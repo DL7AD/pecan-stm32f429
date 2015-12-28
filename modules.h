@@ -59,31 +59,6 @@
 #define MODULE_CAM() (void)0; /* TODO */
 #define MODULE_SEN() (void)0; /* TODO */
 
-typedef enum {
-	MOD_ACTIVE,
-	MOD_SLEEP
-} smode_t;
-
-typedef enum {
-	MOD_2FSK,
-	MOD_AFSK
-} modulation_t;
-
-typedef enum {
-	PROT_RAW,
-	PROT_SSDV,
-	PROT_APRS,
-	PROT_UKHAS
-} protocol_t;
-
-typedef struct {
-	uint8_t *msg;		// Message
-	uint32_t bin_len;	// Binary length
-	uint32_t freq;		// Frequency
-	uint8_t power;		// Power
-	modulation_t mod;	// Modulation
-} radioMSG_t;
-
 extern char *SMODE_STRING[];
 extern char *MOULATION_STRING[];
 extern char *PROTOCOL_STRING[];

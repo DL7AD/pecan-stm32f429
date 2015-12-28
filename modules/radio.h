@@ -3,7 +3,9 @@
 
 #include "ch.h"
 #include "hal.h"
+#include "defines.h"
 #include "../config.h"
+#include "../drivers/si4x6x.h"
 
 extern mailbox_t radioMBP;
 
@@ -15,5 +17,8 @@ uint32_t getAPRSISSFrequency(void);
 uint32_t getCustomFrequency(void);
 
 THD_FUNCTION(moduleRADIO, arg);
+void sendAFSK(radio_t radio, radioMSG_t *msg);
+bool afsk_handler(radio_t radio, radioMSG_t *msg);
 
 #endif
+

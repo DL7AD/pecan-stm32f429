@@ -21,12 +21,41 @@
 #define SYM_SMALLAIRCRAFT			('/', '\'')
 #define SYM_SATELLITE				('\\', 'S')
 
-
-
 // Sleep definitions
 #define SLEEP_BELOW_BATTVOLT(v)				(getBatteryVoltage() < (v) ? MOD_SLEEP : MOD_ACTIVE)
 #define SLEEP_BELOW_SOLVOLT(v)				(getSolarVoltage() < (v) ? MOD_SLEEP : MOD_ACTIVE)
 #define SLEEP_BELOW_SOLBATTVOLT(sol, batt)	(getSolarVoltage() < (sol) || getBatteryVoltage() < (batt) ? MOD_SLEEP : MOD_ACTIVE)
+
+#define RADIO_2M	1	/* Radio 1 => 2m */
+#define RADIO_70CM	2	/* Radio 2 => 70cm */
+
+typedef uint32_t radio_t;
+
+typedef enum {
+	MOD_ACTIVE,
+	MOD_SLEEP
+} smode_t;
+
+typedef enum {
+	MOD_2FSK,
+	MOD_AFSK,
+	MOD_CW
+} modulation_t;
+
+typedef enum {
+	PROT_RAW,
+	PROT_SSDV,
+	PROT_APRS,
+	PROT_UKHAS
+} protocol_t;
+
+typedef struct {
+	uint8_t *msg;		// Message
+	uint32_t bin_len;	// Binary length
+	uint32_t freq;		// Frequency
+	uint8_t power;		// Power
+	modulation_t mod;	// Modulation
+} radioMSG_t;
 
 #endif
 
