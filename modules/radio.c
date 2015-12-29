@@ -180,7 +180,6 @@ void sendCW(radio_t radio, radioMSG_t *msg) {
 	uint32_t bit = 0;
 	systime_t time = chVTGetSystemTimeX();
 	while(bit < msg->bin_len) {
-		TRACE_DEBUG("%d", bit);
 		MOD_GPIO_SET(radio, (msg->msg[bit/8] >> (bit%8)) & 0x1);
 		bit++;
 

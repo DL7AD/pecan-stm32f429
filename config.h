@@ -72,7 +72,7 @@
 #endif
 
 #define MODULES() { \
-	/*MODULE_TRACKING(120);*/ \
+	MODULE_TRACKING(120); \
 	MODULE_RADIO(); \
 	chThdSleepMilliseconds(1000); \
 	\

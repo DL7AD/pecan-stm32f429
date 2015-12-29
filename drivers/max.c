@@ -373,6 +373,7 @@ void GPS_Init(void) {
 	} else {
 		TRACE_ERROR("GPS  > Set airborne model FAILED");
 	}
+	//chThdSleepMilliseconds(30000);
 	if(gps_set_power_save()) {
 		TRACE_INFO("GPS  > Configure power save OK");
 	} else {

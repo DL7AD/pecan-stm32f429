@@ -48,11 +48,11 @@
 #define MODULE_TRACKING(CYCLE) { \
 	module_params_t* parm = chHeapAlloc(NULL, sizeof(module_params_t)); \
 	parm->cycle = CYCLE; \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), NORMALPRIO, moduleTRACKING, parm); \
+	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(2048), NORMALPRIO, moduleTRACKING, parm); \
 }
 
 #define MODULE_RADIO() { \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), NORMALPRIO, moduleRADIO, NULL); \
+	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), HIGHPRIO, moduleRADIO, NULL); \
 }
 
 #define MODULE_SD() (void)0; /* TODO */
