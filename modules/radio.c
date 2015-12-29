@@ -6,7 +6,6 @@
 #include "radio.h"
 #include "../drivers/si4x6x.h"
 
-
 #define TX_CPU_CLOCK			10200
 #define CLOCK_PER_TICK			1
 #define PLAYBACK_RATE			(TX_CPU_CLOCK / CLOCK_PER_TICK) // Tickrate 46.875 kHz
@@ -74,7 +73,7 @@ THD_FUNCTION(moduleRADIO, arg) {
 						sendAFSK(radio, msg);
 						break;
 					case MOD_CW:
-						//sendCW(radio, msg); TODO: Implement!
+						sendCW(radio, msg);
 						break;
 				}
 
@@ -110,10 +109,8 @@ void sendAFSK(radio_t radio, radioMSG_t *msg) {
 	// Initialize Monitor
 	palSetPadMode(GPIOC, 15, PAL_MODE_OUTPUT_PUSHPULL);
 
-	// Initialize radio
+	// Initialize radio and tune
 	Si446x_Init(radio, MOD_AFSK);
-
-	// Set radio power and frequency
 	radioTune(radio, msg->freq, msg->power);
 
 	// Initialize variables for AFSK
@@ -174,9 +171,26 @@ bool afsk_handler(radio_t radio, radioMSG_t *msg) {
 	return true;
 }
 
+void sendCW(radio_t radio, radioMSG_t *msg) {
+	// Initialize radio and tune
+	Si446x_Init(radio, MOD_AFSK);
+	radioTune(radio, msg->freq, msg->power);
 
+	// Transmit data
+	uint32_t bit = 0;
+	systime_t time = chVTGetSystemTimeX();
+	while(bit < msg->bin_len) {
+		TRACE_DEBUG("%d", bit);
+		MOD_GPIO_SET(radio, (msg->msg[bit/8] >> (bit%8)) & 0x1);
+		bit++;
 
+		time += MS2ST(10);
+		chThdSleepUntil(time);
+	}
 
+	// Shutdown radio
+	radioShutdown(radio);	// Shutdown radio
+}
 
 
 

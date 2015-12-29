@@ -10,7 +10,7 @@
 #define RADIO_CS_SET(radio, state)			(radio == RADIO_2M ? palWritePad(GPIOA, 11, state) : palWritePad(GPIOB, 0, state))
 #define RF_GPIO0_SET(radio, state)			(radio == RADIO_2M ? palWritePad(GPIOA, 10, state) : palWritePad(GPIOE, 13, state))
 #define RF_GPIO1_SET(radio, state)			(radio == RADIO_2M ? palWritePad(GPIOA, 9, state) : palWritePad(GPIOE, 14, state))
-#define MOD_GPIO_SET(radio, state)			RF_GPIO0_SET(radio, state)
+#define MOD_GPIO_SET(radio, state)			RF_GPIO1_SET(radio, state)
 #define RADIO_WITHIN_MAX_PWR(radio, dBm)	(radio == RADIO_2M ? (dBm) <= RADIO1_MAX_PWR : (dBm) <= RADIO2_MAX_PWR)
 #define RADIO_WITHIN_FREQ_RANGE(frequ)		((frequ) >= 119000000 && (frequ) <= 1050000000)
 #define RADIO_MAX_PWR(radio)				(radio == RADIO_2M ? RADIO1_MAX_PWR : RADIO2_MAX_PWR)

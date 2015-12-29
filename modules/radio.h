@@ -19,7 +19,7 @@ uint32_t getCustomFrequency(void);
 THD_FUNCTION(moduleRADIO, arg);
 void sendAFSK(radio_t radio, radioMSG_t *msg);
 bool afsk_handler(radio_t radio, radioMSG_t *msg);
-uint8_t dBm2powerLvl(int32_t dBm);
+void sendCW(radio_t radio, radioMSG_t *msg);
 
 #endif
 

@@ -5,6 +5,7 @@
 #include "modules.h"
 #include "radio.h"
 #include "../protocols/aprs/aprs.h"
+#include "../protocols/cw/cw.h"
 
 THD_FUNCTION(modulePOS, arg) {
 	// Print infos
@@ -40,6 +41,16 @@ THD_FUNCTION(modulePOS, arg) {
 
 			case PROT_UKHAS:
 				// TODO: Implement protocol
+
+				chMBPost(&radioMBP, (msg_t)&msg, 0);
+				break;
+
+			case PROT_CW:
+				msg.mod = MOD_CW;
+				msg.freq = (*fptr)();
+				msg.power = parm->power;
+				const char *cwmsg = "POSITION TODO"; // TODO: Implement protocol
+				msg.bin_len = CW_encode(&msg.msg, cwmsg);
 
 				chMBPost(&radioMBP, (msg_t)&msg, 0);
 				break;

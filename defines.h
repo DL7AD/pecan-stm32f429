@@ -43,7 +43,7 @@ typedef enum {
 } modulation_t;
 
 typedef enum {
-	PROT_RAW,
+	PROT_CW,
 	PROT_SSDV,
 	PROT_APRS,
 	PROT_UKHAS

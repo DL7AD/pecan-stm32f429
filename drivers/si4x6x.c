@@ -102,6 +102,9 @@ void Si446x_Init(radio_t radio, modulation_t modem_type) {
 }
 
 void Si446x_write(radio_t radio, uint8_t* txData, uint32_t len) {
+	TRACE_DEBUG("SI   > SPI TRANSMIT");
+	TRACE_BIN(txData, len);
+
 	// Transmit data by SPI
 	uint8_t rxData[len];
 
