@@ -50,7 +50,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 			if(gps_get_fix(&gpsFix)) {
 				TRACE_INFO("GPS  > Polling OK");
 			} else {
-				TRACE_INFO("GPS  > Polling FAILED");
+				TRACE_ERROR("GPS  > Polling FAILED");
 			}
 		} while(!isGPSLocked(&gpsFix) && chVTGetSystemTimeX() <= time + S2ST(parm->cycle-2)); // Do as long no GPS lock and within timeout, timeout=cycle-1sec (-1sec in order to keep synchronization)
 
@@ -61,7 +61,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 			TRACE_INFO("TRAC > GPS sampling finished GPS LOCK");
 			TRACE_GPSFIX(&gpsFix);
 		} else {
-			TRACE_INFO("TRAC > GPS sampling finished GPS LOSS");
+			TRACE_WARN("TRAC > GPS sampling finished GPS LOSS");
 		}
 
 		// Calibrate RTC

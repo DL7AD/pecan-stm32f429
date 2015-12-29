@@ -30,6 +30,9 @@ static const SPIConfig ls_spicfg2 = {
  * @param mv Oscillator voltage in mv
  */
 void Si446x_Init(radio_t radio, modulation_t modem_type) {
+	// Tracing
+	TRACE_INFO("SI   > Initialize Si4x6x (%d)", radio);
+
 	// Initialize SPI
 	palSetPadMode(GPIOB, 13, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_HIGHEST);		// SCK
 	palSetPadMode(GPIOB, 14, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_HIGHEST);		// MISO
@@ -99,9 +102,6 @@ void Si446x_Init(radio_t radio, modulation_t modem_type) {
 }
 
 void Si446x_write(radio_t radio, uint8_t* txData, uint32_t len) {
-	TRACE_DEBUG("SI   > SPI TRANSMIT");
-	TRACE_BIN(txData, len);
-
 	// Transmit data by SPI
 	uint8_t rxData[len];
 
@@ -247,9 +247,9 @@ void setModemCW(radio_t radio) {
 	Si446x_write(radio, use_cw, 5);
 }
 
-void setPowerLevel(radio_t radio, uint8_t level) {
+void setPowerLevel(radio_t radio, int8_t level) {
 	// Set the Power
-	uint8_t set_pa_pwr_lvl_property_command[] = {0x11, 0x22, 0x01, 0x01, level};
+	uint8_t set_pa_pwr_lvl_property_command[] = {0x11, 0x22, 0x01, 0x01, dBm2powerLvl(level)};
 	Si446x_write(radio, set_pa_pwr_lvl_property_command, 5);
 }
 
@@ -264,6 +264,9 @@ void stopTx(radio_t radio) {
 }
 
 void radioShutdown(radio_t radio) {
+	// Tracing
+	TRACE_INFO("SI   > Shutdown Si4x6x");
+
 	RADIO_SDN_SET(radio, true);	// Power down chip
 	RF_GPIO1_SET(radio, false);	// Set GPIO1 low
 }
@@ -272,16 +275,29 @@ void radioShutdown(radio_t radio) {
  * Tunes the radio and activates transmission.
  * @param frequency Transmission frequency in Hz
  * @param shift Shift of FSK in Hz
- * @param level Transmission power level (see power level description in config file)
+ * @param level Transmission power level in dBm
  */
-void radioTune(radio_t radio, uint32_t frequency, uint8_t level) {
-	if(frequency < 119000000UL || frequency > 1050000000UL)
-		frequency = 145300000UL;
+bool radioTune(radio_t radio, uint32_t frequency, int8_t level) {
+	// Tracing
+	TRACE_INFO("SI   > Tune Si4x6x (%d)", radio);
+
+	if(!RADIO_WITHIN_FREQ_RANGE(frequency)) {
+		TRACE_ERROR("SI   > Frequency out of range");
+		TRACE_ERROR("SI   > abort transmission");
+		return false;
+	}
+
+	if(!RADIO_WITHIN_MAX_PWR(radio, level)) {
+		TRACE_WARN("SI   > Power level out of range (max. %d dBm)", RADIO_MAX_PWR(radio));
+		TRACE_WARN("SI   > Reducing power level to %d dBm", RADIO_MAX_PWR(radio));
+		TRACE_WARN("SI   > continue transmission");
+	}
 
 	sendFrequencyToSi446x(radio, frequency);	// Frequency
 	setPowerLevel(radio, level);				// Power level
 
 	startTx(radio);
+	return true;
 }
 
 int8_t Si446x_getTemperature(radio_t radio) {
@@ -290,5 +306,27 @@ int8_t Si446x_getTemperature(radio_t radio) {
 	Si446x_read(radio, txData, 2, rxData, 8);
 	uint16_t adc = rxData[7] | ((rxData[6] & 0x7) << 8);
 	return (899*adc)/4096 - 293;
+}
+
+/**
+  * Converts power level from dBm to Si4x6x power level. The calculation
+  * assumes Vcc = 2.6V and Si4464/Si4463 or Si4063.
+  */
+uint8_t dBm2powerLvl(int32_t dBm) {
+	if(dBm < -35) {
+		return 0;
+	} else if(dBm < -7) {
+		return (uint8_t)((2*dBm+74)/15);
+	} else if(dBm < 2) {
+		return (uint8_t)((2*dBm+26)/3);
+	} else if(dBm < 8) {
+		return (uint8_t)((5*dBm+20)/3);
+	} else if(dBm < 13) {
+		return (uint8_t)(3*dBm-4);
+	} else if(dBm < 18) {
+		return (uint8_t)((92*dBm-1021)/5);
+	} else {
+		return 127;
+	}
 }
 

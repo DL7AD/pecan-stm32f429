@@ -55,15 +55,14 @@ THD_FUNCTION(moduleRADIO, arg) {
 			}
 
 			if(radio) { // Radio found
-
 				TRACE_INFO(	"RAD  > Transmit on radio\r\n"
 							"%s Radio %d\r\n"
 							"%s Frequency %d MHz\r\n"
-							"%s Power %d dBm\r\n"
+							"%s Power %d dBm (%d)\r\n"
 							"%s Modulation %s",
 							TRACE_TAB, radio,
 							TRACE_TAB, msg->freq,
-							TRACE_TAB, msg->power,
+							TRACE_TAB, msg->power, dBm2powerLvl(msg->power),
 							TRACE_TAB, VAL2MOULATION(msg->mod)
 				);
 				TRACE_BIN(msg->msg, msg->bin_len);
@@ -84,11 +83,11 @@ THD_FUNCTION(moduleRADIO, arg) {
 				TRACE_ERROR("RAD  > No radio available for this frequency\r\n"
 							"%s Radio %d\r\n"
 							"%s Frequency %d MHz\r\n"
-							"%s Power %d dBm\r\n"
+							"%s Power %d dBm (%d)\r\n"
 							"%s Modulation %s",
 							TRACE_TAB, 10,
 							TRACE_TAB, msg->freq,
-							TRACE_TAB, msg->power,
+							TRACE_TAB, msg->power, dBm2powerLvl(msg->power),
 							TRACE_TAB, VAL2MOULATION(msg->mod)
 				);
 
@@ -112,11 +111,9 @@ void sendAFSK(radio_t radio, radioMSG_t *msg) {
 	palSetPadMode(GPIOC, 15, PAL_MODE_OUTPUT_PUSHPULL);
 
 	// Initialize radio
-	TRACE_INFO("RAD  > Initialize Si4x6x")
 	Si446x_Init(radio, MOD_AFSK);
 
 	// Set radio power and frequency
-	TRACE_INFO("RAD  > Tune Si4x6x")
 	radioTune(radio, msg->freq, msg->power);
 
 	// Initialize variables for AFSK
@@ -138,7 +135,6 @@ void sendAFSK(radio_t radio, radioMSG_t *msg) {
 		lastSystemTime++;
 	}
 
-	TRACE_INFO("RAD  > Shutdown Si4x6x");
 	radioShutdown(radio);	// Shutdown radio
 	palSetPad(GPIOC, 15);	// Switch of monitor LED
 }
@@ -153,11 +149,11 @@ bool afsk_handler(radio_t radio, radioMSG_t *msg) {
 	}
 
 	// If sent SAMPLES_PER_BAUD already, go to the next bit
-	if (current_sample_in_baud == 0) {    // Load up next bit
-		if ((packet_pos & 7) == 0) {          // Load up next byte
+	if (current_sample_in_baud == 0) {	// Load up next bit
+		if ((packet_pos & 7) == 0) {	// Load up next byte
 			current_byte = msg->msg[packet_pos >> 3];
 		} else {
-			current_byte = current_byte / 2;  // ">>1" forces int conversion
+			current_byte = current_byte / 2; // ">>1" forces int conversion
 		}
 
 		if ((current_byte & 1) == 0) {
@@ -177,4 +173,13 @@ bool afsk_handler(radio_t radio, radioMSG_t *msg) {
 
 	return true;
 }
+
+
+
+
+
+
+
+
+
 

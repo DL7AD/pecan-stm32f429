@@ -22,18 +22,18 @@ extern const SerialConfig uart_config;
 
 #define TRACE_BASE(format, type, args...) { \
 	chMtxLock(&trace_mtx); \
-	chprintf((BaseSequentialStream*)&SD4, "[%8d.%04d][%c] ", chVTGetSystemTimeX()/CH_CFG_ST_FREQUENCY, chVTGetSystemTimeX()%CH_CFG_ST_FREQUENCY, type); \
+	chprintf((BaseSequentialStream*)&SD4, "[%8d.%04d][%s] ", chVTGetSystemTimeX()/CH_CFG_ST_FREQUENCY, chVTGetSystemTimeX()%CH_CFG_ST_FREQUENCY, type); \
 	chprintf((BaseSequentialStream*)&SD4, (format), ##args); \
 	chprintf((BaseSequentialStream*)&SD4, "\r\n"); \
 	chMtxUnlock(&trace_mtx); \
 }
 
-#define TRACE_DEBUG(format, args...) TRACE_BASE(format, 'D', ##args)
-#define TRACE_INFO(format, args...)  TRACE_BASE(format, 'I', ##args)
-#define TRACE_WARN(format, args...) TRACE_BASE(format, 'W', ##args)
-#define TRACE_ERROR(format, args...) TRACE_BASE(format, 'E', ##args)
+#define TRACE_DEBUG(format, args...) TRACE_BASE(format, "DEBUG", ##args)
+#define TRACE_INFO(format, args...)  TRACE_BASE(format, "     ", ##args)
+#define TRACE_WARN(format, args...) TRACE_BASE(format, "WARN ", ##args)
+#define TRACE_ERROR(format, args...) TRACE_BASE(format, "ERROR", ##args)
 
-#define TRACE_TAB "                         "
+#define TRACE_TAB "                             "
 
 #define TRACE_MODULE_INFO(parm, thd, name) { \
 	uint32_t (*fptr)(void); \
@@ -70,7 +70,7 @@ extern const SerialConfig uart_config;
 
 #define TRACE_BIN(data, len) { \
 	chMtxLock(&trace_mtx); \
-	chprintf((BaseSequentialStream*)&SD4, "[%8d.%04d][I] ", chVTGetSystemTimeX()/CH_CFG_ST_FREQUENCY, chVTGetSystemTimeX()%CH_CFG_ST_FREQUENCY); \
+	chprintf((BaseSequentialStream*)&SD4, "[%8d.%04d][     ] ", chVTGetSystemTimeX()/CH_CFG_ST_FREQUENCY, chVTGetSystemTimeX()%CH_CFG_ST_FREQUENCY); \
 	chprintf((BaseSequentialStream*)&SD4, "RAD  > Transmit binary data (%d bits)\r\n", len); \
 	for(uint32_t i=0; i<(len+7)/8; i+=8) \
 		chprintf((BaseSequentialStream*)&SD4, "%s 0x%03x ... 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\r\n", \
