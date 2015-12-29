@@ -13,7 +13,7 @@
 #define MOD_GPIO_SET(radio, state)	RF_GPIO1_SET(radio, state)
 
 void Si446x_Init(radio_t radio, modulation_t modem_type);
-void Si446x_write(radio_t radio, uint16_t* txData, uint32_t len);
+void Si446x_write(radio_t radio, uint8_t* txData, uint32_t len);
 void sendFrequencyToSi446x(radio_t radio, uint32_t freq);
 void setModemAFSK(radio_t radio);
 void setModemCW(radio_t radio);

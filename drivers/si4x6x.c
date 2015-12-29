@@ -8,18 +8,19 @@
 #include "hal.h"
 #include "si4x6x.h"
 #include "../modules.h"
+#include "../trace.h"
 
 static const SPIConfig ls_spicfg1 = {
 	NULL,
 	GPIOA,
 	11,
-	SPI_CR1_BR_2 | SPI_CR1_BR_1
+	SPI_CR1_BR_2 | SPI_CR1_BR_1 | SPI_CR1_MSTR
 };
 static const SPIConfig ls_spicfg2 = {
 	NULL,
 	GPIOB,
 	0,
-	SPI_CR1_BR_2 | SPI_CR1_BR_1
+	SPI_CR1_BR_2 | SPI_CR1_BR_1 | SPI_CR1_MSTR
 };
 #define getSPIDriver(radio) (radio == RADIO_2M ? &ls_spicfg1 : &ls_spicfg2)
 
@@ -67,11 +68,11 @@ void Si446x_Init(radio_t radio, modulation_t modem_type) {
 	uint8_t x2 = (OSC_FREQ >> 16) & 0x0FF;
 	uint8_t x1 = (OSC_FREQ >>  8) & 0x0FF;
 	uint8_t x0 = (OSC_FREQ >>  0) & 0x0FF;
-	uint16_t init_command[] = {0x02, 0x01, 0x01, x3, x2, x1, x0};
+	uint8_t init_command[] = {0x02, 0x01, 0x01, x3, x2, x1, x0};
 	Si446x_write(radio, init_command, 7);
 
 	// Set transmitter GPIOs
-	uint16_t gpio_pin_cfg_command[] = {
+	uint8_t gpio_pin_cfg_command[] = {
 		0x13,	// Command type = GPIO settings
 		0x00,	// GPIO0        0 - PULL_CTL[1bit] - GPIO_MODE[6bit]
 		0x44,	// GPIO1        0 - PULL_CTL[1bit] - GPIO_MODE[6bit]
@@ -97,9 +98,12 @@ void Si446x_Init(radio_t radio, modulation_t modem_type) {
 	}
 }
 
-void Si446x_write(radio_t radio, uint16_t* txData, uint32_t len) {
+void Si446x_write(radio_t radio, uint8_t* txData, uint32_t len) {
+	TRACE_DEBUG("SI   > SPI TRANSMIT");
+	TRACE_BIN(txData, len);
+
 	// Transmit data by SPI
-	uint16_t rxData[len];
+	uint8_t rxData[len];
 
 	// SPI transfer
 	spiAcquireBus(&SPID2);
@@ -114,7 +118,7 @@ void Si446x_write(radio_t radio, uint16_t* txData, uint32_t len) {
 	while(rxData[0] != 0xFF) {
 
 		// Request ACK by Si446x
-		uint16_t rx_ready[] = {0x44};
+		uint8_t rx_ready[] = {0x44};
 
 		// SPI transfer
 		spiAcquireBus(&SPID2);
@@ -132,9 +136,9 @@ void Si446x_write(radio_t radio, uint16_t* txData, uint32_t len) {
 /**
  * Read register from Si446x. First Register CTS is included.
  */
-void Si446x_read(radio_t radio, uint16_t* txData, uint32_t txlen, uint16_t* rxData, uint32_t rxlen) {
+void Si446x_read(radio_t radio, uint8_t* txData, uint32_t txlen, uint8_t* rxData, uint32_t rxlen) {
 	// Transmit data by SPI
-	uint16_t null_spi[txlen];
+	uint8_t null_spi[txlen];
 	// SPI transfer
 	spiAcquireBus(&SPID2);
 	spiStart(&SPID2, getSPIDriver(radio));
@@ -176,7 +180,7 @@ void sendFrequencyToSi446x(radio_t radio, uint32_t freq) {
 
 	// Set the band parameter
 	uint32_t sy_sel = 8;
-	uint16_t set_band_property_command[] = {0x11, 0x20, 0x01, 0x51, (band + sy_sel)};
+	uint8_t set_band_property_command[] = {0x11, 0x20, 0x01, 0x51, (band + sy_sel)};
 	Si446x_write(radio, set_band_property_command, 5);
 
 	// Set the PLL parameters
@@ -191,24 +195,24 @@ void sendFrequencyToSi446x(radio_t radio, uint32_t freq) {
 	uint32_t m0 = (m - m2 * 0x10000 - (m1 << 8));
 
 	// Transmit frequency to chip
-	uint16_t set_frequency_property_command[] = {0x11, 0x40, 0x04, 0x00, n, m2, m1, m0};
+	uint8_t set_frequency_property_command[] = {0x11, 0x40, 0x04, 0x00, n, m2, m1, m0};
 	Si446x_write(radio, set_frequency_property_command, 8);
 
 	uint32_t x = ((((uint32_t)1 << 19) * outdiv * 1300.0)/(2*OSC_FREQ))*2;
 	uint8_t x2 = (x >> 16) & 0xFF;
 	uint8_t x1 = (x >>  8) & 0xFF;
 	uint8_t x0 = (x >>  0) & 0xFF;
-	uint16_t set_deviation[] = {0x11, 0x20, 0x03, 0x0a, x2, x1, x0};
+	uint8_t set_deviation[] = {0x11, 0x20, 0x03, 0x0a, x2, x1, x0};
 	Si446x_write(radio, set_deviation, 7);
 }
 
 void setModemAFSK(radio_t radio) {
 	// Disable preamble
-	uint16_t disable_preamble[] = {0x11, 0x10, 0x01, 0x00, 0x00};
+	uint8_t disable_preamble[] = {0x11, 0x10, 0x01, 0x00, 0x00};
 	Si446x_write(radio, disable_preamble, 5);
 
 	// Do not transmit sync word
-	uint16_t no_sync_word[] = {0x11, 0x11, 0x01, 0x11, (0x01 << 7)};
+	uint8_t no_sync_word[] = {0x11, 0x11, 0x01, 0x11, (0x01 << 7)};
 	Si446x_write(radio, no_sync_word, 5);
 
 	// Setup the NCO modulo and oversampling mode
@@ -217,45 +221,45 @@ void setModemAFSK(radio_t radio) {
 	uint8_t f2 = (s >> 16) & 0xFF;
 	uint8_t f1 = (s >>  8) & 0xFF;
 	uint8_t f0 = (s >>  0) & 0xFF;
-	uint16_t setup_oversampling[] = {0x11, 0x20, 0x04, 0x06, f3, f2, f1, f0};
+	uint8_t setup_oversampling[] = {0x11, 0x20, 0x04, 0x06, f3, f2, f1, f0};
 	Si446x_write(radio, setup_oversampling, 8);
 
 	// setup the NCO data rate for APRS
-	uint16_t setup_data_rate[] = {0x11, 0x20, 0x03, 0x03, 0x00, 0x11, 0x30};
+	uint8_t setup_data_rate[] = {0x11, 0x20, 0x03, 0x03, 0x00, 0x11, 0x30};
 	Si446x_write(radio, setup_data_rate, 7);
 
 	// use 2GFSK from async GPIO1
-	uint16_t use_2gfsk[] = {0x11, 0x20, 0x01, 0x00, 0x2B};
+	uint8_t use_2gfsk[] = {0x11, 0x20, 0x01, 0x00, 0x2B};
 	Si446x_write(radio, use_2gfsk, 5);
 
 	// Set AFSK filter
 	uint8_t coeff[] = {0x81, 0x9f, 0xc4, 0xee, 0x18, 0x3e, 0x5c, 0x70, 0x76};
 	uint8_t i;
 	for(i=0; i<sizeof(coeff); i++) {
-		uint16_t msg[] = {0x11, 0x20, 0x01, 0x17-i, coeff[i]};
+		uint8_t msg[] = {0x11, 0x20, 0x01, 0x17-i, coeff[i]};
 		Si446x_write(radio, msg, 5);
 	}
 }
 
 void setModemCW(radio_t radio) {
 	// use 2GFSK from async GPIO1
-	uint16_t use_cw[] = {0x11, 0x20, 0x01, 0x00, 0xA9};
+	uint8_t use_cw[] = {0x11, 0x20, 0x01, 0x00, 0xA9};
 	Si446x_write(radio, use_cw, 5);
 }
 
 void setPowerLevel(radio_t radio, uint8_t level) {
 	// Set the Power
-	uint16_t set_pa_pwr_lvl_property_command[] = {0x11, 0x22, 0x01, 0x01, level};
+	uint8_t set_pa_pwr_lvl_property_command[] = {0x11, 0x22, 0x01, 0x01, level};
 	Si446x_write(radio, set_pa_pwr_lvl_property_command, 5);
 }
 
 void startTx(radio_t radio) {
-	uint16_t change_state_command[] = {0x34, 0x07};
+	uint8_t change_state_command[] = {0x34, 0x07};
 	Si446x_write(radio, change_state_command, 2);
 }
 
 void stopTx(radio_t radio) {
-	uint16_t change_state_command[] = {0x34, 0x03};
+	uint8_t change_state_command[] = {0x34, 0x03};
 	Si446x_write(radio, change_state_command, 2);
 }
 
@@ -281,8 +285,8 @@ void radioTune(radio_t radio, uint32_t frequency, uint8_t level) {
 }
 
 int8_t Si446x_getTemperature(radio_t radio) {
-	uint16_t txData[2] = {0x14, 0x10};
-	uint16_t rxData[8];
+	uint8_t txData[2] = {0x14, 0x10};
+	uint8_t rxData[8];
 	Si446x_read(radio, txData, 2, rxData, 8);
 	uint16_t adc = rxData[7] | ((rxData[6] & 0x7) << 8);
 	return (899*adc)/4096 - 293;
