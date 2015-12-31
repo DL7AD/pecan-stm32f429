@@ -31,7 +31,7 @@ static const SPIConfig ls_spicfg2 = {
  */
 void Si446x_Init(radio_t radio, modulation_t modem_type) {
 	// Tracing
-	TRACE_INFO("SI   > Initialize Si4x6x (%d)", radio);
+	TRACE_INFO("SI %d > Initialize Si4x6x", radio);
 
 	// Initialize SPI
 	palSetPadMode(GPIOB, 13, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_HIGHEST);		// SCK
@@ -59,8 +59,6 @@ void Si446x_Init(radio_t radio, modulation_t modem_type) {
 		palSetPadMode(GPIOE, 14, PAL_MODE_OUTPUT_PUSHPULL);	// RADIO2 GPIO1
 
 	}
-
-
 
 	// Power up transmitter
 	RADIO_SDN_SET(radio, false);	// Radio SDN low (power up transmitter)
@@ -99,12 +97,12 @@ void Si446x_Init(radio_t radio, modulation_t modem_type) {
 		case MOD_2FSK:
 			break;
 	}
+
+	// Temperature readout
+	TRACE_INFO("SI %d > Transmitter temperature %d degC", radio, Si446x_getTemperature(radio));
 }
 
 void Si446x_write(radio_t radio, uint8_t* txData, uint32_t len) {
-	TRACE_DEBUG("SI   > SPI TRANSMIT");
-	TRACE_BIN(txData, len);
-
 	// Transmit data by SPI
 	uint8_t rxData[len];
 
@@ -131,9 +129,12 @@ void Si446x_write(radio_t radio, uint8_t* txData, uint32_t len) {
 		spiUnselect(&SPID2);
 		spiReleaseBus(&SPID2);
 
-		if(rxData[0] != 0xFF) // Si not finished, wait for it
+		if(rxData[0] != 0xFF) { // Si not finished, wait for it
 			chThdSleepMilliseconds(1);
+		}
 	}
+
+	chThdSleepMilliseconds(20); // FIXME: Workaround, this function does not detect CTS from Si4x6x
 }
 
 /**
@@ -268,7 +269,7 @@ void stopTx(radio_t radio) {
 
 void radioShutdown(radio_t radio) {
 	// Tracing
-	TRACE_INFO("SI   > Shutdown Si4x6x");
+	TRACE_INFO("SI %d > Shutdown Si4x6x", radio);
 
 	RADIO_SDN_SET(radio, true);	// Power down chip
 	RF_GPIO1_SET(radio, false);	// Set GPIO1 low
@@ -282,18 +283,18 @@ void radioShutdown(radio_t radio) {
  */
 bool radioTune(radio_t radio, uint32_t frequency, int8_t level) {
 	// Tracing
-	TRACE_INFO("SI   > Tune Si4x6x (%d)", radio);
+	TRACE_INFO("SI %d > Tune Si4x6x", radio);
 
 	if(!RADIO_WITHIN_FREQ_RANGE(frequency)) {
-		TRACE_ERROR("SI   > Frequency out of range");
-		TRACE_ERROR("SI   > abort transmission");
+		TRACE_ERROR("SI %d > Frequency out of range", radio);
+		TRACE_ERROR("SI %d > abort transmission", radio);
 		return false;
 	}
 
 	if(!RADIO_WITHIN_MAX_PWR(radio, level)) {
-		TRACE_WARN("SI   > Power level out of range (max. %d dBm)", RADIO_MAX_PWR(radio));
-		TRACE_WARN("SI   > Reducing power level to %d dBm", RADIO_MAX_PWR(radio));
-		TRACE_WARN("SI   > continue transmission");
+		TRACE_WARN("SI %d > Power level out of range (max. %d dBm)", radio, RADIO_MAX_PWR(radio));
+		TRACE_WARN("SI %d > Reducing power level to %d dBm", radio, RADIO_MAX_PWR(radio));
+		TRACE_WARN("SI %d > continue transmission", radio);
 	}
 
 	sendFrequencyToSi446x(radio, frequency);	// Frequency

@@ -106,10 +106,8 @@ THD_FUNCTION(moduleTRACKING, arg) {
 		lastTrackPoint = newTrackPoint;
 		id++;
 
-		TRACE_DEBUG("BLA1");
 		time += S2ST(parm->cycle); // Wait until this time
-		chThdSleepMilliseconds(5000);
-		TRACE_DEBUG("BLA2");
+		chThdSleepUntil(time);
 	}
 }
 

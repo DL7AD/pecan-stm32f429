@@ -173,7 +173,7 @@ bool afsk_handler(radio_t radio, radioMSG_t *msg) {
 
 void sendCW(radio_t radio, radioMSG_t *msg) {
 	// Initialize radio and tune
-	Si446x_Init(radio, MOD_AFSK);
+	Si446x_Init(radio, MOD_CW);
 	radioTune(radio, msg->freq, msg->power);
 
 	// Transmit data

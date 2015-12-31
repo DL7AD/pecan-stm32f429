@@ -344,10 +344,10 @@
                                      PIN_OTYPE_PUSHPULL(GPIOA_SWDIO) |      \
                                      PIN_OTYPE_PUSHPULL(GPIOA_SWCLK) |      \
                                      PIN_OTYPE_PUSHPULL(GPIOA_SD_CS))
-#define VAL_GPIOA_OSPEEDR           (PIN_OSPEED_VERYLOW(GPIOA_UART_TX) |    \
-                                     PIN_OSPEED_VERYLOW(GPIOA_UART_RX) |    \
-                                     PIN_OSPEED_VERYLOW(GPIOA_UART_GPS_TX) |\
-                                     PIN_OSPEED_VERYLOW(GPIOA_UART_GPS_RX) |\
+#define VAL_GPIOA_OSPEEDR           (PIN_OSPEED_HIGH(GPIOA_UART_TX) |       \
+                                     PIN_OSPEED_HIGH(GPIOA_UART_RX) |       \
+                                     PIN_OSPEED_HIGH(GPIOA_UART_GPS_TX) |   \
+                                     PIN_OSPEED_HIGH(GPIOA_UART_GPS_RX) |   \
                                      PIN_OSPEED_HIGH(GPIOA_CAM_HREF) |      \
                                      PIN_OSPEED_VERYLOW(GPIOA_PIN5) |       \
                                      PIN_OSPEED_HIGH(GPIOA_CAM_PCLK) |      \
@@ -469,10 +469,10 @@
                                      PIN_OSPEED_VERYLOW(GPIOB_PIN5) |       \
                                      PIN_OSPEED_HIGH(GPIOB_CAM_D7) |        \
                                      PIN_OSPEED_HIGH(GPIOB_CAM_VSYNC) |     \
-                                     PIN_OSPEED_LOW(GPIOB_CAM_SCL) |        \
-                                     PIN_OSPEED_LOW(GPIOB_CAM_SDA) |        \
-                                     PIN_OSPEED_LOW(GPIOB_I2C_SCL) |        \
-                                     PIN_OSPEED_LOW(GPIOB_I2C_SDA) |        \
+                                     PIN_OSPEED_HIGH(GPIOB_CAM_SCL) |       \
+                                     PIN_OSPEED_HIGH(GPIOB_CAM_SDA) |       \
+                                     PIN_OSPEED_HIGH(GPIOB_I2C_SCL) |       \
+                                     PIN_OSPEED_HIGH(GPIOB_I2C_SDA) |       \
                                      PIN_OSPEED_VERYLOW(GPIOB_RADIO2_SDN) | \
                                      PIN_OSPEED_HIGH(GPIOB_SPI_SCK) |       \
                                      PIN_OSPEED_HIGH(GPIOB_SPI_MISO) |      \
