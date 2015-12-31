@@ -5,6 +5,7 @@
 #include "ptime.h"
 #include "config.h"
 #include "trace.h"
+#include "drivers/bme280.h"
 
 uint32_t counter = 0;
 
@@ -25,42 +26,21 @@ int main(void) {
 	TRACE_INIT();
 	TRACE_INFO("MAIN > Startup");
 
-	// Startup modules
-	//MODULES();
-
-
-
-
-	palSetPadMode(GPIOB, 10, PAL_MODE_ALTERNATE(4));
-	palSetPadMode(GPIOB, 11, PAL_MODE_ALTERNATE(4));
+	TRACE_INFO("MAIN > Startup SENSOR I2C");
 	i2cStart(&I2CD2, &i2cfg2);
 
-	uint8_t rxbuf[1];
-	uint8_t txbuf[1];
-	for(uint8_t i=1; i<127; i++) {
-		i2cAcquireBus(&I2CD2);
+	// Startup modules
+	MODULES();
 
-		palSetPad(GPIOE, 3);
-		msg_t status = i2cMasterTransmitTimeout(&I2CD2, i, txbuf, 1, rxbuf, 1, MS2ST(100));
-
-		i2cReleaseBus(&I2CD2);
-		if(status == MSG_OK) {
-			TRACE_DEBUG("Found I2C slave %d", i);
-		} else {
-			TRACE_DEBUG("No I2C slave %d (%d)", i, status);
-
-			i2cStop(&I2CD2);
-			i2cStart(&I2CD2, &i2cfg2);
-		}
-		chThdSleepMilliseconds(100);
-	}
-
-
-
-
-
-	while(1) {
+	BME280_Init();
+	while(true) {
 		palTogglePad(GPIOE, 3); // Toggle LED to show: I'M ALIVE
+
+		int16_t  temp  = BME280_getTemperature();
+		uint32_t press = BME280_getPressure(256);
+		uint16_t hum   = BME280_getHumidity();
+		int32_t alt    = BME280_getAltitude(P_0, press);
+		TRACE_INFO("BME  > T=%d.%02ddegC p=%d.%01dPa phi=%d.%01d%% a=%d.%02dm", temp/100, temp%100, press/10, press%10, hum/10, hum%10, alt/100, alt%100);
 
 		if(counter%60 == 0) // Print time every 30 seconds
 			PRINT_TIME("MAIN");
