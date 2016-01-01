@@ -32,15 +32,8 @@ int main(void) {
 	// Startup modules
 	MODULES();
 
-	BME280_Init();
 	while(true) {
 		palTogglePad(GPIOE, 3); // Toggle LED to show: I'M ALIVE
-
-		int16_t  temp  = BME280_getTemperature();
-		uint32_t press = BME280_getPressure(256);
-		uint16_t hum   = BME280_getHumidity();
-		int32_t alt    = BME280_getAltitude(P_0, press);
-		TRACE_INFO("BME  > T=%d.%02ddegC p=%d.%01dPa phi=%d.%01d%% a=%d.%02dm", temp/100, temp%100, press/10, press%10, hum/10, hum%10, alt/100, alt%100);
 
 		if(counter%60 == 0) // Print time every 30 seconds
 			PRINT_TIME("MAIN");

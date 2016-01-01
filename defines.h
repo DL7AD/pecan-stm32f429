@@ -37,9 +37,9 @@ typedef enum {
 } smode_t;
 
 typedef enum {
+	MOD_CW,
 	MOD_2FSK,
-	MOD_AFSK,
-	MOD_CW
+	MOD_AFSK
 } modulation_t;
 
 typedef enum {

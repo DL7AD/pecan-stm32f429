@@ -5,6 +5,7 @@
 #include "ptime.h"
 #include "config.h"
 #include "drivers/max.h"
+#include "drivers/bme280.h"
 
 trackPoint_t trackPoints[2];
 trackPoint_t* lastTrackPoint;
@@ -38,8 +39,8 @@ THD_FUNCTION(moduleTRACKING, arg) {
 	systime_t time = chVTGetSystemTimeX();
 	while(true)
 	{
-		TRACE_INFO("POS  > Do module TRACKING MANAGER cycle");
-		trackPoint_t* newTrackPoint = &trackPoints[(id+1) % sizeof(trackPoints)];
+		TRACE_INFO("TRAC > Do module TRACKING MANAGER cycle");
+		trackPoint_t* tp = &trackPoints[(id+1) % sizeof(trackPoints)];
 
 		// Search for GPS satellites
 		GPS_Init();
@@ -67,43 +68,92 @@ THD_FUNCTION(moduleTRACKING, arg) {
 		// Calibrate RTC
 		setTime(gpsFix.time);
 
+
 		// Fill tracking point
 
 		// GPS fix and time
-		newTrackPoint->id = id;
-		newTrackPoint->time = gpsFix.time;
-		newTrackPoint->gps_lock = isGPSLocked(&gpsFix);
-		newTrackPoint->gps_lat = gpsFix.lat;
-		newTrackPoint->gps_lon = gpsFix.lon;
-		newTrackPoint->gps_alt = gpsFix.alt;
-		newTrackPoint->gps_sats = gpsFix.num_svs;
-		newTrackPoint->gps_ttff = ST2S(chVTGetSystemTimeX() - time);
+		tp->id = id;
+		tp->time.year = gpsFix.time.year;
+		tp->time.month = gpsFix.time.month;
+		tp->time.day = gpsFix.time.day;
+		tp->time.hour = gpsFix.time.hour;
+		tp->time.minute = gpsFix.time.minute;
+		tp->time.second = gpsFix.time.second;
+		tp->gps_lock = isGPSLocked(&gpsFix);
+		tp->gps_lat = gpsFix.lat;
+		tp->gps_lon = gpsFix.lon;
+		tp->gps_alt = gpsFix.alt;
+		tp->gps_sats = gpsFix.num_svs;
+		tp->gps_ttff = ST2S(chVTGetSystemTimeX() - time);
+
 
 		// Power management TODO: Implement this!
-		newTrackPoint->adc_solar = 0;
-		newTrackPoint->adc_battery = 0;
-		newTrackPoint->adc_charge = 0;
+		tp->adc_solar = 0;
+		tp->adc_battery = 0;
+		tp->adc_charge = 0;
 
-		// Atmosphere condition TODO: Implement this!
-		newTrackPoint->air_press = 0;
-		newTrackPoint->air_hum = 0;
-		newTrackPoint->air_temp = 0;
+		bme280_t bmeInt;
+		bme280_t bmeExt;
 
-		// Balloon condition TODO: Implement this!
-		newTrackPoint->bal_press = 0;
-		newTrackPoint->bal_hum = 0;
-		newTrackPoint->bal_temp = 0;
+		// Atmosphere condition
+		if(BME280_isAvailable(BME280_ADDRESS_INT)) {
+			BME280_Init(&bmeInt, BME280_ADDRESS_INT);
+			tp->air_press = BME280_getPressure(&bmeInt, 256);
+			tp->air_hum = BME280_getHumidity(&bmeInt);
+			tp->air_temp = BME280_getTemperature(&bmeInt);
+		} else { // No internal BME280 found
+			TRACE_ERROR("TRAC > Internal BME280 not available");
+			tp->air_press = 0;
+			tp->air_hum = 0;
+			tp->air_temp = 0;
+		}
+
+		// Balloon condition
+		if(BME280_isAvailable(BME280_ADDRESS_EXT)) {
+			BME280_Init(&bmeExt, BME280_ADDRESS_EXT);
+			tp->bal_press = BME280_getPressure(&bmeExt, 256);
+			tp->bal_hum = BME280_getHumidity(&bmeExt);
+			tp->bal_temp = BME280_getTemperature(&bmeExt);
+		} else { // No external BME280 found
+			TRACE_ERROR("TRAC > External BME280 not available");
+			tp->bal_press = 0;
+			tp->bal_hum = 0;
+			tp->bal_temp = 0;
+		}
 
 		// Movement TODO: Implement this!
-		newTrackPoint->acc_x = 0;
-		newTrackPoint->acc_y = 0;
-		newTrackPoint->acc_z = 0;
-		newTrackPoint->gyr_x = 0;
-		newTrackPoint->gyr_y = 0;
-		newTrackPoint->gyr_z = 0;
+		tp->acc_x = 0;
+		tp->acc_y = 0;
+		tp->acc_z = 0;
+		tp->gyr_x = 0;
+		tp->gyr_y = 0;
+		tp->gyr_z = 0;
+
+
+		// Trace data
+		TRACE_INFO(	"TRAC > New tracking point available (ID=%d)\r\n"
+					"%s Time %d-%02d-%02d %02d:%02d:%02d\r\n"
+					"%s Pos  %d.%07d %d.%07d Alt %dm\r\n"
+					"%s Sats %d  TTFF %dsec\r\n"
+					"%s ADC Vbat=%d.%dV  Vsol=%d.%dV  I=%dmA\r\n"
+					"%s Air  p=%d.%01dPa T=%d.%02d%% phi=%d.%01d%%\r\n"
+					"%s Ball p=%d.%01dPa T=%d.%02d%% phi=%d.%01d%%\r\n"
+					"%s Acc %05d %05d %05d\r\n"
+					"%s Gyr %05d %05d %05d\r\n",
+					tp->id,
+					TRACE_TAB, tp->time.year, tp->time.month, tp->time.day, tp->time.hour, tp->time.minute, tp->time.day,
+					TRACE_TAB, tp->gps_lat/10000000, tp->gps_lat%10000000, tp->gps_lon/10000000, tp->gps_lon%10000000, tp->gps_alt,
+					TRACE_TAB, tp->gps_sats, tp->gps_ttff,
+					TRACE_TAB, tp->adc_solar/1000, (tp->adc_solar%1000)%10, tp->adc_battery/1000, (tp->adc_battery%1000)%10, tp->adc_charge,
+					TRACE_TAB, tp->air_press/10, tp->air_press%10, tp->air_temp/100, tp->air_temp%100, tp->air_hum/10, tp->air_hum%10,
+					TRACE_TAB, tp->bal_press/10, tp->bal_press%10, tp->bal_temp/100, tp->bal_temp%100, tp->bal_hum/10, tp->bal_hum%10,
+					TRACE_TAB, tp->acc_x, tp->acc_y, tp->acc_z,
+					TRACE_TAB, tp->gyr_x, tp->gyr_y, tp->gyr_z
+		);
+
 
 		// Switch last recent track point
-		lastTrackPoint = newTrackPoint;
+		lastTrackPoint = tp;
 		id++;
 
 		time += S2ST(parm->cycle); // Wait until this time

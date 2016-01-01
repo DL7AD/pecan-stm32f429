@@ -20,13 +20,13 @@ typedef struct {
 	uint16_t adc_battery; // Current battery voltage
 	int32_t adc_charge;	// Power charged in battery last 5min in uWh
 
-	uint32_t air_press; // Airpressure in Pa
-	uint8_t air_hum; // Rel. humidity in %
-	uint16_t air_temp; // Temperature in K*10
+	uint32_t air_press; // Airpressure in Pa*10
+	uint8_t air_hum; // Rel. humidity in %*10
+	int16_t air_temp; // Temperature in degC*100
 
 	uint32_t bal_press; // Airpressure in Pa in balloon
 	uint8_t bal_hum; // Rel. humidity in % in balloon
-	uint16_t bal_temp; // Temperature in K*10 in balloon
+	int16_t bal_temp; // Temperature in K*10 in balloon
 
 	int16_t acc_x; // Acceleration on x-axis in 5min average
 	int16_t acc_y; // Acceleration on y-axis in 5min average

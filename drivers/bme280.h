@@ -19,7 +19,8 @@
 
 #define P_0								101325
 
-#define BME280_ADDRESS					0x77
+#define BME280_ADDRESS_EXT				0x76
+#define BME280_ADDRESS_INT				0x77
 
 #define BME280_REGISTER_DIG_T1			0x88
 #define BME280_REGISTER_DIG_T2			0x8A
@@ -55,8 +56,7 @@
 #define BME280_REGISTER_TEMPDATA		0xFA
 #define BME280_REGISTER_HUMIDDATA		0xFD
 
-typedef struct
-{
+typedef struct {
 	uint16_t dig_T1;
 	int16_t  dig_T2;
 	int16_t  dig_T3;
@@ -79,10 +79,19 @@ typedef struct
 	int8_t   dig_H6;
 } bme280_calib_data_t;
 
-void BME280_Init(void);
-int16_t BME280_getTemperature(void);
-uint32_t BME280_getPressure(uint16_t means);
-uint16_t BME280_getHumidity(void);
+// BME280 handle
+typedef struct {
+	uint8_t address;
+	int32_t t_fine;
+	bme280_calib_data_t calib;
+} bme280_t;
+
+bool BME280_isAvailable(uint8_t address);
+void BME280_Init(bme280_t *handle, uint8_t address);
+int16_t BME280_getTemperature(bme280_t *handle);
+uint32_t BME280_getPressure(bme280_t *handle, uint16_t means);
+uint16_t BME280_getHumidity(bme280_t *handle);
 int32_t BME280_getAltitude(uint32_t seaLevel, uint32_t atmospheric);
 
 #endif
+
