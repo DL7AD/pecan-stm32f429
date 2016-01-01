@@ -5,26 +5,39 @@
 #include "ch.h"
 #include "hal.h"
 #include "max.h"
-#include "trace.h"
+#include "../trace.h"
 
 /* 
  * gps_transmit_string
  *
  * transmits a command to the GPS
  */
-inline void gps_transmit_string(uint8_t *cmd, uint8_t length) {
+void gps_transmit_string(uint8_t *cmd, uint8_t length) {
 	i2cAcquireBus(&I2CD2);
 	i2cMasterTransmitTimeout(&I2CD2, 0x42, cmd, length, NULL, 0, MS2ST(10));
 	i2cReleaseBus(&I2CD2);
 }
 
-inline uint8_t gps_receive_byte(void) {
+uint8_t gps_receive_byte(void) {
 	uint8_t rxbuf[1];
-	uint8_t txbuf[] = {0xFF};
+	uint8_t txbuf = {0xFF};
+
 	i2cAcquireBus(&I2CD2);
 	i2cMasterTransmitTimeout(&I2CD2, 0x42, (uint8_t*)&txbuf, 1, (uint8_t*)&rxbuf, 1, MS2ST(10));
 	i2cReleaseBus(&I2CD2);
+
 	return rxbuf[0];
+}
+
+uint8_t gps_bytes_avail(void) {
+	uint8_t rxbuf[2];
+	uint8_t txbuf = {0xFD};
+
+	i2cAcquireBus(&I2CD2);
+	i2cMasterTransmitTimeout(&I2CD2, 0x42, (uint8_t*)&txbuf, 1, (uint8_t*)&rxbuf, 2, MS2ST(10));
+	i2cReleaseBus(&I2CD2);
+
+	return (rxbuf[0] << 8) | rxbuf[1];
 }
 
 /* 
@@ -49,10 +62,13 @@ uint8_t gps_receive_ack(uint8_t class_id, uint8_t msg_id, uint16_t timeout) {
 	// runs until ACK/NAK packet is received
 	systime_t sTimeout = chVTGetSystemTimeX() + MS2ST(timeout);
 	while(chVTGetSystemTimeX() <= sTimeout) {
+
 		// Receive one byte
+		if(!gps_bytes_avail()) { // No byte available
+			chThdSleepMilliseconds(100);
+			continue;
+		}
 		rx_byte = gps_receive_byte();
-		if(rx_byte == 0xFF)
-			continue; // No byte available
 
 		// Process one byte
 		if (rx_byte == ack[match_count] || rx_byte == nak[match_count]) {
@@ -93,10 +109,13 @@ uint16_t gps_receive_payload(uint8_t class_id, uint8_t msg_id, unsigned char *pa
 
 	systime_t sTimeout = chVTGetSystemTimeX() + MS2ST(timeout);
 	while(chVTGetSystemTimeX() <= sTimeout) {
+
 		// Receive one byte
+		if(!gps_bytes_avail()) { // No byte available
+			chThdSleepMilliseconds(100);
+			continue;
+		}
 		rx_byte = gps_receive_byte();
-		if(rx_byte == 0xFF)
-			continue; // No byte available
 
 		// Process one byte
 		switch (state) {
@@ -153,7 +172,7 @@ bool gps_get_fix(gpsFix_t *fix) {
 	int32_t alt_tmp;
 
 	gps_transmit_string(pvt, sizeof(pvt));
-	if(!gps_receive_payload(0x01, 0x07, response, 1000))
+	if(!gps_receive_payload(0x01, 0x07, response, 2000))
 		return false;
 
 	fix->num_svs = response[23];
@@ -209,7 +228,7 @@ uint8_t gps_disable_nmea_output(void) {
 	};
 
 	gps_transmit_string(nonmea, sizeof(nonmea));
-	return gps_receive_ack(0x06, 0x00, 100);
+	return gps_receive_ack(0x06, 0x00, 1000);
 }
 
 /*
@@ -232,7 +251,7 @@ uint8_t gps_set_gps_only(void) {
 	};
 
 	gps_transmit_string(gpsonly, sizeof(gpsonly));
-	return gps_receive_ack(0x06, 0x3E, 100);
+	return gps_receive_ack(0x06, 0x3E, 1000);
 }
 
 /*
@@ -271,7 +290,7 @@ uint8_t gps_set_airborne_model(void) {
 	};
 
 	gps_transmit_string(model6, sizeof(model6));
-	return gps_receive_ack(0x06, 0x24, 100);
+	return gps_receive_ack(0x06, 0x24, 1000);
 }
 
 /*
@@ -301,7 +320,7 @@ uint8_t gps_set_power_save(void) {
 	};
 
 	gps_transmit_string(powersave, sizeof(powersave));
-	return gps_receive_ack(0x06, 0x3B, 100);
+	return gps_receive_ack(0x06, 0x3B, 1000);
 }
 
 /*
@@ -322,7 +341,7 @@ uint8_t gps_power_save(int on) {
 	}
 
 	gps_transmit_string(recvmgmt, sizeof(recvmgmt));
-	return gps_receive_ack(0x06, 0x11, 100);
+	return gps_receive_ack(0x06, 0x11, 1000);
 }
 
 /*
@@ -341,7 +360,7 @@ uint8_t gps_power_save(int on) {
 	};
 
 	gps_transmit_string(cfg, sizeof(cfg));
-	return gps_receive_ack(0x06, 0x09, 100);
+	return gps_receive_ack(0x06, 0x09, 1000);
 }*/
 
 void GPS_Init(void) {
