@@ -28,7 +28,7 @@ uint32_t getCustomFrequency(void) {
 }
 
 THD_FUNCTION(moduleRADIO, arg) {
-	(void)arg;
+	module_params_t* parm = (module_params_t*)arg;
 
 	// Print infos
 	TRACE_INFO("RAD  > Startup module RADIO");
@@ -39,6 +39,8 @@ THD_FUNCTION(moduleRADIO, arg) {
 
 	while(true)
 	{
+		parm->lastCycle = chVTGetSystemTimeX(); // Watchdog timer
+
 		// Receive message
 		radioMSG_t *msg;
 		msg_t status = chMBFetch(&radioMBP, (msg_t*)&msg, 0);

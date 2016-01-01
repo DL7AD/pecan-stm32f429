@@ -8,6 +8,7 @@
 
 #include "ch.h"
 #include "hal.h"
+#include "../trace.h"
 
 #define i2cInit() i2cStart(&I2CD2, &_i2cfg2);
 
@@ -15,6 +16,7 @@
 	i2cAcquireBus(&I2CD2); \
 	msg_t i2c_status = i2cMasterTransmitTimeout(&I2CD2, addr, txbuf, txbytes, rxbuf, rxbytes, timeout); \
 	if(i2c_status == MSG_TIMEOUT) { /* Restart I2C at timeout */ \
+		TRACE_ERROR("I2C  > TIMEOUT > RESTART"); \
 		i2cStop(&I2CD2); \
 		i2cStart(&I2CD2, &_i2cfg2); \
 	} \
@@ -25,6 +27,7 @@
 	i2cAcquireBus(&I2CD2); \
 	msg_t i2c_status = i2cMasterTransmitTimeout(&I2CD2, addr, rxbuf, rxbytes, timeout); \
 	if(i2c_status == MSG_TIMEOUT) { /* Restart I2C at timeout */ \
+		TRACE_ERROR("I2C  > TIMEOUT > RESTART"); \
 		i2cStop(&I2CD2); \
 		i2cStart(&I2CD2, &_i2cfg2); \
 	} \

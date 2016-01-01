@@ -16,6 +16,7 @@ THD_FUNCTION(modulePOS, arg) {
 	systime_t time = chVTGetSystemTimeX();
 	while(true)
 	{
+		parm->lastCycle = chVTGetSystemTimeX(); // Watchdog timer
 		TRACE_INFO("POS  > Do module POSITION cycle");
 		TRACE_WARN("POS  > Module POSITION not fully implemented"); // FIXME
 
@@ -52,7 +53,7 @@ THD_FUNCTION(modulePOS, arg) {
 				const char *cwmsg = "POSITION TODO"; // TODO: Implement protocol
 				msg.bin_len = CW_encode(&msg.msg, cwmsg);
 
-				//chMBPost(&radioMBP, (msg_t)&msg, 0);
+				chMBPost(&radioMBP, (msg_t)&msg, 0);
 				break;
 
 			default:

@@ -5,6 +5,7 @@
 #include "ptime.h"
 #include "config.h"
 #include "trace.h"
+#include "modules.h"
 #include "drivers/bme280.h"
 #include "drivers/pi2c.h"
 
@@ -31,8 +32,21 @@ int main(void) {
 	while(true) {
 		palTogglePad(GPIOE, 3); // Toggle LED to show: I'M ALIVE
 
-		if(counter%60 == 0) // Print time every 30 seconds
+		if(counter%60 == 0) {
+
+			// Print time
 			PRINT_TIME("MAIN");
+
+			// Module integration check (software watchdog)
+			for(uint8_t i=0; i<moduleCount; i++) {
+				if(ST2S(chVTGetSystemTimeX()-modules[i]->lastCycle) <= (uint32_t)modules[0]->cycle) {
+					TRACE_INFO("MAIN > Module %s OK", modules[i]->name);
+				} else {
+					TRACE_ERROR("MAIN > Module %s CRASHED", modules[i]->name);
+				}
+			}
+
+		}
 
 		chThdSleepMilliseconds(500);
 		counter++;
