@@ -26,6 +26,7 @@ int main(void) {
 	TRACE_INIT();
 	TRACE_INFO("MAIN > Startup");
 
+	// Startup I2C
 	TRACE_INFO("MAIN > Startup SENSOR I2C");
 	i2cStart(&I2CD2, &i2cfg2);
 

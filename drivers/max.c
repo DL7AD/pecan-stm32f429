@@ -14,7 +14,7 @@
  */
 void gps_transmit_string(uint8_t *cmd, uint8_t length) {
 	i2cAcquireBus(&I2CD2);
-	i2cMasterTransmitTimeout(&I2CD2, 0x42, cmd, length, NULL, 0, MS2ST(10));
+	i2cMasterTransmitTimeout(&I2CD2, UBLOX_MAX_ADDRESS, cmd, length, NULL, 0, MS2ST(10));
 	i2cReleaseBus(&I2CD2);
 }
 
@@ -23,7 +23,7 @@ uint8_t gps_receive_byte(void) {
 	uint8_t txbuf = {0xFF};
 
 	i2cAcquireBus(&I2CD2);
-	i2cMasterTransmitTimeout(&I2CD2, 0x42, (uint8_t*)&txbuf, 1, (uint8_t*)&rxbuf, 1, MS2ST(10));
+	i2cMasterTransmitTimeout(&I2CD2, UBLOX_MAX_ADDRESS, (uint8_t*)&txbuf, 1, (uint8_t*)&rxbuf, 1, MS2ST(10));
 	i2cReleaseBus(&I2CD2);
 
 	return rxbuf[0];
@@ -34,7 +34,7 @@ uint8_t gps_bytes_avail(void) {
 	uint8_t txbuf = {0xFD};
 
 	i2cAcquireBus(&I2CD2);
-	i2cMasterTransmitTimeout(&I2CD2, 0x42, (uint8_t*)&txbuf, 1, (uint8_t*)&rxbuf, 2, MS2ST(10));
+	i2cMasterTransmitTimeout(&I2CD2, UBLOX_MAX_ADDRESS, (uint8_t*)&txbuf, 1, (uint8_t*)&rxbuf, 2, MS2ST(10));
 	i2cReleaseBus(&I2CD2);
 
 	return (rxbuf[0] << 8) | rxbuf[1];
@@ -363,7 +363,7 @@ uint8_t gps_power_save(int on) {
 	return gps_receive_ack(0x06, 0x09, 1000);
 }*/
 
-void GPS_Init(void) {
+bool GPS_Init(void) {
 
 	// Initialize pins
 	TRACE_INFO("GPS  > Init pins");
@@ -378,34 +378,42 @@ void GPS_Init(void) {
 	// Wait for GPS startup
 	chThdSleepMilliseconds(3000);
 
+	uint8_t status = 1;
+
 	// Configure GPS
 	TRACE_INFO("GPS  > Initialize GPS");
 	if(gps_disable_nmea_output()) {
 		TRACE_INFO("GPS  > Disable NMEA output OK");
 	} else {
 		TRACE_ERROR("GPS  > Disable NMEA output FAILED");
+		status = 0;
 	}
 	if(gps_set_gps_only()) {
 		TRACE_INFO("GPS  > Set GPS only OK");
 	} else {
 		TRACE_ERROR("GPS  > Set GPS only FAILED");
+		status = 0;
 	}
 	if(gps_set_airborne_model()) {
 		TRACE_INFO("GPS  > Set airborne model OK");
 	} else {
 		TRACE_ERROR("GPS  > Set airborne model FAILED");
+		status = 0;
 	}
-	//chThdSleepMilliseconds(30000);
 	if(gps_set_power_save()) {
 		TRACE_INFO("GPS  > Configure power save OK");
 	} else {
 		TRACE_ERROR("GPS  > Configure power save FAILED");
+		status = 0;
 	}
 	if(gps_power_save(0)) {
 		TRACE_INFO("GPS  > Disable power save OK");
 	} else {
 		TRACE_ERROR("GPS  > Disable power save FAILED");
+		status = 0;
 	}
+
+	return status;
 }
 
 void GPS_Deinit(void)

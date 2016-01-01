@@ -9,6 +9,8 @@
 #include "hal.h"
 #include "ptime.h"
 
+#define UBLOX_MAX_ADDRESS	0x42
+
 #define isGPSLocked(pos) ((pos)->type == 3 && (pos)->num_svs >= 5)
 
 typedef struct {
@@ -28,7 +30,7 @@ uint8_t gps_power_save(int on);
 //uint8_t gps_save_settings(void);
 bool gps_get_fix(gpsFix_t *fix);
 
-void GPS_Init(void);
+bool GPS_Init(void);
 void GPS_Deinit(void);
 
 #endif
