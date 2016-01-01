@@ -108,9 +108,6 @@ static volatile bool modem_busy = false;	// Is timer running
 static radio_t cradio;						// Current radio
 
 void sendAFSK(radio_t radio, radioMSG_t *msg) {
-	// Initialize Monitor
-	palSetPadMode(GPIOC, 15, PAL_MODE_OUTPUT_PUSHPULL);
-
 	// Initialize radio and tune
 	Si446x_Init(radio, MOD_AFSK);
 	radioTune(radio, msg->freq, msg->power);
@@ -135,13 +132,9 @@ void sendAFSK(radio_t radio, radioMSG_t *msg) {
 	}
 
 	radioShutdown(radio);	// Shutdown radio
-	palSetPad(GPIOC, 15);	// Switch of monitor LED
 }
 
 bool afsk_handler(radio_t radio, radioMSG_t *msg) {
-	// Monitor
-	palTogglePad(GPIOC, 15);
-
 	// If done sending packet
 	if(packet_pos == msg->bin_len) {
 		return false;

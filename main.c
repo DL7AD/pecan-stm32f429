@@ -10,13 +10,16 @@
 #include "drivers/pi2c.h"
 
 uint32_t counter = 0;
+uint32_t error = 0;
 
 int main(void) {
 	// Startup RTOS
 	halInit();
 	chSysInit();
 
-	palSetPadMode(GPIOE, 3, PAL_MODE_OUTPUT_PUSHPULL);
+	palSetPadMode(GPIOE, 3, PAL_MODE_OUTPUT_PUSHPULL);	// LED green
+	palSetPadMode(GPIOC, 13, PAL_MODE_OUTPUT_PUSHPULL);	// LED yellow
+	palSetPadMode(GPIOC, 15, PAL_MODE_OUTPUT_PUSHPULL);	// LED red
 
 	// Trace Init
 	TRACE_INIT();
@@ -30,7 +33,9 @@ int main(void) {
 	MODULES();
 
 	while(true) {
-		palTogglePad(GPIOE, 3); // Toggle LED to show: I'M ALIVE
+		palWritePad(GPIOE, 3, counter%2);		// Show I'M ALIVE
+		if(error)
+			palWritePad(GPIOC, 15, counter%2);	// Show error
 
 		if(counter%60 == 0) {
 
@@ -43,6 +48,7 @@ int main(void) {
 					TRACE_INFO("MAIN > Module %s OK", modules[i]->name);
 				} else {
 					TRACE_ERROR("MAIN > Module %s CRASHED", modules[i]->name);
+					error = 1;
 				}
 			}
 
