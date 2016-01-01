@@ -6,14 +6,9 @@
 #include "config.h"
 #include "trace.h"
 #include "drivers/bme280.h"
+#include "drivers/pi2c.h"
 
 uint32_t counter = 0;
-
-static const I2CConfig i2cfg2 = {
-	OPMODE_I2C,
-	400000,
-	FAST_DUTY_CYCLE_2,
-};
 
 int main(void) {
 	// Startup RTOS
@@ -28,7 +23,7 @@ int main(void) {
 
 	// Startup I2C
 	TRACE_INFO("MAIN > Startup SENSOR I2C");
-	i2cStart(&I2CD2, &i2cfg2);
+	i2cInit();
 
 	// Startup modules
 	MODULES();

@@ -5,7 +5,6 @@
 #include "modules/image.h"
 #include "modules/tracking.h"
 #include "modules/satellite.h"
-#include "modules/telemetry.h"
 #include "modules/log.h"
 #include "modules/radio.h"
 #include "sgp4.h"

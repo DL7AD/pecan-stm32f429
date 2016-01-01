@@ -52,7 +52,7 @@ THD_FUNCTION(modulePOS, arg) {
 				const char *cwmsg = "POSITION TODO"; // TODO: Implement protocol
 				msg.bin_len = CW_encode(&msg.msg, cwmsg);
 
-				chMBPost(&radioMBP, (msg_t)&msg, 0);
+				//chMBPost(&radioMBP, (msg_t)&msg, 0);
 				break;
 
 			default:

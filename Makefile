@@ -127,11 +127,11 @@ CSRC = $(STARTUPSRC) \
        modules/position.c \
        modules/image.c \
        modules/satellite.c \
-       modules/telemetry.c \
        modules/log.c \
        drivers/max.c \
        drivers/si4x6x.c \
        drivers/bme280.c \
+       drivers/pi2c.c \
        trace.c \
        modules.c \
        base64.c \

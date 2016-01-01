@@ -43,8 +43,8 @@ THD_FUNCTION(moduleTRACKING, arg) {
 		trackPoint_t* tp = &trackPoints[(id+1) % sizeof(trackPoints)];
 
 		// Search for GPS satellites
-		GPS_Init();
 		gpsFix_t gpsFix;
+		GPS_Init();
 
 		do {
 			chThdSleepMilliseconds(100);
@@ -132,7 +132,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 
 		// Trace data
 		TRACE_INFO(	"TRAC > New tracking point available (ID=%d)\r\n"
-					"%s Time %d-%02d-%02d %02d:%02d:%02d\r\n"
+					"%s Time %04d-%02d-%02d %02d:%02d:%02d\r\n"
 					"%s Pos  %d.%07d %d.%07d Alt %dm\r\n"
 					"%s Sats %d  TTFF %dsec\r\n"
 					"%s ADC Vbat=%d.%dV  Vsol=%d.%dV  I=%dmA\r\n"

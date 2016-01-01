@@ -5,6 +5,7 @@
 #include "ch.h"
 #include "hal.h"
 #include "max.h"
+#include "pi2c.h"
 #include "../trace.h"
 
 /* 
@@ -13,30 +14,20 @@
  * transmits a command to the GPS
  */
 void gps_transmit_string(uint8_t *cmd, uint8_t length) {
-	i2cAcquireBus(&I2CD2);
-	i2cMasterTransmitTimeout(&I2CD2, UBLOX_MAX_ADDRESS, cmd, length, NULL, 0, MS2ST(10));
-	i2cReleaseBus(&I2CD2);
+	i2cSend(UBLOX_MAX_ADDRESS, cmd, length, NULL, 0, MS2ST(10));
 }
 
 uint8_t gps_receive_byte(void) {
 	uint8_t rxbuf[1];
 	uint8_t txbuf = {0xFF};
-
-	i2cAcquireBus(&I2CD2);
-	i2cMasterTransmitTimeout(&I2CD2, UBLOX_MAX_ADDRESS, (uint8_t*)&txbuf, 1, (uint8_t*)&rxbuf, 1, MS2ST(10));
-	i2cReleaseBus(&I2CD2);
-
+	i2cSend(UBLOX_MAX_ADDRESS, (uint8_t*)&txbuf, 1, (uint8_t*)&rxbuf, 1, MS2ST(10));
 	return rxbuf[0];
 }
 
 uint8_t gps_bytes_avail(void) {
 	uint8_t rxbuf[2];
 	uint8_t txbuf = {0xFD};
-
-	i2cAcquireBus(&I2CD2);
-	i2cMasterTransmitTimeout(&I2CD2, UBLOX_MAX_ADDRESS, (uint8_t*)&txbuf, 1, (uint8_t*)&rxbuf, 2, MS2ST(10));
-	i2cReleaseBus(&I2CD2);
-
+	i2cSend(UBLOX_MAX_ADDRESS, (uint8_t*)&txbuf, 1, (uint8_t*)&rxbuf, 2, MS2ST(10));
 	return (rxbuf[0] << 8) | rxbuf[1];
 }
 
