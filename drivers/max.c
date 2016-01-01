@@ -7,22 +7,24 @@
 #include "max.h"
 #include "trace.h"
 
-// Serial driver configuration for GPS
-const SerialConfig gps_config =
-{
-	9600,	// baud rate
-	0,		// CR1 register
-	0,		// CR2 register
-	0		// CR3 register
-};
-
 /* 
  * gps_transmit_string
  *
  * transmits a command to the GPS
  */
 inline void gps_transmit_string(uint8_t *cmd, uint8_t length) {
-	sdWrite(&SD2, cmd, length);
+	i2cAcquireBus(&I2CD2);
+	i2cMasterTransmitTimeout(&I2CD2, 0x42, cmd, length, NULL, 0, MS2ST(10));
+	i2cReleaseBus(&I2CD2);
+}
+
+inline uint8_t gps_receive_byte(void) {
+	uint8_t rxbuf[1];
+	uint8_t txbuf[] = {0xFF};
+	i2cAcquireBus(&I2CD2);
+	i2cMasterTransmitTimeout(&I2CD2, 0x42, (uint8_t*)&txbuf, 1, (uint8_t*)&rxbuf, 1, MS2ST(10));
+	i2cReleaseBus(&I2CD2);
+	return rxbuf[0];
 }
 
 /* 
@@ -47,8 +49,12 @@ uint8_t gps_receive_ack(uint8_t class_id, uint8_t msg_id, uint16_t timeout) {
 	// runs until ACK/NAK packet is received
 	systime_t sTimeout = chVTGetSystemTimeX() + MS2ST(timeout);
 	while(chVTGetSystemTimeX() <= sTimeout) {
+		// Receive one byte
+		rx_byte = gps_receive_byte();
+		if(rx_byte == 0xFF)
+			continue; // No byte available
 
-		rx_byte = sdGetTimeout(&SD2, sTimeout - chVTGetSystemTimeX());
+		// Process one byte
 		if (rx_byte == ack[match_count] || rx_byte == nak[match_count]) {
 			if (match_count == 3) {	/* test ACK/NAK byte */
 				if (rx_byte == ack[match_count]) {
@@ -87,9 +93,12 @@ uint16_t gps_receive_payload(uint8_t class_id, uint8_t msg_id, unsigned char *pa
 
 	systime_t sTimeout = chVTGetSystemTimeX() + MS2ST(timeout);
 	while(chVTGetSystemTimeX() <= sTimeout) {
+		// Receive one byte
+		rx_byte = gps_receive_byte();
+		if(rx_byte == 0xFF)
+			continue; // No byte available
 
-		rx_byte = sdGetTimeout(&SD2, sTimeout - chVTGetSystemTimeX());
-
+		// Process one byte
 		switch (state) {
 			case UBX_A:
 				if (rx_byte == 0xB5)	state = UBX_B;
@@ -188,15 +197,15 @@ bool gps_get_fix(gpsFix_t *fix) {
  */
 uint8_t gps_disable_nmea_output(void) {
 	uint8_t nonmea[] = {
-		0xB5, 0x62, 0x06, 0x00, 20, 0x00,		/* UBX-CFG-PRT */
-		0x01, 0x00, 0x00, 0x00, 			/* UART1, reserved, no TX ready */
-		0xe0, 0x08, 0x00, 0x00,				/* UART mode (8N1) */
-		0x80, 0x25, 0x00, 0x00,				/* UART baud rate (9600) */
-		0x01, 0x00,					/* input protocols (uBx only) */
-		0x01, 0x00,					/* output protocols (uBx only) */
-		0x00, 0x00,					/* flags */
-		0x00, 0x00,					/* reserved */
-		0xaa, 0x79					/* checksum */
+		0xB5, 0x62, 0x06, 0x00, 20, 0x00,	// UBX-CFG-PRT
+		0x01, 0x00, 0x00, 0x00, 			// UART1, reserved, no TX ready
+		0xe0, 0x08, 0x00, 0x00,				// UART mode (8N1)
+		0x80, 0x25, 0x00, 0x00,				// UART baud rate (9600)
+		0x01, 0x00,							// input protocols (uBx only)
+		0x01, 0x00,							// output protocols (uBx only)
+		0x00, 0x00,							// flags
+		0x00, 0x00,							// reserved
+		0xaa, 0x79							// checksum
 	};
 
 	gps_transmit_string(nonmea, sizeof(nonmea));
@@ -213,13 +222,13 @@ uint8_t gps_disable_nmea_output(void) {
  */
 uint8_t gps_set_gps_only(void) {
 	uint8_t gpsonly[] = {
-		0xB5, 0x62, 0x06, 0x3E, 36, 0x00,		/* UBX-CFG-GNSS */
-		0x00, 32, 32, 4,				/* use 32 channels, 4 configs following */
-		0x00, 16, 32, 0, 0x01, 0x00, 0x00, 0x00,	/* GPS enable, all channels */
-		0x03, 0, 0, 0, 0x00, 0x00, 0x00, 0x00,		/* BeiDou disable, 0 channels */
-		0x05, 0, 0, 0, 0x00, 0x00, 0x00, 0x00,		/* QZSS disable, 0 channels */
-		0x06, 0, 0, 0, 0x00, 0x00, 0x00, 0x00,		/* GLONASS disable, 0 channels */
-		0xeb, 0x72					/* checksum */
+		0xB5, 0x62, 0x06, 0x3E, 36, 0x00,			// UBX-CFG-GNSS
+		0x00, 32, 32, 4,							// use 32 channels, 4 configs following
+		0x00, 16, 32, 0, 0x01, 0x00, 0x00, 0x00,	// GPS enable, all channels
+		0x03, 0, 0, 0, 0x00, 0x00, 0x00, 0x00,		// BeiDou disable, 0 channels
+		0x05, 0, 0, 0, 0x00, 0x00, 0x00, 0x00,		// QZSS disable, 0 channels
+		0x06, 0, 0, 0, 0x00, 0x00, 0x00, 0x00,		// GLONASS disable, 0 channels
+		0xeb, 0x72									// checksum
 	};
 
 	gps_transmit_string(gpsonly, sizeof(gpsonly));
@@ -239,26 +248,26 @@ uint8_t gps_set_gps_only(void) {
  */
 uint8_t gps_set_airborne_model(void) {
 	uint8_t model6[] = {
-		0xB5, 0x62, 0x06, 0x24, 0x24, 0x00, 		/* UBX-CFG-NAV5 */
-		0xFF, 0xFF, 					/* parameter bitmask */
-		0x06, 						/* dynamic model */
-		0x03, 						/* fix mode */
-		0x00, 0x00, 0x00, 0x00, 			/* 2D fix altitude */
-		0x10, 0x27, 0x00, 0x00,				/* 2D fix altitude variance */
-		0x05, 						/* minimum elevation */
-		0x00, 						/* reserved */
-		0xFA, 0x00, 					/* position DOP */
-		0xFA, 0x00, 					/* time DOP */
-		0x64, 0x00, 					/* position accuracy */
-		0x2C, 0x01, 					/* time accuracy */
-		0x00,						/* static hold threshold */ 
-		0x3C, 						/* DGPS timeout */
-		0x00, 						/* min. SVs above C/No thresh */
-		0x00, 						/* C/No threshold */
-		0x00, 0x00, 					/* reserved */
-		0xc8, 0x00,					/* static hold max. distance */
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 		/* reserved */
-		0x1a, 0x28					/* checksum */
+		0xB5, 0x62, 0x06, 0x24, 0x24, 0x00, 	// UBX-CFG-NAV5
+		0xFF, 0xFF, 							// parameter bitmask
+		0x06, 									// dynamic model
+		0x03, 									// fix mode
+		0x00, 0x00, 0x00, 0x00, 				// 2D fix altitude
+		0x10, 0x27, 0x00, 0x00,					// 2D fix altitude variance
+		0x05, 									// minimum elevation
+		0x00, 									// reserved
+		0xFA, 0x00, 							// position DOP
+		0xFA, 0x00, 							// time DOP
+		0x64, 0x00, 							// position accuracy
+		0x2C, 0x01, 							// time accuracy
+		0x00,									// static hold threshold 
+		0x3C, 									// DGPS timeout
+		0x00, 									// min. SVs above C/No thresh
+		0x00, 									// C/No threshold
+		0x00, 0x00, 							// reserved
+		0xc8, 0x00,								// static hold max. distance
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 	// reserved
+		0x1a, 0x28								// checksum
 	};
 
 	gps_transmit_string(model6, sizeof(model6));
@@ -275,19 +284,19 @@ uint8_t gps_set_airborne_model(void) {
  */
 uint8_t gps_set_power_save(void) {
 	uint8_t powersave[] = {
-		0xB5, 0x62, 0x06, 0x3B, 44, 0,	/* UBX-CFG-PM2 */
-		0x01, 0x00, 0x00, 0x00, 	/* v1, reserved 1..3 */
-		0x00, 0b00010000, 0b00000010, 0x00, /* cyclic tracking, update ephemeris */
-		0x10, 0x27, 0x00, 0x00,		/* update period, ms */
-		0x10, 0x27, 0x00, 0x00,		/* search period, ms */
-		0x00, 0x00, 0x00, 0x00,		/* grid offset */
-		0x00, 0x00,			/* on-time after first fix */
-		0x01, 0x00,			/* minimum acquisition time */
-		0x00, 0x00, 0x00, 0x00,		/* reserved 4,5 */
-		0x00, 0x00, 0x00, 0x00,		/* reserved 6 */
-		0x00, 0x00, 0x00, 0x00,		/* reserved 7 */
-		0x00, 0x00, 0x00, 0x00,		/* reserved 8,9,10 */
-		0x00, 0x00, 0x00, 0x00,		/* reserved 11 */
+		0xB5, 0x62, 0x06, 0x3B, 44, 0,		// UBX-CFG-PM2
+		0x01, 0x00, 0x00, 0x00, 			// v1, reserved 1..3
+		0x00, 0b00010000, 0b00000010, 0x00,	// cyclic tracking, update ephemeris
+		0x10, 0x27, 0x00, 0x00,				// update period, ms
+		0x10, 0x27, 0x00, 0x00,				// search period, ms
+		0x00, 0x00, 0x00, 0x00,				// grid offset
+		0x00, 0x00,							// on-time after first fix
+		0x01, 0x00,							// minimum acquisition time
+		0x00, 0x00, 0x00, 0x00,				// reserved 4,5
+		0x00, 0x00, 0x00, 0x00,				// reserved 6
+		0x00, 0x00, 0x00, 0x00,				// reserved 7
+		0x00, 0x00, 0x00, 0x00,				// reserved 8,9,10
+		0x00, 0x00, 0x00, 0x00,				// reserved 11
 		0xef, 0x29
 	};
 
@@ -302,13 +311,13 @@ uint8_t gps_set_power_save(void) {
  */
 uint8_t gps_power_save(int on) {
 	uint8_t recvmgmt[] = {
-		0xB5, 0x62, 0x06, 0x11, 2, 0,	/* UBX-CFG-RXM */
-		0x08, 0x01,			/* reserved, enable power save mode */
+		0xB5, 0x62, 0x06, 0x11, 2, 0,	// UBX-CFG-RXM
+		0x08, 0x01,						// reserved, enable power save mode
 		0x22, 0x92
 	};
 	if (!on) {
-		recvmgmt[7] = 0x00;		/* continuous mode */
-		recvmgmt[8] = 0x21;		/* new checksum */
+		recvmgmt[7] = 0x00;		// continuous mode
+		recvmgmt[8] = 0x21;		// new checksum
 		recvmgmt[9] = 0x91;
 	}
 
@@ -325,9 +334,9 @@ uint8_t gps_power_save(int on) {
 /*uint8_t gps_save_settings(void) {
 	uint8_t cfg[] = {
 		0xB5, 0x62, 0x06, 0x09, 12, 0,	// UBX-CFG-CFG
-		0x00, 0x00, 0x00, 0x00,		// clear no sections
-		0x1f, 0x1e, 0x00, 0x00,		// save all sections
-		0x00, 0x00, 0x00, 0x00,		// load no sections
+		0x00, 0x00, 0x00, 0x00,			// clear no sections
+		0x1f, 0x1e, 0x00, 0x00,			// save all sections
+		0x00, 0x00, 0x00, 0x00,			// load no sections
 		0x58, 0x59
 	};
 
@@ -341,12 +350,6 @@ void GPS_Init(void) {
 	TRACE_INFO("GPS  > Init pins");
 	palSetPadMode(GPIOE, 12, PAL_MODE_OUTPUT_PUSHPULL);	// GPS_RESET
 	palSetPadMode(GPIOE, 7, PAL_MODE_OUTPUT_PUSHPULL);	// GPS_OFF
-	palSetPadMode(GPIOA, 2, PAL_MODE_ALTERNATE(7));		// UART TXD
-	palSetPadMode(GPIOA, 3, PAL_MODE_ALTERNATE(7));		// UART RXD
-
-	// Init UART
-	TRACE_INFO("GPS  > Init GPS UART");
-	sdStart(&SD2, &gps_config);
 
 	// Switch MOSFET
 	TRACE_INFO("GPS  > Switch on");
@@ -386,12 +389,8 @@ void GPS_Init(void) {
 	}
 }
 
-void GPS_Deinit(void) {
-
-	// Deinit UART
-	TRACE_INFO("GPS  > Deinit UART");
-	sdStop(&SD2);
-
+void GPS_Deinit(void)
+{
 	// Switch MOSFET
 	TRACE_INFO("GPS  > Switch off");
 	palSetPad(GPIOE, 7);

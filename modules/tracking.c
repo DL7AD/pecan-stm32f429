@@ -115,7 +115,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 			tp->bal_hum = BME280_getHumidity(&bmeExt);
 			tp->bal_temp = BME280_getTemperature(&bmeExt);
 		} else { // No external BME280 found
-			TRACE_ERROR("TRAC > External BME280 not available");
+			TRACE_WARN("TRAC > External BME280 not available");
 			tp->bal_press = 0;
 			tp->bal_hum = 0;
 			tp->bal_temp = 0;
@@ -136,8 +136,8 @@ THD_FUNCTION(moduleTRACKING, arg) {
 					"%s Pos  %d.%07d %d.%07d Alt %dm\r\n"
 					"%s Sats %d  TTFF %dsec\r\n"
 					"%s ADC Vbat=%d.%dV  Vsol=%d.%dV  I=%dmA\r\n"
-					"%s Air  p=%d.%01dPa T=%d.%02d%% phi=%d.%01d%%\r\n"
-					"%s Ball p=%d.%01dPa T=%d.%02d%% phi=%d.%01d%%\r\n"
+					"%s Air  p=%6d.%01dPa T=%2d.%02ddegC phi=%2d.%01d%%\r\n"
+					"%s Ball p=%6d.%01dPa T=%2d.%02ddegC phi=%2d.%01d%%\r\n"
 					"%s Acc %05d %05d %05d\r\n"
 					"%s Gyr %05d %05d %05d\r\n",
 					tp->id,
