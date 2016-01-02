@@ -5,7 +5,7 @@
 #include "ch.h"
 #include "hal.h"
 
-const I2CConfig _i2cfg2 = {
+const I2CConfig _i2cfg = {
 	OPMODE_I2C,
 	200000,
 	FAST_DUTY_CYCLE_2,

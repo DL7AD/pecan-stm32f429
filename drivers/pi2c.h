@@ -10,31 +10,38 @@
 #include "hal.h"
 #include "../trace.h"
 
-#define i2cInit() i2cStart(&I2CD2, &_i2cfg2);
+#define i2cInit() i2cStart(&I2CD2, &_i2cfg);
+#define i2cCamInit() i2cStart(&I2CD2, &_i2cfg);
 
-#define i2cSend(addr, txbuf, txbytes, rxbuf, rxbytes, timeout) { \
-	i2cAcquireBus(&I2CD2); \
-	msg_t i2c_status = i2cMasterTransmitTimeout(&I2CD2, addr, txbuf, txbytes, rxbuf, rxbytes, timeout); \
+#define i2cSendDriver(driver, addr, txbuf, txbytes, rxbuf, rxbytes, timeout) { \
+	i2cAcquireBus(driver); \
+	msg_t i2c_status = i2cMasterTransmitTimeout(driver, addr, txbuf, txbytes, rxbuf, rxbytes, timeout); \
 	if(i2c_status == MSG_TIMEOUT) { /* Restart I2C at timeout */ \
 		TRACE_ERROR("I2C  > TIMEOUT > RESTART"); \
-		i2cStop(&I2CD2); \
-		i2cStart(&I2CD2, &_i2cfg2); \
+		i2cStop(driver); \
+		i2cStart(driver, &_i2cfg); \
 	} \
-	i2cReleaseBus(&I2CD2); \
+	i2cReleaseBus(driver); \
 }
 
-#define i2cReceive(addr, rxbuf, rxbytes, timeout) { \
-	i2cAcquireBus(&I2CD2); \
-	msg_t i2c_status = i2cMasterTransmitTimeout(&I2CD2, addr, rxbuf, rxbytes, timeout); \
+#define i2cReceiveDriver(driver, addr, rxbuf, rxbytes, timeout) { \
+	i2cAcquireBus(driver); \
+	msg_t i2c_status = i2cMasterTransmitTimeout(driver, addr, rxbuf, rxbytes, timeout); \
 	if(i2c_status == MSG_TIMEOUT) { /* Restart I2C at timeout */ \
 		TRACE_ERROR("I2C  > TIMEOUT > RESTART"); \
-		i2cStop(&I2CD2); \
-		i2cStart(&I2CD2, &_i2cfg2); \
+		i2cStop(driver); \
+		i2cStart(driver, &_i2cfg); \
 	} \
-	i2cReleaseBus(&I2CD2); \
+	i2cReleaseBus(driver); \
 }
 
-extern const I2CConfig _i2cfg2;
+#define i2cSend(addr, txbuf, txbytes, rxbuf, rxbytes, timeout)		i2cSendDriver(&I2CD2, addr, txbuf, txbytes, rxbuf, rxbytes, timeout)
+#define i2cReceive(addr, rxbuf, rxbytes, timeout)					i2cReceiveDriver(&I2CD2, addr, rxbuf, rxbytes, timeout)
+
+#define i2cCamSend(addr, txbuf, txbytes, rxbuf, rxbytes, timeout)	i2cSendDriver(&I2CD1, addr, txbuf, txbytes, rxbuf, rxbytes, timeout)
+#define i2cCamReceive(addr, rxbuf, rxbytes, timeout)				i2cReceiveDriver(&I2CD1, addr, rxbuf, rxbytes, timeout)
+
+extern const I2CConfig _i2cfg;
 
 #endif
 

@@ -132,6 +132,9 @@ CSRC = $(STARTUPSRC) \
        drivers/si4x6x.c \
        drivers/bme280.c \
        drivers/pi2c.c \
+       drivers/ov9655.c \
+       jpegant/dct.c \
+       jpegant/jpegenc.c \
        trace.c \
        modules.c \
        base64.c \
