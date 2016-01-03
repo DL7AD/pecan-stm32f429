@@ -131,6 +131,7 @@ CSRC = $(STARTUPSRC) \
        drivers/max.c \
        drivers/si4x6x.c \
        drivers/bme280.c \
+       drivers/pac1720.c \
        drivers/pi2c.c \
        trace.c \
        modules.c \

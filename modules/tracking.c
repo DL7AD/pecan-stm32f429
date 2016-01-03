@@ -6,6 +6,7 @@
 #include "config.h"
 #include "drivers/max.h"
 #include "drivers/bme280.h"
+#include "drivers/pac1720.h"
 
 trackPoint_t trackPoints[2];
 trackPoint_t* lastTrackPoint;
@@ -28,11 +29,6 @@ THD_FUNCTION(moduleTRACKING, arg) {
 			   "%s Cycle: %d sec",
 			   TRACE_TAB, parm->cycle
 	);
-
-	// Initialize pins
-	palSetPadMode(GPIOE, 7, PAL_MODE_OUTPUT_PUSHPULL);	// GPS_OFF
-	palSetPadMode(GPIOD, 5, PAL_MODE_ALTERNATE(7));		// UART TXD
-	palSetPadMode(GPIOD, 6, PAL_MODE_ALTERNATE(7));		// UART RXD
 
 	uint32_t id = 0;
 
@@ -86,9 +82,10 @@ THD_FUNCTION(moduleTRACKING, arg) {
 
 
 		// Power management TODO: Implement this!
+		pac1720_init();
 		tp->adc_solar = 0;
 		tp->adc_battery = 0;
-		tp->adc_charge = 0;
+		tp->adc_charge = pac1720_getAveragePower();
 
 		bme280_t bmeInt;
 		bme280_t bmeExt;
@@ -133,7 +130,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 					"%s Time %04d-%02d-%02d %02d:%02d:%02d\r\n"
 					"%s Pos  %d.%07d %d.%07d Alt %dm\r\n"
 					"%s Sats %d  TTFF %dsec\r\n"
-					"%s ADC Vbat=%d.%dV  Vsol=%d.%dV  I=%dmA\r\n"
+					"%s ADC Vbat=%d.%dV  Vsol=%d.%dV  P=%dmW\r\n"
 					"%s Air  p=%6d.%01dPa T=%2d.%02ddegC phi=%2d.%01d%%\r\n"
 					"%s Ball p=%6d.%01dPa T=%2d.%02ddegC phi=%2d.%01d%%\r\n"
 					"%s Acc %05d %05d %05d\r\n"

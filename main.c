@@ -6,8 +6,8 @@
 #include "config.h"
 #include "trace.h"
 #include "modules.h"
-#include "drivers/bme280.h"
 #include "drivers/pi2c.h"
+#include "drivers/pac1720.h"
 
 uint32_t counter = 0;
 uint32_t error = 0;
@@ -31,6 +31,9 @@ int main(void) {
 
 	// Startup modules
 	MODULES();
+
+	// Startup current measurement
+	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(256), NORMALPRIO, pac1720, NULL);
 
 	while(true) {
 		palWritePad(GPIOE, 3, counter%2);		// Show I'M ALIVE
