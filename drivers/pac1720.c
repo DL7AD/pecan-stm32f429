@@ -66,6 +66,7 @@ THD_FUNCTION(pac1720, arg) {
 		int16_t charge = pac1720_getPowerCharge();
 		int16_t discharge = pac1720_getPowerDischarge();
 		pac1720_charge += charge - discharge;
+		TRACE_DEBUG("%d", pac1720_charge);
 		pac1720_counter++;
 
 		time += MS2ST(1000);
