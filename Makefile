@@ -133,6 +133,9 @@ CSRC = $(STARTUPSRC) \
        drivers/bme280.c \
        drivers/pac1720.c \
        drivers/pi2c.c \
+       drivers/ov9655.c \
+       jpegant/dct.c \
+       jpegant/jpegenc.c \
        trace.c \
        modules.c \
        base64.c \
