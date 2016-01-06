@@ -12,4 +12,6 @@ void OV9655_InitDCMI(void);
 void OV9655_InitGPIO(void);
 uint32_t OV9655_getBuffer(uint8_t** buffer);
 void OV9655_TransmitConfig(void);
+void OV9655_init(void);
+
 #endif

@@ -85,6 +85,7 @@ THD_FUNCTION(moduleIMG, arg) {
 	systime_t time = chVTGetSystemTimeX();
 	while(true)
 	{
+		parm->lastCycle = chVTGetSystemTimeX(); // Watchdog timer
 		TRACE_INFO("IMG  > Do module IMAGE cycle");
 		TRACE_WARN("IMG  > Module IMAGE not fully implemented"); // FIXME
 
@@ -92,19 +93,11 @@ THD_FUNCTION(moduleIMG, arg) {
 		TRACE_INFO("IMG  > Init camera I2C");
 		i2cCamInit();
 
-		// Configure GPIOs
-		TRACE_INFO("IMG  > Init camera GPIO");
-		OV9655_InitGPIO();
-
-		// Send settings to OV9655
-		TRACE_INFO("IMG  > Transmit config to camera");
-		OV9655_TransmitConfig();
-
-		TRACE_INFO("IMG  > Init DMA");
-		OV9655_InitDMA();
+		// Init OV9655
+		OV9655_init();
 
 		// Sample data from DCMI through DMA to RAM
-		TRACE_INFO("IMG  > Init DMA");
+		TRACE_INFO("IMG  > Capture image");
 		OV9655_Snapshot2RAM();
 
 		uint8_t *image;

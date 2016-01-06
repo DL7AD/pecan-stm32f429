@@ -11,7 +11,7 @@
 #include "../trace.h"
 
 #define i2cInit() i2cStart(&I2CD2, &_i2cfg);
-#define i2cCamInit() i2cStart(&I2CD2, &_i2cfg);
+#define i2cCamInit() i2cStart(&I2CD1, &_i2cfg);
 
 #define i2cSendDriver(driver, addr, txbuf, txbytes, rxbuf, rxbytes, timeout) { \
 	i2cAcquireBus(driver); \

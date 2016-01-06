@@ -192,10 +192,12 @@ void OV9655_Snapshot2RAM(void)
 		unsigned x,xb,yb;
 		uint16_t color;
 
-		while(buffNum <= lines) // Wait for data by DMA
-			(void)0;
+		while(buffNum <= lines) { // Wait for data by DMA
+			TRACE_INFO("BLA");
+			chThdSleepMilliseconds(10);
+		}
 
-		palSetPad(GPIOG, 14);
+		palClearPad(GPIOC, 13);
 		for (x = 0; x < OV9655_MAXX-15; x += 16)
 		{
 			// Create 16x16 block
@@ -226,7 +228,7 @@ void OV9655_Snapshot2RAM(void)
 			huffman_encode(HUFFMAN_CTX_Cb, (short*)Cb8x8);
 			huffman_encode(HUFFMAN_CTX_Cr, (short*)Cr8x8);
 		}
-		palClearPad(GPIOG, 14);
+		palSetPad(GPIOC, 13);
 
 		lines++;
 	}
@@ -306,6 +308,8 @@ void OV9655_InitGPIO(void)
 	palSetPadMode(GPIOB, 6, PAL_MODE_ALTERNATE(13)); // D5    -> PB6
 	palSetPadMode(GPIOE, 5, PAL_MODE_ALTERNATE(13)); // D6    -> PE5
 	palSetPadMode(GPIOE, 6, PAL_MODE_ALTERNATE(13)); // D7    -> PE6
+
+	palSetPadMode(GPIOE, 0, PAL_MODE_OUTPUT_PUSHPULL);	// CAM_OFF
 }
 
 uint32_t OV9655_getBuffer(uint8_t** buffer) {
@@ -319,3 +323,20 @@ void OV9655_TransmitConfig(void) {
 		chThdSleepMilliseconds(3);
 	}
 }
+
+void OV9655_init(void) {
+	TRACE_INFO("CAM  > Init pins");
+	OV9655_InitGPIO();
+
+	// Power on OV9655
+	TRACE_INFO("CAM  > Switch on");
+	palClearPad(GPIOE, 0);	// Switch on camera
+
+	// Send settings to OV9655
+	TRACE_INFO("CAM  > Transmit config to camera");
+	OV9655_TransmitConfig();
+
+	TRACE_INFO("CAM  > Init DMA");
+	OV9655_InitDMA();
+}
+
