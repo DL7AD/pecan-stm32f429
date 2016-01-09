@@ -193,7 +193,6 @@ void OV9655_Snapshot2RAM(void)
 		uint16_t color;
 
 		while(buffNum <= lines) { // Wait for data by DMA
-			TRACE_INFO("BLA");
 			chThdSleepMilliseconds(10);
 		}
 
@@ -288,14 +287,12 @@ void OV9655_InitDCMI(void)
 /**
   * Initializes GPIO (for DCMI) and setup a CLOCKOUT pin (PA8)
   * which is needed by the camera (XCLK pin)
-  * The high speed clock supports communication by I2C (XCLK = 8MHz)
-  * The slow clock allows sampling of VGA resolution in realtime (XCLK = 2.7MHz)
-  * @param Activate fast clock
+  * The high speed clock supports communication by I2C (XCLK = 16MHz)
   */
 void OV9655_InitGPIO(void)
 {
 	palSetPadMode(GPIOA, 8, PAL_MODE_ALTERNATE(0)); // PA8             -> XCLK
-	RCC->CFGR = (RCC->CFGR & (uint32_t)0xF8FFFFFF) | (uint32_t)0x04000000;
+	RCC->CFGR = (RCC->CFGR & (uint32_t)0xF8FFFFFF) | (uint32_t)0x00000000;
 
 	palSetPadMode(GPIOA, 4, PAL_MODE_ALTERNATE(13)); // HSYNC -> PA4
 	palSetPadMode(GPIOA, 6, PAL_MODE_ALTERNATE(13)); // PCLK  -> PA6
@@ -310,6 +307,9 @@ void OV9655_InitGPIO(void)
 	palSetPadMode(GPIOE, 6, PAL_MODE_ALTERNATE(13)); // D7    -> PE6
 
 	palSetPadMode(GPIOE, 0, PAL_MODE_OUTPUT_PUSHPULL);	// CAM_OFF
+
+	palSetPadMode(GPIOB, 8, PAL_MODE_ALTERNATE(4));	// I2C SCL
+	palSetPadMode(GPIOB, 9, PAL_MODE_ALTERNATE(4));	// I2C SDA
 }
 
 uint32_t OV9655_getBuffer(uint8_t** buffer) {
