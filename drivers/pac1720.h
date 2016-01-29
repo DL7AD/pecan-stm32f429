@@ -54,6 +54,5 @@ int16_t pac1720_getPowerCharge(void);
 int16_t pac1720_getPowerDischarge(void);
 int16_t pac1720_getAveragePower(void);
 bool pac1720_isAvailable(void);
-THD_FUNCTION(pac1720, arg);
 
 #endif

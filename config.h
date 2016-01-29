@@ -22,6 +22,10 @@
 #define RADIO2_MAX_FREQ			450000000		/* Min. Frequency range of Radio 2 */
 #define RADIO2_MAX_PWR			13				/* Max. power of Radio 2 in dBm */
 
+// Uncategorized (TODO)
+#define CYCLE_TIME				120
+
+
 // User configurations
 #define APRS_CALLSIGN			"DL7AD"			/* APRS callsign */
 #define APRS_SSID				11				/* APRS SSID */
@@ -72,12 +76,8 @@
 #endif
 
 #define MODULES() { \
-	/*MODULE_TRACKING(120); \
-	MODULE_RADIO(); \
-	chThdSleepMilliseconds(1000);*/ \
-	\
-	MODULE_IMAGE(300, NULL, CUSTOM_FREQ, 10, MOD_2FSK, PROT_SSDV); \
-	/* MODULE_POSITION(120, NULL, APRS_REGION_FREQ, 10, MOD_AFSK, PROT_APRS); */ \
+	/*MODULE_IMAGE(300, NULL, CUSTOM_FREQ, 10, MOD_2FSK, PROT_SSDV);*/ \
+	MODULE_POSITION(120, NULL, CUSTOM_FREQ, 10, MOD_AFSK, PROT_APRS); \
 }
 
 #endif

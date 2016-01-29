@@ -60,9 +60,15 @@
 	modules[moduleCount++] = parm; \
 }
 
+#define initModules() MODULES()
+#define initEssentialModules() { \
+	MODULE_TRACKING(CYCLE_TIME); /* Tracker data input */ \
+	MODULE_RADIO(); /* Tracker data output */ \
+	chThdSleepMilliseconds(1000); \
+}
+
 #define MODULE_SD() (void)0; /* TODO */
 #define MODULE_CAM() (void)0; /* TODO */
-#define MODULE_SEN() (void)0; /* TODO */
 
 extern char *SMODE_STRING[];
 extern char *MOULATION_STRING[];

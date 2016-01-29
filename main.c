@@ -13,25 +13,17 @@ uint32_t counter = 0;
 uint32_t error = 0;
 
 int main(void) {
-	// Startup RTOS
-	halInit();
-	chSysInit();
+	halInit();			// Startup HAL
+	chSysInit();		// Startup RTOS
 
-	// Debug Init (Serial debug port, LEDs)
-	DEBUG_INIT();
+	DEBUG_INIT();		// Debug Init (Serial debug port, LEDs)
 
-	// Trace Init
 	TRACE_INFO("MAIN > Startup");
-
-	// Startup I2C
 	TRACE_INFO("MAIN > Startup SENSOR I2C");
-	i2cInit();
-
-	// Startup modules
-	MODULES();
-
-	// Startup current measurement
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(256), NORMALPRIO, pac1720, NULL);
+	i2cInit();					// Startup I2C
+	initEssentialModules();		// Startup required modules
+	initModules();				// Startup optional modules
+	pac1720_init();				// Startup current measurement
 
 	while(true) {
 		palWritePad(GPIOE, 3, counter%2);		// Show I'M ALIVE
