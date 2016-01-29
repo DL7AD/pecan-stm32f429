@@ -16,7 +16,6 @@ THD_FUNCTION(moduleSAT, arg) {
 		TRACE_INFO("SAT  > Do module SATELLITE cycle");
 		TRACE_WARN("SAT  > Module SATELLITE not implemented"); // FIXME
 
-		time += S2ST(parm->cycle); // Wait until this time
-		chThdSleepUntil(time);
+		time = chThdSleepUntilWindowed(time, time + S2ST(parm->cycle)); // Wait until time + cycletime
 	}
 }

@@ -178,8 +178,7 @@ void sendCW(radio_t radio, radioMSG_t *msg) {
 		MOD_GPIO_SET(radio, (msg->msg[bit/8] >> (bit%8)) & 0x1);
 		bit++;
 
-		time += MS2ST(10);
-		chThdSleepUntil(time);
+		time = chThdSleepUntilWindowed(time, time + MS2ST(10));
 	}
 
 	// Shutdown radio

@@ -106,8 +106,7 @@ THD_FUNCTION(moduleIMG, arg) {
 		TRACE_INFO("IMG  > Encode/Transmit SSDV");
 		encode_ssdv(image, image_len, parm);
 
-		time += S2ST(parm->cycle); // Wait until this time
-		chThdSleepUntil(time);
+		time = chThdSleepUntilWindowed(time, time + S2ST(parm->cycle)); // Wait until time + cycletime
 	}
 }
 

@@ -49,13 +49,12 @@ THD_FUNCTION(moduleTRACKING, arg) {
 				TRACE_ERROR("GPS  > Polling FAILED");
 		} while(!isGPSLocked(&gpsFix) && chVTGetSystemTimeX() <= time + S2ST(parm->cycle-3)); // Do as long no GPS lock and within timeout, timeout=cycle-1sec (-1sec in order to keep synchronization)
 
-		// Trace GPS result TODO: Do a rework. Add more information and rename it to track point
-		if(isGPSLocked(&gpsFix)) {
+		if(isGPSLocked(&gpsFix)) { // GPS locked
 			GPS_Deinit(); // Switch off GPS
 
 			TRACE_INFO("TRAC > GPS sampling finished GPS LOCK");
 			TRACE_GPSFIX(&gpsFix);
-		} else {
+		} else { // GPS lost
 			TRACE_WARN("TRAC > GPS sampling finished GPS LOSS");
 		}
 
@@ -151,8 +150,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 		lastTrackPoint = tp;
 		id++;
 
-		time += S2ST(parm->cycle); // Wait until this time
-		chThdSleepUntil(time);
+		time = chThdSleepUntilWindowed(time, time + S2ST(parm->cycle)); // Wait until time + cycletime
 	}
 }
 

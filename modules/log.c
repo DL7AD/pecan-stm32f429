@@ -16,7 +16,6 @@ THD_FUNCTION(moduleLOG, arg) {
 		TRACE_INFO("LOG  > Do module LOG cycle");
 		TRACE_WARN("LOG  > Module LOG not fully implemented"); // FIXME
 
-		time += S2ST(parm->cycle); // Wait until this time
-		chThdSleepUntil(time);
+		time = chThdSleepUntilWindowed(time, time + S2ST(parm->cycle)); // Wait until time + cycletime
 	}
 }

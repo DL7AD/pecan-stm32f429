@@ -60,8 +60,7 @@ THD_FUNCTION(modulePOS, arg) {
 				TRACE_ERROR("POS  > Unsupported protocol selected for module POSITION");
 		}
 
-		time += S2ST(parm->cycle); // Wait until this time
-		chThdSleepUntil(time);
+		time = chThdSleepUntilWindowed(time, time + S2ST(parm->cycle)); // Wait until time + cycletime
 	}
 }
 
