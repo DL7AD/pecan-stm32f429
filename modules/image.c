@@ -1,7 +1,7 @@
 #include "ch.h"
 #include "hal.h"
 
-#include "trace.h"
+#include "debug.h"
 #include "../modules.h"
 #include "../drivers/ov9655.h"
 #include "../drivers/pi2c.h"

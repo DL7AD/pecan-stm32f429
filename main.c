@@ -4,7 +4,7 @@
 
 #include "ptime.h"
 #include "config.h"
-#include "trace.h"
+#include "debug.h"
 #include "modules.h"
 #include "drivers/pi2c.h"
 #include "drivers/pac1720.h"
@@ -17,12 +17,10 @@ int main(void) {
 	halInit();
 	chSysInit();
 
-	palSetPadMode(GPIOE, 3, PAL_MODE_OUTPUT_PUSHPULL);	// LED green
-	palSetPadMode(GPIOC, 13, PAL_MODE_OUTPUT_PUSHPULL);	// LED yellow
-	palSetPadMode(GPIOC, 15, PAL_MODE_OUTPUT_PUSHPULL);	// LED red
+	// Debug Init (Serial debug port, LEDs)
+	DEBUG_INIT();
 
 	// Trace Init
-	TRACE_INIT();
 	TRACE_INFO("MAIN > Startup");
 
 	// Startup I2C

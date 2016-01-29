@@ -1,6 +1,6 @@
 #include "ch.h"
 #include "hal.h"
-#include "trace.h"
+#include "debug.h"
 
 #include "ptime.h"
 #include "config.h"

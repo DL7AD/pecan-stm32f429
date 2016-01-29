@@ -6,7 +6,7 @@
 #include "hal.h"
 #include "max.h"
 #include "pi2c.h"
-#include "../trace.h"
+#include "../debug.h"
 
 /* 
  * gps_transmit_string

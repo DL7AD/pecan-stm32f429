@@ -136,7 +136,7 @@ CSRC = $(STARTUPSRC) \
        drivers/ov9655.c \
        jpegant/dct.c \
        jpegant/jpegenc.c \
-       trace.c \
+       debug.c \
        modules.c \
        base64.c \
        ptime.c \

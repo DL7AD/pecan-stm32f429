@@ -1,7 +1,7 @@
 #include "ch.h"
 #include "hal.h"
 #include "cw.h"
-#include "../../trace.h"
+#include "../../debug.h"
 #include <math.h>
 
 // CW use 10ms ticks

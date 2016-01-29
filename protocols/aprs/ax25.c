@@ -18,7 +18,7 @@
 #include "hal.h"
 #include "ax25.h"
 #include "config.h"
-#include "../../trace.h"
+#include "../../debug.h"
 
 // Module globals
 unsigned short int crc;

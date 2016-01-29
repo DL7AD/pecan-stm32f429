@@ -21,7 +21,7 @@
 #include <string.h>
 #include "ssdv.h"
 #include "rs8.h"
-#include "trace.h"
+#include "debug.h"
 
 /* Recognised JPEG markers */
 enum {

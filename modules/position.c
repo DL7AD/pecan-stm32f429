@@ -1,7 +1,7 @@
 #include "ch.h"
 #include "hal.h"
 
-#include "trace.h"
+#include "debug.h"
 #include "modules.h"
 #include "radio.h"
 #include "../protocols/aprs/aprs.h"

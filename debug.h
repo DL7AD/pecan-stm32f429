@@ -5,12 +5,16 @@
 #include "hal.h"
 #include "chprintf.h"
 #include "ptime.h"
-//#include <math.h>
 
 extern mutex_t trace_mtx;
 extern const SerialConfig uart_config;
 
-#define TRACE_INIT() { \
+// Initializer for serial debug and LEDs
+#define DEBUG_INIT() { \
+	palSetPadMode(GPIOE, 3, PAL_MODE_OUTPUT_PUSHPULL);	/* LED green */ \
+	palSetPadMode(GPIOC, 13, PAL_MODE_OUTPUT_PUSHPULL);	/* LED yellow */ \
+	palSetPadMode(GPIOC, 15, PAL_MODE_OUTPUT_PUSHPULL);	/* LED red */ \
+	\
 	sdStart(&SD4, &uart_config); \
 	palSetPadMode(GPIOA, 0, PAL_MODE_ALTERNATE(8)); \
 	palSetPadMode(GPIOA, 1, PAL_MODE_ALTERNATE(8)); \

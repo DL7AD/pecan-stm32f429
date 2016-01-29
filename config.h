@@ -72,11 +72,12 @@
 #endif
 
 #define MODULES() { \
-	MODULE_TRACKING(120); \
+	/*MODULE_TRACKING(120); \
 	MODULE_RADIO(); \
-	chThdSleepMilliseconds(1000); \
+	chThdSleepMilliseconds(1000);*/ \
 	\
 	MODULE_IMAGE(300, NULL, CUSTOM_FREQ, 10, MOD_2FSK, PROT_SSDV); \
+	/* MODULE_POSITION(120, NULL, APRS_REGION_FREQ, 10, MOD_AFSK, PROT_APRS); */ \
 }
 
 #endif

@@ -1,7 +1,7 @@
 #include "ch.h"
 #include "hal.h"
 #include "defines.h"
-#include "trace.h"
+#include "debug.h"
 #include "modules.h"
 #include "radio.h"
 #include "../drivers/si4x6x.h"

@@ -1,6 +1,6 @@
 #include "ch.h"
 #include "hal.h"
-#include "trace.h"
+#include "debug.h"
 #include "pi2c.h"
 #include "pac1720.h"
 

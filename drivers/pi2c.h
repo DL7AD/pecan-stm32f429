@@ -8,7 +8,7 @@
 
 #include "ch.h"
 #include "hal.h"
-#include "../trace.h"
+#include "../debug.h"
 
 #define i2cInit() i2cStart(&I2CD2, &_i2cfg);
 #define i2cCamInit() i2cStart(&I2CD1, &_i2cfg);

@@ -8,7 +8,7 @@
 #include "hal.h"
 #include "si4x6x.h"
 #include "../modules.h"
-#include "../trace.h"
+#include "../debug.h"
 
 static const SPIConfig ls_spicfg1 = {
 	NULL,
