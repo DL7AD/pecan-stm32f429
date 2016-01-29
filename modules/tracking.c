@@ -37,7 +37,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 	{
 		parm->lastCycle = chVTGetSystemTimeX(); // Watchdog timer
 		TRACE_INFO("TRAC > Do module TRACKING MANAGER cycle");
-		trackPoint_t* tp = &trackPoints[(id+1) % sizeof(trackPoints)];
+		trackPoint_t* tp = &trackPoints[id % (sizeof(trackPoints) / sizeof(trackPoint_t))];
 
 		// Search for GPS satellites
 		gpsFix_t gpsFix;
@@ -47,7 +47,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 			chThdSleepMilliseconds(100);
 			if(!gps_get_fix(&gpsFix))
 				TRACE_ERROR("GPS  > Polling FAILED");
-		} while(!isGPSLocked(&gpsFix) && chVTGetSystemTimeX() <= time + S2ST(parm->cycle-2)); // Do as long no GPS lock and within timeout, timeout=cycle-1sec (-1sec in order to keep synchronization)
+		} while(!isGPSLocked(&gpsFix) && chVTGetSystemTimeX() <= time + S2ST(parm->cycle-3)); // Do as long no GPS lock and within timeout, timeout=cycle-1sec (-1sec in order to keep synchronization)
 
 		// Trace GPS result TODO: Do a rework. Add more information and rename it to track point
 		if(isGPSLocked(&gpsFix)) {
