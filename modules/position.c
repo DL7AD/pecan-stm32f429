@@ -4,8 +4,8 @@
 #include "debug.h"
 #include "modules.h"
 #include "radio.h"
-#include "../protocols/aprs/aprs.h"
-#include "../protocols/cw/cw.h"
+#include "aprs.h"
+#include "cw.h"
 
 THD_FUNCTION(modulePOS, arg) {
 	// Print infos

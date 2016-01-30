@@ -6,8 +6,8 @@
 #include "hal.h"
 #include "max.h"
 #include "pi2c.h"
-#include "../debug.h"
-#include <config.h>
+#include "debug.h"
+#include "config.h"
 
 /* 
  * gps_transmit_string

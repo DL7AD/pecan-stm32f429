@@ -4,8 +4,8 @@
 #include "ch.h"
 #include "hal.h"
 #include "defines.h"
-#include "../config.h"
-#include "../drivers/si4x6x.h"
+#include "config.h"
+#include "si4x6x.h"
 
 extern mailbox_t radioMBP;
 

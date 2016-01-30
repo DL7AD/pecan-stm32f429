@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "base64.h"
-#include "../../drivers/max.h"
+#include "max.h"
 
 #define METER_TO_FEET(m) (((m)*26876) / 8192)
 #define MAX_INT_DIGITS 19

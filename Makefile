@@ -229,7 +229,8 @@ UDEFS =
 UADEFS =
 
 # List all user directories here
-UINCDIR =
+UINCDIR = modules/ drivers protocols/aprs protocols/ssdv \
+          protocols/cw
 
 # List the user directory to look for the libraries here
 ULIBDIR =

@@ -4,7 +4,7 @@
 #include "debug.h"
 #include "modules.h"
 #include "radio.h"
-#include "../drivers/si4x6x.h"
+#include "si4x6x.h"
 
 #define TX_CPU_CLOCK			10200
 #define CLOCK_PER_TICK			1

@@ -3,8 +3,8 @@
 
 #include "ch.h"
 #include "hal.h"
-#include "../defines.h"
-#include "../modules.h"
+#include "defines.h"
+#include "modules.h"
 
 #define RADIO_SDN_SET(radio, state)			(radio == RADIO_2M ? palWritePad(GPIOA, 12, state) : palWritePad(GPIOB, 12, state))
 #define RADIO_CS_SET(radio, state)			(radio == RADIO_2M ? palWritePad(GPIOA, 11, state) : palWritePad(GPIOB, 0, state))

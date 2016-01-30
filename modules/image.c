@@ -2,11 +2,11 @@
 #include "hal.h"
 
 #include "debug.h"
-#include "../modules.h"
-#include "../drivers/ov9655.h"
-#include "../drivers/pi2c.h"
+#include "modules.h"
+#include "ov9655.h"
+#include "pi2c.h"
 
-#include "../protocols/ssdv/ssdv.h"
+#include "ssdv.h"
 
 static uint32_t image_id;
 
