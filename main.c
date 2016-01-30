@@ -60,9 +60,10 @@ int main(void) {
 		for(uint8_t i=0; i<moduleCount; i++) {
 			if(ST2S(chVTGetSystemTimeX()-modules[i]->lastCycle) <= (uint32_t)modules[0]->cycle) {
 				TRACE_INFO("MAIN > Module %s OK", modules[i]->name);
+				error = 0;
 			} else {
 				TRACE_ERROR("MAIN > Module %s CRASHED", modules[i]->name);
-				error = 1; // Lets red LED blink in virtual timer
+				error = 1; // Let red LED blink in virtual timer
 			}
 		}
 
