@@ -45,8 +45,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 
 		do {
 			chThdSleepMilliseconds(100);
-			if(!gps_get_fix(&gpsFix))
-				TRACE_ERROR("GPS  > Polling FAILED");
+			gps_get_fix(&gpsFix);
 		} while(!isGPSLocked(&gpsFix) && chVTGetSystemTimeX() <= time + S2ST(parm->cycle-3)); // Do as long no GPS lock and within timeout, timeout=cycle-1sec (-1sec in order to keep synchronization)
 
 		if(isGPSLocked(&gpsFix)) { // GPS locked

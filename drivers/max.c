@@ -7,6 +7,7 @@
 #include "max.h"
 #include "pi2c.h"
 #include "../debug.h"
+#include <config.h>
 
 /* 
  * gps_transmit_string
@@ -161,10 +162,17 @@ bool gps_get_fix(gpsFix_t *fix) {
 	static uint8_t response[92];	/* PVT response length is 92 bytes */
 	uint8_t pvt[] = {0xB5, 0x62, 0x01, 0x07, 0x00, 0x00, 0x08, 0x19};
 	int32_t alt_tmp;
+	uint32_t try = 0;
 
-	gps_transmit_string(pvt, sizeof(pvt));
-	if(!gps_receive_payload(0x01, 0x07, response, 2000))
+	// Read GPS data
+	do {
+		gps_transmit_string(pvt, sizeof(pvt));
+	} while(!gps_receive_payload(0x01, 0x07, response, 2000) && try++ < 3);
+
+	if(try == 3) { // Failed to aquire GPS data
+		TRACE_ERROR("GPS  > Polling FAILED");
 		return false;
+	}
 
 	fix->num_svs = response[23];
 	fix->type = response[20];
@@ -358,13 +366,13 @@ bool GPS_Init(void) {
 
 	// Initialize pins
 	TRACE_INFO("GPS  > Init pins");
-	palSetPadMode(GPIOE, 12, PAL_MODE_OUTPUT_PUSHPULL);	// GPS_RESET
-	palSetPadMode(GPIOE, 7, PAL_MODE_OUTPUT_PUSHPULL);	// GPS_OFF
+	palSetPadMode(PORT(GPS_RESET), PIN(GPS_RESET), PAL_MODE_OUTPUT_PUSHPULL);	// GPS_RESET
+	palSetPadMode(PORT(GPS_OFF), PIN(GPS_OFF), PAL_MODE_OUTPUT_PUSHPULL);	// GPS_OFF
 
 	// Switch MOSFET
 	TRACE_INFO("GPS  > Switch on");
-	palSetPad(GPIOE, 12);	// Pull up GPS_RESET
-	palClearPad(GPIOE, 7);	// Switch on GPS
+	palSetPad(PORT(GPS_RESET), PIN(GPS_RESET));	// Pull up GPS_RESET
+	palClearPad(PORT(GPS_OFF), PIN(GPS_OFF));	// Switch on GPS
 	
 	// Wait for GPS startup
 	chThdSleepMilliseconds(3000);
@@ -411,7 +419,7 @@ void GPS_Deinit(void)
 {
 	// Switch MOSFET
 	TRACE_INFO("GPS  > Switch off");
-	palSetPad(GPIOE, 7);
+	palSetPad(PORT(GPS_OFF), PIN(GPS_OFF));
 
 }
 
