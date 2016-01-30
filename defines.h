@@ -13,6 +13,8 @@
 
 #define SYM_GET_TABLE(A)	ARGN(0, A)
 #define SYM_GET_SYMBOL(A)	ARGN(1, A)
+#define PORT(A)				ARGN(0, A)
+#define PIN(A)				ARGN(1, A)
 
 #define APRS_REGION_FREQ			getAPRSRegionFrequency
 #define APRS_ISS_FREQ				getAPRSISSFrequency

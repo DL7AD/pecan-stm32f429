@@ -26,9 +26,9 @@ int main(void) {
 	pac1720_init();				// Startup current measurement
 
 	while(true) {
-		palWritePad(GPIOE, 3, counter%2);		// Show I'M ALIVE
+		palWritePad(PORT(LED_GREEN), PIN(LED_GREEN), counter%2);	// Show I'M ALIVE
 		if(error)
-			palWritePad(GPIOC, 15, counter%2);	// Show error
+			palWritePad(PORT(LED_RED), PIN(LED_RED), counter%2);	// Show error
 
 		if(counter%60 == 0) {
 
