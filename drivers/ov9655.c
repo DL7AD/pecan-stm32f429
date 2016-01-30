@@ -291,8 +291,8 @@ void OV9655_InitDCMI(void)
   */
 void OV9655_InitGPIO(void)
 {
-	palSetPadMode(GPIOA, 8, PAL_MODE_ALTERNATE(0)); // PA8             -> XCLK
-	RCC->CFGR = (RCC->CFGR & (uint32_t)0xF8FFFFFF) | (uint32_t)0x00000000;
+	palSetPadMode(GPIOA, 8, PAL_MODE_ALTERNATE(0)); // PA8    -> XCLK
+	RCC->CFGR = (RCC->CFGR & (uint32_t)0xFC4FFFFF) | (1 << 26);
 
 	palSetPadMode(GPIOA, 4, PAL_MODE_ALTERNATE(13)); // HSYNC -> PA4
 	palSetPadMode(GPIOA, 6, PAL_MODE_ALTERNATE(13)); // PCLK  -> PA6
@@ -308,8 +308,8 @@ void OV9655_InitGPIO(void)
 
 	palSetPadMode(GPIOE, 0, PAL_MODE_OUTPUT_PUSHPULL);	// CAM_OFF
 
-	palSetPadMode(GPIOB, 8, PAL_MODE_ALTERNATE(4));	// I2C SCL
-	palSetPadMode(GPIOB, 9, PAL_MODE_ALTERNATE(4));	// I2C SDA
+	palSetPadMode(GPIOB, 8, PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN);	// I2C SCL
+	palSetPadMode(GPIOB, 9, PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN);	// I2C SDA
 }
 
 uint32_t OV9655_getBuffer(uint8_t** buffer) {

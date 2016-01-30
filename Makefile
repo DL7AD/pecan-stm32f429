@@ -138,10 +138,10 @@ CSRC = $(STARTUPSRC) \
        jpegant/jpegenc.c \
        debug.c \
        modules.c \
-       base64.c \
+       math/base64.c \
        ptime.c \
        radio.c \
-       sgp4.c \
+       math/sgp4.c \
        main.c
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
@@ -230,7 +230,7 @@ UADEFS =
 
 # List all user directories here
 UINCDIR = modules/ drivers protocols/aprs protocols/ssdv \
-          protocols/cw
+          protocols/cw math/
 
 # List the user directory to look for the libraries here
 ULIBDIR =
