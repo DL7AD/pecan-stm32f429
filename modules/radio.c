@@ -17,6 +17,14 @@
 mailbox_t radioMBP;
 radioMSG_t buf[10];
 
+static uint16_t current_byte;
+static uint16_t current_sample_in_baud;		// 1 bit = SAMPLES_PER_BAUD samples
+static uint32_t phase_delta;				// 1200/2200 for standard AX.25
+static uint32_t phase;						// Fixed point 9.7 (2PI = TABLE_SIZE)
+static uint32_t packet_pos;					// Next bit to be sent out
+static volatile bool modem_busy = false;	// Is timer running
+static radio_t cradio;						// Current radio
+
 uint32_t getAPRSRegionFrequency(void) {
 	return 144800000; // TODO: Implement Geofencing
 }
@@ -69,7 +77,7 @@ THD_FUNCTION(moduleRADIO, arg) {
 				TRACE_BIN(msg->msg, msg->bin_len);
 				switch(msg->mod) {
 					case MOD_2FSK:
-						//send2FSK(radio, msg); TODO: Implement!
+						send2FSK(radio, msg);
 						break;
 					case MOD_AFSK:
 						sendAFSK(radio, msg);
@@ -98,19 +106,10 @@ THD_FUNCTION(moduleRADIO, arg) {
 	}
 }
 
-// Module globals
-static uint16_t current_byte;
-static uint16_t current_sample_in_baud;		// 1 bit = SAMPLES_PER_BAUD samples
-static uint32_t phase_delta;				// 1200/2200 for standard AX.25
-static uint32_t phase;						// Fixed point 9.7 (2PI = TABLE_SIZE)
-static uint32_t packet_pos;					// Next bit to be sent out
-static volatile bool modem_busy = false;	// Is timer running
-static radio_t cradio;						// Current radio
-
 void sendAFSK(radio_t radio, radioMSG_t *msg) {
 	// Initialize radio and tune
 	Si446x_Init(radio, MOD_AFSK);
-	radioTune(radio, msg->freq, msg->power);
+	radioTune(radio, msg->freq, 0, msg->power);
 
 	// Initialize variables for AFSK
 	phase_delta = PHASE_DELTA_1200;
@@ -169,7 +168,7 @@ bool afsk_handler(radio_t radio, radioMSG_t *msg) {
 void sendCW(radio_t radio, radioMSG_t *msg) {
 	// Initialize radio and tune
 	Si446x_Init(radio, MOD_CW);
-	radioTune(radio, msg->freq, msg->power);
+	radioTune(radio, msg->freq, 0, msg->power);
 
 	// Transmit data
 	uint32_t bit = 0;
@@ -184,6 +183,75 @@ void sendCW(radio_t radio, radioMSG_t *msg) {
 	// Shutdown radio
 	radioShutdown(radio);	// Shutdown radio
 }
+
+// TODO: Move this part
+#define TXDELAY		100
+#define STOPBITS	2
+#define ASCII		8
+
+void send2FSK(radio_t radio, radioMSG_t *msg) {
+	// Initialize radio and tune
+	Si446x_Init(radio, MOD_2FSK);
+	radioTune(radio, msg->freq, 850, msg->power);
+
+	// Transmit data (Software UART)
+	uint8_t txs = 6;	// TX state
+	uint8_t txc = 0;	// Current char
+	uint32_t txi = 0;
+	uint32_t txj = 0;
+
+	systime_t time = chVTGetSystemTimeX();
+	while(txs != 0)
+	{
+		switch(txs)
+		{      
+			case 6: //TX-delay
+				txj++;
+				if(txj > TXDELAY) { 
+					txj = 0;
+					txs = 7;
+				}
+				break;
+
+			case 7: //Transmit a single char
+				if(txj < msg->bin_len/8) {
+					txc = msg->msg[txj]; //Select char
+					txj++;
+					MOD_GPIO_SET(radio, LOW); //Start Bit (Synchronizing)
+					txi = 0;
+					txs = 8;
+				} else {
+					txj = 0;
+					txs = 0; //Finished to transmit char
+				}
+				break;
+
+			case 8:
+				if(txi < ASCII) {
+					txi++;
+					MOD_GPIO_SET(radio, txc & 1);
+					txc = txc >> 1;
+				} else {
+					MOD_GPIO_SET(radio, HIGH); //Stop Bit
+					txi = 0;
+					txs = 9;
+				}
+				break;
+
+			case 9:
+				if(STOPBITS == 2)
+					MOD_GPIO_SET(radio, HIGH); //Stop Bit
+				txs = 7;
+		}
+
+		// Synchronization
+		time = chThdSleepUntilWindowed(time, time + MS2ST(20));
+	}
+
+	// Shutdown radio
+	radioShutdown(radio);	// Shutdown radio
+}
+
 
 
 

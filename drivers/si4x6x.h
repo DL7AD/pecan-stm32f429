@@ -17,15 +17,17 @@
 
 void Si446x_Init(radio_t radio, modulation_t modem_type);
 void Si446x_write(radio_t radio, uint8_t* txData, uint32_t len);
-void sendFrequencyToSi446x(radio_t radio, uint32_t freq);
+void setFrequency(radio_t radio, uint32_t freq, uint16_t shift);
+void setShift(radio_t radio, uint16_t shift);
 void setModemAFSK(radio_t radio);
 void setModemCW(radio_t radio);
+void setModem2FSK(radio_t radio);
 void setDeviation(radio_t radio, uint32_t deviation);
 void setPowerLevel(radio_t radio, int8_t level);
 void startTx(radio_t radio);
 void stopTx(radio_t radio);
 void radioShutdown(radio_t radio);
-bool radioTune(radio_t radio, uint32_t frequency, int8_t level);
+bool radioTune(radio_t radio, uint32_t frequency, uint16_t shift, int8_t level);
 int8_t Si446x_getTemperature(radio_t radio);
 uint8_t dBm2powerLvl(int32_t dBm);
 

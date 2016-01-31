@@ -20,6 +20,7 @@ THD_FUNCTION(moduleRADIO, arg);
 void sendAFSK(radio_t radio, radioMSG_t *msg);
 bool afsk_handler(radio_t radio, radioMSG_t *msg);
 void sendCW(radio_t radio, radioMSG_t *msg);
+void send2FSK(radio_t radio, radioMSG_t *msg);
 
 #endif
 

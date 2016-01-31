@@ -31,6 +31,9 @@
 #define RADIO_2M	1	/* Radio 1 => 2m */
 #define RADIO_70CM	2	/* Radio 2 => 70cm */
 
+#define HIGH	true
+#define LOW		false
+
 typedef uint32_t radio_t;
 
 typedef enum {

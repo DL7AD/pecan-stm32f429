@@ -24,6 +24,8 @@ static const SPIConfig ls_spicfg2 = {
 };
 #define getSPIDriver(radio) (radio == RADIO_2M ? &ls_spicfg1 : &ls_spicfg2)
 
+uint32_t outdiv;
+
 /**
  * Initializes Si446x transceiver chip. Adjustes the frequency which is shifted by variable
  * oscillator voltage.
@@ -95,6 +97,7 @@ void Si446x_Init(radio_t radio, modulation_t modem_type) {
 			setModemCW(radio);
 			break;
 		case MOD_2FSK:
+			setModem2FSK(radio);
 			break;
 	}
 
@@ -172,10 +175,9 @@ void Si446x_read(radio_t radio, uint8_t* txData, uint32_t txlen, uint8_t* rxData
 	}
 }
 
-void sendFrequencyToSi446x(radio_t radio, uint32_t freq) {
+void setFrequency(radio_t radio, uint32_t freq, uint16_t shift) {
 	// Set the output divider according to recommended ranges given in Si446x datasheet
 	uint32_t band = 0;
-	uint32_t outdiv;
 	if(freq < 705000000UL) {outdiv = 6;  band = 1;};
 	if(freq < 525000000UL) {outdiv = 8;  band = 2;};
 	if(freq < 353000000UL) {outdiv = 12; band = 3;};
@@ -198,9 +200,13 @@ void sendFrequencyToSi446x(radio_t radio, uint32_t freq) {
 	uint32_t m1 = (m - m2 * 0x10000) >> 8;
 	uint32_t m0 = (m - m2 * 0x10000 - (m1 << 8));
 
+	uint32_t channel_increment = 524288 * outdiv * shift / (2 * OSC_FREQ);
+	uint8_t c1 = channel_increment / 0x100;
+	uint8_t c0 = channel_increment - (0x100 * c1);
+
 	// Transmit frequency to chip
-	uint8_t set_frequency_property_command[] = {0x11, 0x40, 0x04, 0x00, n, m2, m1, m0};
-	Si446x_write(radio, set_frequency_property_command, 8);
+	uint8_t set_frequency_property_command[] = {0x11, 0x40, 0x04, 0x00, n, m2, m1, m0, c1, c0};
+	Si446x_write(radio, set_frequency_property_command, 10);
 
 	uint32_t x = ((((uint32_t)1 << 19) * outdiv * 1300.0)/(2*OSC_FREQ))*2;
 	uint8_t x2 = (x >> 16) & 0xFF;
@@ -208,6 +214,19 @@ void sendFrequencyToSi446x(radio_t radio, uint32_t freq) {
 	uint8_t x0 = (x >>  0) & 0xFF;
 	uint8_t set_deviation[] = {0x11, 0x20, 0x03, 0x0a, x2, x1, x0};
 	Si446x_write(radio, set_deviation, 7);
+}
+
+void setShift(radio_t radio, uint16_t shift) {
+	float units_per_hz = (( 0x40000 * outdiv ) / (float)OSC_FREQ);
+
+	// Set deviation for 2FSK
+	uint32_t modem_freq_dev = (uint32_t)(units_per_hz * shift / 2.0 );
+	uint8_t modem_freq_dev_0 = 0xFF & modem_freq_dev;
+	uint8_t modem_freq_dev_1 = 0xFF & (modem_freq_dev >> 8);
+	uint8_t modem_freq_dev_2 = 0xFF & (modem_freq_dev >> 16);
+
+	uint8_t set_modem_freq_dev_command[] = {0x11, 0x20, 0x03, 0x0A, modem_freq_dev_2, modem_freq_dev_1, modem_freq_dev_0};
+	Si446x_write(radio, set_modem_freq_dev_command, 7);
 }
 
 void setModemAFSK(radio_t radio) {
@@ -246,9 +265,15 @@ void setModemAFSK(radio_t radio) {
 }
 
 void setModemCW(radio_t radio) {
-	// use 2GFSK from async GPIO1
+	// use CW from async GPIO1
 	uint8_t use_cw[] = {0x11, 0x20, 0x01, 0x00, 0xA9};
 	Si446x_write(radio, use_cw, 5);
+}
+
+void setModem2FSK(radio_t radio) {
+	// use 2FSK from async GPIO1
+	uint8_t use_2fsk[] = {0x11, 0x20, 0x01, 0x00, 0xAA};
+	Si446x_write(radio, use_2fsk, 5);
 }
 
 void setPowerLevel(radio_t radio, int8_t level) {
@@ -281,7 +306,7 @@ void radioShutdown(radio_t radio) {
  * @param shift Shift of FSK in Hz
  * @param level Transmission power level in dBm
  */
-bool radioTune(radio_t radio, uint32_t frequency, int8_t level) {
+bool radioTune(radio_t radio, uint32_t frequency, uint16_t shift, int8_t level) {
 	// Tracing
 	TRACE_INFO("SI %d > Tune Si4x6x", radio);
 
@@ -297,8 +322,9 @@ bool radioTune(radio_t radio, uint32_t frequency, int8_t level) {
 		TRACE_WARN("SI %d > continue transmission", radio);
 	}
 
-	sendFrequencyToSi446x(radio, frequency);	// Frequency
-	setPowerLevel(radio, level);				// Power level
+	setFrequency(radio, frequency, shift);	// Frequency
+	setShift(radio, shift);							// Shift
+	setPowerLevel(radio, level);					// Power level
 
 	startTx(radio);
 	return true;

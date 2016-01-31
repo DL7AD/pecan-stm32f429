@@ -6,6 +6,7 @@
 #include "radio.h"
 #include "aprs.h"
 #include "cw.h"
+#include "chprintf.h"
 
 THD_FUNCTION(modulePOS, arg) {
 	// Print infos
@@ -41,7 +42,12 @@ THD_FUNCTION(modulePOS, arg) {
 				break;
 
 			case PROT_UKHAS:
-				// TODO: Implement protocol
+				msg.mod = MOD_2FSK;
+				msg.freq = (*fptr)();
+				msg.power = parm->power;
+				uint8_t fskmsg[64];
+				msg.bin_len = 8*chsnprintf((char*)fskmsg, sizeof(fskmsg), "$$$$$%s,%d,<TODO>,*<CRC>\n", FSK_CALLSIGN, trackPoint->id); // TODO: Implement protocol
+				msg.msg = fskmsg;
 
 				chMBPost(&radioMBP, (msg_t)&msg, 0);
 				break;
