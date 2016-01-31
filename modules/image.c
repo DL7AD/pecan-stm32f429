@@ -71,7 +71,7 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 				TRACE_ERROR("POS  > Unsupported protocol selected for module POSITION");
 		}
 
-		chThdSleepMilliseconds(60000); // Wait for packet to be flushed
+		chThdSleepMilliseconds(20000); // Wait for packet to be flushed
 
 		i++;
 	}

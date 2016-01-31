@@ -247,7 +247,7 @@ void send2FSK(radio_t radio, radioMSG_t *msg) {
 		}
 
 		// Synchronization
-		time = chThdSleepUntilWindowed(time, time + MS2ST(20));
+		time = chThdSleepUntilWindowed(time, time + MS2ST(5));
 	}
 
 	// Shutdown radio
