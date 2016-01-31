@@ -9,9 +9,18 @@
 #include "ch.h"
 #include "hal.h"
 #include "debug.h"
+#include "config.h"
 
-#define i2cInit() i2cStart(&I2CD2, &_i2cfg);
-#define i2cCamInit() i2cStart(&I2CD1, &_i2cfg);
+#define i2cInit() { \
+	palSetPadMode(PORT(I2C_SDA), PIN(I2C_SDA), PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN); /* I2C SCL */ \
+	palSetPadMode(PORT(I2C_SCL), PIN(I2C_SCL), PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN); /* I2C SDA */ \
+	i2cStart(&I2CD2, &_i2cfg); \
+}
+#define i2cCamInit() { \
+	palSetPadMode(PORT(CAM_SDA), PIN(CAM_SDA), PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN); /* Camera I2C SCL */ \
+	palSetPadMode(PORT(CAM_SCL), PIN(CAM_SCL), PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN); /* Camera I2C SDA */ \
+	i2cStart(&I2CD1, &_i2cfg); \
+}
 
 #define i2cSendDriver(driver, addr, txbuf, txbytes, rxbuf, rxbytes, timeout) { \
 	i2cAcquireBus(driver); \

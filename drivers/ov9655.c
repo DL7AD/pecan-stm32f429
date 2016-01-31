@@ -306,8 +306,7 @@ void OV9655_InitGPIO(void)
 
 	palSetPadMode(GPIOE, 0, PAL_MODE_OUTPUT_PUSHPULL); // CAM_OFF
 
-	palSetPadMode(GPIOB, 8, PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN); // I2C SCL
-	palSetPadMode(GPIOB, 9, PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN); // I2C SDA
+	i2cCamInit();
 }
 
 uint32_t OV9655_getBuffer(uint8_t** buffer) {
