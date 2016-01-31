@@ -14,32 +14,35 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 	ssdv_t ssdv;
 	uint8_t pkt[SSDV_PKT_SIZE];
 	uint16_t i = 0;
-	uint8_t b;
+	uint8_t *b;
 	uint16_t bi = 0;
 	uint8_t c = SSDV_OK;
 
 	ssdv_enc_init(&ssdv, SSDV_TYPE_NORMAL, FSK_CALLSIGN, ++image_id);
 	ssdv_enc_set_buffer(&ssdv, pkt);
 
-	while(c == SSDV_OK)
+	while(true)
 	{
-		// Encode packet
 		while((c = ssdv_enc_get_packet(&ssdv)) == SSDV_FEED_ME)
 		{
-			b = image[bi++];
-			if(bi == image_len)
+			b = &image[bi];
+			uint8_t r = bi < image_len-128 ? 128 : image_len - bi;
+			bi += 128;
+
+			if(r <= 0)
 			{
-				TRACE_INFO("IMG  > Image transfer completed");
+				TRACE_ERROR("SSDV > Premature end of file");
 				break;
 			}
-			ssdv_enc_feed(&ssdv, &b, 1);
+			ssdv_enc_feed(&ssdv, b, r);
 		}
-		
-		if(c == SSDV_EOI) {
-			TRACE_INFO("IMG  > Image transfer completed\n");
+
+		if(c == SSDV_EOI)
+		{
+			TRACE_INFO("SSDV > ssdv_enc_get_packet said EOI");
 			break;
 		} else if(c != SSDV_OK) {
-			TRACE_ERROR("IMG  > SSDV ERROR\n");
+			TRACE_ERROR("SSDV > ssdv_enc_get_packet failed: %i", c);
 			return;
 		}
 
@@ -68,8 +71,12 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 				TRACE_ERROR("POS  > Unsupported protocol selected for module POSITION");
 		}
 
+		chThdSleepMilliseconds(60000); // Wait for packet to be flushed
+
 		i++;
 	}
+
+	TRACE_INFO("SSDV > %i packets", i);
 }
 
 THD_FUNCTION(moduleIMG, arg) {
@@ -100,7 +107,6 @@ THD_FUNCTION(moduleIMG, arg) {
 		uint32_t image_len = OV9655_getBuffer(&image);
 
 		TRACE_INFO("IMG  > Encode/Transmit SSDV");
-		chThdSleepMilliseconds(100);
 		encode_ssdv(image, image_len, parm);
 
 		time = chThdSleepUntilWindowed(time, time + S2ST(parm->cycle)); // Wait until time + cycletime

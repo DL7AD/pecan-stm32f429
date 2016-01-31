@@ -323,8 +323,8 @@ bool radioTune(radio_t radio, uint32_t frequency, uint16_t shift, int8_t level) 
 	}
 
 	setFrequency(radio, frequency, shift);	// Frequency
-	setShift(radio, shift);							// Shift
-	setPowerLevel(radio, level);					// Power level
+	setShift(radio, shift);					// Shift
+	setPowerLevel(radio, level);			// Power level
 
 	startTx(radio);
 	return true;

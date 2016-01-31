@@ -192,6 +192,7 @@ void sendCW(radio_t radio, radioMSG_t *msg) {
 void send2FSK(radio_t radio, radioMSG_t *msg) {
 	// Initialize radio and tune
 	Si446x_Init(radio, MOD_2FSK);
+	MOD_GPIO_SET(radio, HIGH);
 	radioTune(radio, msg->freq, 850, msg->power);
 
 	// Transmit data (Software UART)
@@ -205,24 +206,25 @@ void send2FSK(radio_t radio, radioMSG_t *msg) {
 	{
 		switch(txs)
 		{      
-			case 6: //TX-delay
+			case 6: // TX-delay
 				txj++;
-				if(txj > TXDELAY) { 
+				if(txj > TXDELAY) {
 					txj = 0;
 					txs = 7;
 				}
 				break;
 
-			case 7: //Transmit a single char
+			case 7: // Transmit a single char
 				if(txj < msg->bin_len/8) {
-					txc = msg->msg[txj]; //Select char
+					txc = msg->msg[txj]; // Select char
 					txj++;
-					MOD_GPIO_SET(radio, LOW); //Start Bit (Synchronizing)
+					MOD_GPIO_SET(radio, LOW); // Start Bit (Synchronizing)
 					txi = 0;
 					txs = 8;
 				} else {
 					txj = 0;
-					txs = 0; //Finished to transmit char
+					txs = 0; // Finished to transmit string
+					MOD_GPIO_SET(radio, HIGH);
 				}
 				break;
 
@@ -232,7 +234,7 @@ void send2FSK(radio_t radio, radioMSG_t *msg) {
 					MOD_GPIO_SET(radio, txc & 1);
 					txc = txc >> 1;
 				} else {
-					MOD_GPIO_SET(radio, HIGH); //Stop Bit
+					MOD_GPIO_SET(radio, HIGH); // Stop Bit
 					txi = 0;
 					txs = 9;
 				}
@@ -240,7 +242,7 @@ void send2FSK(radio_t radio, radioMSG_t *msg) {
 
 			case 9:
 				if(STOPBITS == 2)
-					MOD_GPIO_SET(radio, HIGH); //Stop Bit
+					MOD_GPIO_SET(radio, HIGH); // Stop Bit
 				txs = 7;
 		}
 
@@ -249,6 +251,7 @@ void send2FSK(radio_t radio, radioMSG_t *msg) {
 	}
 
 	// Shutdown radio
+	chThdSleepMilliseconds(100);
 	radioShutdown(radio);	// Shutdown radio
 }
 
