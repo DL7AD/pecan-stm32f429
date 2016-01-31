@@ -60,17 +60,13 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 				msg.freq = (*fptr)();
 				msg.power = parm->power;
 				msg.msg = pkt;
-				msg.bin_len = sizeof(pkt) * sizeof(uint8_t);
+				msg.bin_len = 8*sizeof(pkt);
 				chMBPost(&radioMBP, (msg_t)&msg, 0);
 				break;
 
 			default:
 				TRACE_ERROR("POS  > Unsupported protocol selected for module POSITION");
 		}
-
-
-
-
 
 		i++;
 	}
@@ -104,6 +100,7 @@ THD_FUNCTION(moduleIMG, arg) {
 		uint32_t image_len = OV9655_getBuffer(&image);
 
 		TRACE_INFO("IMG  > Encode/Transmit SSDV");
+		chThdSleepMilliseconds(100);
 		encode_ssdv(image, image_len, parm);
 
 		time = chThdSleepUntilWindowed(time, time + S2ST(parm->cycle)); // Wait until time + cycletime

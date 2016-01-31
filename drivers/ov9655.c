@@ -21,7 +21,7 @@
 	D2					D0					PA9 PC6 PH9							PC6
 	D3					D1					PA10 PC7 PH10						PC7
 	D4					D2					PC8 PE0 PG10 PH11					PC8
-	D5					D3					PC9 PE1 PG11 PH12					PE1
+	D5					D3					PC9 PE1 PG11 PH12					PC9
 	D6					D4					PC11 PE4 PH14						PE4
 	D7					D5					PB6 PD3 PI4							PB6
 	D8					D6					PB8 PE5 PI6							PE5
@@ -65,8 +65,8 @@ conv Cb8x8[8][8];
 conv Cr8x8[8][8];
 uint64_t subsclk = 0;
 uint64_t readclk = 0;
-static uint8_t jpeg[50*1024];
-static uint32_t jpeg_pos = 0;
+uint8_t jpeg[50*1024];
+uint32_t jpeg_pos = 0;
 
 
 // I2C camera configuration for QVGA resolution
@@ -196,7 +196,6 @@ void OV9655_Snapshot2RAM(void)
 			chThdSleepMilliseconds(10);
 		}
 
-		palClearPad(GPIOC, 13);
 		for (x = 0; x < OV9655_MAXX-15; x += 16)
 		{
 			// Create 16x16 block
@@ -227,7 +226,6 @@ void OV9655_Snapshot2RAM(void)
 			huffman_encode(HUFFMAN_CTX_Cb, (short*)Cb8x8);
 			huffman_encode(HUFFMAN_CTX_Cr, (short*)Cr8x8);
 		}
-		palSetPad(GPIOC, 13);
 
 		lines++;
 	}
@@ -292,7 +290,7 @@ void OV9655_InitDCMI(void)
 void OV9655_InitGPIO(void)
 {
 	palSetPadMode(GPIOA, 8, PAL_MODE_ALTERNATE(0)); // PA8    -> XCLK
-	RCC->CFGR = (RCC->CFGR & (uint32_t)0xFC4FFFFF) | (1 << 26);
+	RCC->CFGR = (RCC->CFGR & (uint32_t)0xFC4FFFFF) | (1 << 0x6);
 
 	palSetPadMode(GPIOA, 4, PAL_MODE_ALTERNATE(13)); // HSYNC -> PA4
 	palSetPadMode(GPIOA, 6, PAL_MODE_ALTERNATE(13)); // PCLK  -> PA6
@@ -300,7 +298,7 @@ void OV9655_InitGPIO(void)
 	palSetPadMode(GPIOC, 6, PAL_MODE_ALTERNATE(13)); // D0    -> PC6
 	palSetPadMode(GPIOC, 7, PAL_MODE_ALTERNATE(13)); // D1    -> PC7
 	palSetPadMode(GPIOC, 8, PAL_MODE_ALTERNATE(13)); // D2    -> PC8
-	palSetPadMode(GPIOE, 1, PAL_MODE_ALTERNATE(13)); // D3    -> PE1
+	palSetPadMode(GPIOC, 9, PAL_MODE_ALTERNATE(13)); // D3    -> PC9
 	palSetPadMode(GPIOE, 4, PAL_MODE_ALTERNATE(13)); // D4    -> PE4
 	palSetPadMode(GPIOB, 6, PAL_MODE_ALTERNATE(13)); // D5    -> PB6
 	palSetPadMode(GPIOE, 5, PAL_MODE_ALTERNATE(13)); // D6    -> PE5
