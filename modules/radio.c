@@ -85,6 +85,9 @@ THD_FUNCTION(moduleRADIO, arg) {
 					case MOD_CW:
 						sendCW(radio, msg);
 						break;
+					case MOD_DOMINOEX16:
+						TRACE_ERROR("RAD  > Unimplemented modulation DominoEX16"); // TODO: Implement this
+						break;
 				}
 
 			} else { // Error
@@ -184,11 +187,6 @@ void sendCW(radio_t radio, radioMSG_t *msg) {
 	radioShutdown(radio);	// Shutdown radio
 }
 
-// TODO: Move this part
-#define TXDELAY		100
-#define STOPBITS	2
-#define ASCII		8
-
 void send2FSK(radio_t radio, radioMSG_t *msg) {
 	// Initialize radio and tune
 	Si446x_Init(radio, MOD_2FSK);
@@ -208,7 +206,7 @@ void send2FSK(radio_t radio, radioMSG_t *msg) {
 		{      
 			case 6: // TX-delay
 				txj++;
-				if(txj > TXDELAY) {
+				if(txj > FSK_PREDELAY) {
 					txj = 0;
 					txs = 7;
 				}
@@ -229,7 +227,7 @@ void send2FSK(radio_t radio, radioMSG_t *msg) {
 				break;
 
 			case 8:
-				if(txi < ASCII) {
+				if(txi < FSK_ASCII) {
 					txi++;
 					MOD_GPIO_SET(radio, txc & 1);
 					txc = txc >> 1;
@@ -241,18 +239,18 @@ void send2FSK(radio_t radio, radioMSG_t *msg) {
 				break;
 
 			case 9:
-				if(STOPBITS == 2)
+				if(FSK_STOPBITS == 2)
 					MOD_GPIO_SET(radio, HIGH); // Stop Bit
 				txs = 7;
 		}
 
 		// Synchronization
-		time = chThdSleepUntilWindowed(time, time + MS2ST(5));
+		time = chThdSleepUntilWindowed(time, time + US2ST(1667));
 	}
 
 	// Shutdown radio
-	chThdSleepMilliseconds(100);
-	radioShutdown(radio);	// Shutdown radio
+	chThdSleepMilliseconds(50);	
+	radioShutdown(radio);		// Shutdown radio
 }
 
 

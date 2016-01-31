@@ -32,7 +32,7 @@ THD_FUNCTION(modulePOS, arg) {
 
 		switch(parm->protocol) {
 
-			case PROT_APRS:
+			case PROT_APRS_AFSK:
 				msg.mod = MOD_AFSK;
 				msg.freq = (*fptr)();
 				msg.power = parm->power;
@@ -41,7 +41,7 @@ THD_FUNCTION(modulePOS, arg) {
 				chMBPost(&radioMBP, (msg_t)&msg, 0);
 				break;
 
-			case PROT_UKHAS:
+			case PROT_UKHAS_2FSK:
 				msg.mod = MOD_2FSK;
 				msg.freq = (*fptr)();
 				msg.power = parm->power;
@@ -52,7 +52,7 @@ THD_FUNCTION(modulePOS, arg) {
 				chMBPost(&radioMBP, (msg_t)&msg, 0);
 				break;
 
-			case PROT_CW:
+			case PROT_RAW_CW:
 				msg.mod = MOD_CW;
 				msg.freq = (*fptr)();
 				msg.power = parm->power;
@@ -63,7 +63,7 @@ THD_FUNCTION(modulePOS, arg) {
 				break;
 
 			default:
-				TRACE_ERROR("POS  > Unsupported protocol selected for module POSITION");
+				TRACE_ERROR("POS  > Unsupported modulation/protocol selected for module POSITION");
 		}
 
 		time = chThdSleepUntilWindowed(time, time + S2ST(parm->cycle)); // Wait until time + cycletime

@@ -31,7 +31,7 @@ uint32_t outdiv;
  * oscillator voltage.
  * @param mv Oscillator voltage in mv
  */
-void Si446x_Init(radio_t radio, modulation_t modem_type) {
+void Si446x_Init(radio_t radio, mod_t modulation) {
 	// Tracing
 	TRACE_INFO("SI %d > Initialize Si4x6x", radio);
 
@@ -88,7 +88,7 @@ void Si446x_Init(radio_t radio, modulation_t modem_type) {
 	Si446x_write(radio, gpio_pin_cfg_command, 8);
 
 	// Set modem
-	switch(modem_type)
+	switch(modulation)
 	{
 		case MOD_AFSK:
 			setModemAFSK(radio);
@@ -99,6 +99,8 @@ void Si446x_Init(radio_t radio, modulation_t modem_type) {
 		case MOD_2FSK:
 			setModem2FSK(radio);
 			break;
+		case MOD_DOMINOEX16:
+			TRACE_WARN("SI %d > Unimplemented modulation %s", radio, VAL2MOULATION(modulation)); // TODO: Implement DominoEX16
 	}
 
 	// Temperature readout

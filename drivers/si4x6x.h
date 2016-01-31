@@ -15,7 +15,7 @@
 #define RADIO_WITHIN_FREQ_RANGE(frequ)		((frequ) >= 119000000 && (frequ) <= 1050000000)
 #define RADIO_MAX_PWR(radio)				(radio == RADIO_2M ? RADIO1_MAX_PWR : RADIO2_MAX_PWR)
 
-void Si446x_Init(radio_t radio, modulation_t modem_type);
+void Si446x_Init(radio_t radio, mod_t modulation);
 void Si446x_write(radio_t radio, uint8_t* txData, uint32_t len);
 void setFrequency(radio_t radio, uint32_t freq, uint16_t shift);
 void setShift(radio_t radio, uint16_t shift);

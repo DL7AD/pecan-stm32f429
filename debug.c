@@ -10,5 +10,5 @@ const SerialConfig uart_config =
     0           // CR3 register
 };
 
-mutex_t trace_mtx; // Used internal to synchronize multiple chprintf
+mutex_t trace_mtx; // Used internal to synchronize multiple chprintf in debug.h
 

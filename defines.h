@@ -36,30 +36,37 @@
 
 typedef uint32_t radio_t;
 
+// Sleep mode type
 typedef enum {
 	MOD_ACTIVE,
 	MOD_SLEEP
 } smode_t;
 
+// Protocol type
+typedef enum {
+	PROT_UKHAS_2FSK,
+	PROT_UKHAS_DOMINOEX16,
+	PROT_APRS_AFSK,
+	PROT_SSDV_2FSK,
+	PROT_SSDV_APRS_AFSK,
+	PROT_RAW_CW
+} prot_t;
+
+// Modulation type
 typedef enum {
 	MOD_CW,
 	MOD_2FSK,
+	MOD_DOMINOEX16,
 	MOD_AFSK
-} modulation_t;
+} mod_t;
 
-typedef enum {
-	PROT_CW,
-	PROT_SSDV,
-	PROT_APRS,
-	PROT_UKHAS
-} protocol_t;
-
+// Radio message type
 typedef struct {
 	uint8_t *msg;		// Message
 	uint32_t bin_len;	// Binary length
 	uint32_t freq;		// Frequency
 	uint8_t power;		// Power
-	modulation_t mod;	// Modulation
+	mod_t mod;			// Modulation
 } radioMSG_t;
 
 #endif

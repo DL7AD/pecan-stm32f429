@@ -11,9 +11,9 @@ extern const SerialConfig uart_config;
 
 // Initializer for serial debug and LEDs
 #define DEBUG_INIT() { \
-	palSetPadMode(GPIOE, 3, PAL_MODE_OUTPUT_PUSHPULL);	/* LED green */ \
-	palSetPadMode(GPIOC, 13, PAL_MODE_OUTPUT_PUSHPULL);	/* LED yellow */ \
-	palSetPadMode(GPIOC, 15, PAL_MODE_OUTPUT_PUSHPULL);	/* LED red */ \
+	palSetPadMode(PORT(LED_GREEN), PIN(LED_GREEN), PAL_MODE_OUTPUT_PUSHPULL); \
+	palSetPadMode(PORT(LED_YELLOW), PIN(LED_YELLOW), PAL_MODE_OUTPUT_PUSHPULL); \
+	palSetPadMode(PORT(LED_RED), PIN(LED_RED), PAL_MODE_OUTPUT_PUSHPULL); \
 	\
 	sdStart(&SD4, &uart_config); \
 	palSetPadMode(GPIOA, 0, PAL_MODE_ALTERNATE(8)); \
@@ -46,13 +46,11 @@ extern const SerialConfig uart_config;
 		"%s Cycle: %d sec\r\n" \
 		"%s Power: %d dBm\r\n" \
 		"%s Frequency: %d.%03d MHz (current)\r\n" \
-		"%s Modulation: %s\r\n" \
 		"%s Protocol: %s", \
 		thd, name, \
 		TRACE_TAB, (parm)->cycle, \
 		TRACE_TAB, (parm)->power, \
 		TRACE_TAB, (*fptr)()/1000000, ((*fptr)()%1000000)/1000, \
-		TRACE_TAB, VAL2MOULATION((parm)->modulation), \
 		TRACE_TAB, VAL2PROTOCOL((parm)->protocol) \
 	); \
 }

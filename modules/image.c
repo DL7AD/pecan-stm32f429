@@ -52,13 +52,13 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 		fptr = parm->frequencyMethod;
 
 		switch(parm->protocol) {
-			case PROT_APRS:
+			case PROT_SSDV_APRS_AFSK:
 				TRACE_ERROR("IMG  > APRS not implemented!");
 
 				//chMBPost(&radioMBP, (msg_t)&msg, 0);
 				break;
 
-			case PROT_SSDV:
+			case PROT_SSDV_2FSK:
 				msg.mod = MOD_2FSK;
 				msg.freq = (*fptr)();
 				msg.power = parm->power;
@@ -71,7 +71,7 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 				TRACE_ERROR("POS  > Unsupported protocol selected for module POSITION");
 		}
 
-		chThdSleepMilliseconds(20000); // Wait for packet to be flushed
+		chThdSleepMilliseconds(8000); // Wait for packet to be flushed
 
 		i++;
 	}
