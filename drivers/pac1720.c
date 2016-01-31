@@ -55,6 +55,8 @@ THD_FUNCTION(pac1720_thd, arg)
 		int16_t discharge = pac1720_getPowerDischarge();
 		pac1720_charge += charge - discharge;
 		pac1720_counter++;
+
+		chThdSleepMilliseconds(100);
 	}
 }
 
@@ -71,5 +73,5 @@ void pac1720_init(void)
 	write8(PAC1720_ADDRESS, PAC1720_CH2_VSENSE_SAMP_CONFIG, 0x53);
 
 	TRACE_INFO("PAC  > Init PAC1720 continuous measurement");
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(256), NORMALPRIO, pac1720_thd, NULL);
+	//chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(256), NORMALPRIO, pac1720_thd, NULL);
 }

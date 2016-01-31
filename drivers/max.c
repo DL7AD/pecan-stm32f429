@@ -367,7 +367,7 @@ bool GPS_Init(void) {
 	// Initialize pins
 	TRACE_INFO("GPS  > Init pins");
 	palSetPadMode(PORT(GPS_RESET), PIN(GPS_RESET), PAL_MODE_OUTPUT_PUSHPULL);	// GPS_RESET
-	palSetPadMode(PORT(GPS_OFF), PIN(GPS_OFF), PAL_MODE_OUTPUT_PUSHPULL);	// GPS_OFF
+	palSetPadMode(PORT(GPS_OFF), PIN(GPS_OFF), PAL_MODE_OUTPUT_PUSHPULL);		// GPS_OFF
 
 	// Switch MOSFET
 	TRACE_INFO("GPS  > Switch on");
