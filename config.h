@@ -35,8 +35,8 @@
 
 #define MODULES() { \
                   /* Cycle Sleep Frequency         Power Protocol       */ \
-/*	MODULE_IMAGE    (300,  NULL, CUSTOM_FREQ,      10,   PROT_SSDV_2FSK );*/ \
-	MODULE_POSITION (120,  NULL, CUSTOM_FREQ,      10,   PROT_UKHAS_2FSK); \
+	MODULE_IMAGE    (300,  NULL, CUSTOM_FREQ,      10,   PROT_SSDV_2FSK ); \
+/*	MODULE_POSITION (120,  NULL, CUSTOM_FREQ,      10,   PROT_UKHAS_2FSK);*/ \
 	MODULE_SATELLITE(60,   NULL, APRS_ISS_FREQ,    33,   PROT_APRS_AFSK ); \
 	MODULE_LOG      (120,  NULL, APRS_REGION_FREQ, 10,   PROT_APRS_AFSK ); \
 }

@@ -33,7 +33,7 @@
 
 #define MODULE_IMAGE(CYCLE,SLEEP,FREQ,PWR,PROT) { \
 	ARG2PARM("IMG", CYCLE,SLEEP,FREQ,PWR,PROT); \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(8192), NORMALPRIO, moduleIMG, parm); \
+	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(8192), HIGHPRIO, moduleIMG, parm); \
 	modules[moduleCount++] = parm; \
 }
 

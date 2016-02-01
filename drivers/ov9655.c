@@ -193,7 +193,7 @@ void OV9655_Snapshot2RAM(void)
 		uint16_t color;
 
 		while(buffNum <= lines) { // Wait for data by DMA
-			chThdSleepMilliseconds(10);
+			chThdSleepMicroseconds(100);
 		}
 
 		for (x = 0; x < OV9655_MAXX-15; x += 16)
@@ -231,7 +231,6 @@ void OV9655_Snapshot2RAM(void)
 	}
 
 	// Add JPEG footer to buffer
-	chThdSleepMilliseconds(100);
 	huffman_stop();
 }
 
@@ -243,7 +242,9 @@ void OV9655_Snapshot2RAM(void)
 void dma_avail(uint32_t flags)
 {
 	(void)flags;
+	palWritePad(PORT(LED_YELLOW), PIN(LED_YELLOW), true);
 	buffNum++;
+	palWritePad(PORT(LED_YELLOW), PIN(LED_YELLOW), false);
 }
 
 /**
@@ -289,9 +290,6 @@ void OV9655_InitDCMI(void)
   */
 void OV9655_InitGPIO(void)
 {
-	palSetPadMode(GPIOA, 8, PAL_MODE_ALTERNATE(0)); // PA8    -> XCLK
-	RCC->CFGR = (RCC->CFGR & (uint32_t)0xF8FFFFFF) | (uint32_t)0x04000000;//RCC->CFGR = (RCC->CFGR & (uint32_t)0xFC4FFFFF) | (1 << 0x6);
-
 	palSetPadMode(GPIOA, 4, PAL_MODE_ALTERNATE(13)); // HSYNC -> PA4
 	palSetPadMode(GPIOA, 6, PAL_MODE_ALTERNATE(13)); // PCLK  -> PA6
 	palSetPadMode(GPIOB, 7, PAL_MODE_ALTERNATE(13)); // VSYNC -> PB7
@@ -309,6 +307,12 @@ void OV9655_InitGPIO(void)
 	i2cCamInit();
 }
 
+void OV9655_InitClockout(void)
+{
+	palSetPadMode(GPIOA, 8, PAL_MODE_ALTERNATE(0)); // PA8    -> XCLK
+	RCC->CFGR = (RCC->CFGR & 0xF8FFFFFF) | (0x4 << 24);
+}
+
 uint32_t OV9655_getBuffer(uint8_t** buffer) {
 	*buffer = jpeg;
 	return jpeg_pos;
@@ -323,6 +327,7 @@ void OV9655_TransmitConfig(void) {
 
 void OV9655_init(void) {
 	TRACE_INFO("CAM  > Init pins");
+	OV9655_InitClockout();
 	OV9655_InitGPIO();
 
 	// Power on OV9655

@@ -17,7 +17,7 @@ uint32_t error = 0;
   * LED blinking routine
   * RED LED blinks: One or more modules crashed (software watchdog)
   * GREEN LED blinks: I'm alive! (STM32 crashed if not blinking)
-  * YELLOW LED: reserved
+  * YELLOW LED: Camera takes a photo (See image.c)
   */
 static void led_cb(void *led_sw) {
 	// Switch LEDs

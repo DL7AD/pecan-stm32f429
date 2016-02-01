@@ -71,7 +71,7 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 				TRACE_ERROR("POS  > Unsupported protocol selected for module POSITION");
 		}
 
-		chThdSleepMilliseconds(8000); // Wait for packet to be flushed
+		chThdSleepMilliseconds(7000); // Wait for packet to be flushed
 
 		i++;
 	}
@@ -101,7 +101,9 @@ THD_FUNCTION(moduleIMG, arg) {
 
 		// Sample data from DCMI through DMA to RAM
 		TRACE_INFO("IMG  > Capture image");
+		palClearPad(PORT(LED_YELLOW), PIN(LED_YELLOW));
 		OV9655_Snapshot2RAM();
+		palSetPad(PORT(LED_YELLOW), PIN(LED_YELLOW));
 
 		uint8_t *image;
 		uint32_t image_len = OV9655_getBuffer(&image);
