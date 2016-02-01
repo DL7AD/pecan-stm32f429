@@ -47,6 +47,7 @@ int main(void) {
 	initEssentialModules();		// Startup required modules (input/output modules)
 	initModules();				// Startup optional modules (eg. POSITION, LOG, ...)
 	pac1720_init();				// Startup current measurement
+	initADC();					// Init ADCs
 
 	// Initialize LED timer
 	chVTObjectInit(&vt);

@@ -141,6 +141,7 @@ CSRC = $(STARTUPSRC) \
        math/base64.c \
        ptime.c \
        radio.c \
+       padc.c \
        math/sgp4.c \
        main.c
 
