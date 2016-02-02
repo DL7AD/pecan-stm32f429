@@ -69,7 +69,7 @@ THD_FUNCTION(moduleRADIO, arg) {
 							"%s Radio %d\r\n"
 							"%s Frequency %d MHz\r\n"
 							"%s Power %d dBm (%d)\r\n"
-							"%s Modulation %s",msg,
+							"%s Modulation %s",
 							TRACE_TAB, radio,
 							TRACE_TAB, msg->freq,
 							TRACE_TAB, msg->power, dBm2powerLvl(msg->power),
