@@ -65,7 +65,7 @@ THD_FUNCTION(moduleRADIO, arg) {
 			}
 
 			if(radio) { // Radio found
-				TRACE_INFO(	"RAD  > Transmit on radio (%x)\r\n"
+				TRACE_INFO(	"RAD  > Transmit on radio\r\n"
 							"%s Radio %d\r\n"
 							"%s Frequency %d MHz\r\n"
 							"%s Power %d dBm (%d)\r\n"
