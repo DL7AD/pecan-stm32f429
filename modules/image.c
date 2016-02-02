@@ -87,16 +87,16 @@ THD_FUNCTION(moduleIMG, arg) {
 	TRACE_INFO("IMG  > Startup module IMAGE");
 	TRACE_MODULE_INFO(parm, "IMG", "IMAGE");
 
-	// Init I2C
-	TRACE_INFO("IMG  > Init camera I2C");
-	i2cCamInit();
-
-	// Init OV9655
-	OV9655_init();
-
 	systime_t time = chVTGetSystemTimeX();
 	while(true)
 	{
+		// Init I2C
+		TRACE_INFO("IMG  > Init camera I2C");
+		i2cCamInit();
+
+		// Init OV9655
+		OV9655_init();
+
 		parm->lastCycle = chVTGetSystemTimeX(); // Watchdog timer
 		TRACE_INFO("IMG  > Do module IMAGE cycle");
 

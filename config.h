@@ -21,7 +21,8 @@
 #define FSK_CALLSIGN			"D-11"			/* UKHAS callsign for RTTY or DominoEX */
 #define FSK_PREDELAY			0				/* 2FSK pre-transmission delay */
 #define FSK_POSTDELAY			0				/* 2FSK post-transmission delay */
-#define FSK_BAUD				600				/* 2FSK baudrate */
+#define FSK_BAUD				600			/* 2FSK baudrate */
+#define FSK_SHIFT				1000			/* 2FSK baudrate */
 #define FSK_STOPBITS			2				/* 2FSK stopbits */
 #define FSK_ASCII				8				/* 2FSK bits */
 

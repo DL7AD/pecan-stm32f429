@@ -195,7 +195,7 @@ void send2FSK(radio_t radio, radioMSG_t *msg) {
 	// Initialize radio and tune
 	Si446x_Init(radio, MOD_2FSK);
 	MOD_GPIO_SET(radio, HIGH);
-	radioTune(radio, msg->freq, 850, msg->power);
+	radioTune(radio, msg->freq, FSK_SHIFT, msg->power);
 
 	// Transmit data (Software UART)
 	uint8_t txs = 6;	// TX state

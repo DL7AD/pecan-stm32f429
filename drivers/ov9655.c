@@ -65,7 +65,7 @@ conv Cb8x8[8][8];
 conv Cr8x8[8][8];
 uint64_t subsclk = 0;
 uint64_t readclk = 0;
-uint8_t jpeg[50*1024];
+uint8_t jpeg[20*1024]; // JPEG output buffer
 uint32_t jpeg_pos = 0;
 
 
@@ -177,54 +177,17 @@ void OV9655_Snapshot2RAM(void)
 {
 	// Reset output pointer
 	jpeg_pos = 0;
+	buffNum = 0;
 
 	// Add JPEG header to buffer
 	huffman_start(OV9655_MAXY & -16, OV9655_MAXX & -16);
 
+	// DCMI init
+	OV9655_InitDCMI();
+
 	// Encode JPEG data
-	uint32_t lines = 0;
-	while(lines < OV9655_MAXY / 16)
-	{
-		unsigned x,xb,yb;
-		uint16_t color;
-
-		while(buffNum <= lines) { // Wait for data by DMA
-			chThdSleepMicroseconds(100);
-		}
-
-		for (x = 0; x < OV9655_MAXX-15; x += 16)
-		{
-			// Create 16x16 block
-			for(yb=0;yb<16;yb++) {
-				for(xb=x;xb<x+16;xb++) {
-					color=ov9655_ram_buffer[lines%2][yb*OV9655_MAXX+xb];
-					RGB16x16[yb][xb-x].Blue = ((color&0x001F)<<3); // 5bit blue
-					RGB16x16[yb][xb-x].Green = ((color&0x07E0)>>3); // 6bit green
-					RGB16x16[yb][xb-x].Red = ((color&0xF800)>>8); // 5bit red
-				}
-			}
-
-			// Encode JPEG
-			// getting subsampled Cb and Cr
-			subsample2(RGB16x16, Y8x8, Cb8x8, Cr8x8);
-
-			dct(Y8x8[0][0], Y8x8[0][0]);	// 1 Y-transform
-			dct(Y8x8[0][1], Y8x8[0][1]);	// 2 Y-transform
-			dct(Y8x8[1][0], Y8x8[1][0]);	// 3 Y-transform
-			dct(Y8x8[1][1], Y8x8[1][1]);	// 4 Y-transform
-			dct(Cb8x8, Cb8x8);				// Cb-transform
-			dct(Cr8x8, Cr8x8);				// Cr-transform
-
-			huffman_encode(HUFFMAN_CTX_Y, (short*)Y8x8[0][0]);
-			huffman_encode(HUFFMAN_CTX_Y, (short*)Y8x8[0][1]);
-			huffman_encode(HUFFMAN_CTX_Y, (short*)Y8x8[1][0]);
-			huffman_encode(HUFFMAN_CTX_Y, (short*)Y8x8[1][1]);
-			huffman_encode(HUFFMAN_CTX_Cb, (short*)Cb8x8);
-			huffman_encode(HUFFMAN_CTX_Cr, (short*)Cr8x8);
-		}
-
-		lines++;
-	}
+	while(buffNum < OV9655_MAXY / 16)
+		chThdSleepMilliseconds(10);
 
 	// Add JPEG footer to buffer
 	huffman_stop();
@@ -238,7 +201,47 @@ void OV9655_Snapshot2RAM(void)
 void dma_avail(uint32_t flags)
 {
 	(void)flags;
+
+	unsigned x,xb,yb;
+	uint16_t color;
+
+	for(x = 0; x < OV9655_MAXX-15; x += 16)
+	{
+		// Create 16x16 block
+		for(yb=0; yb<16; yb++) {
+			for(xb=x; xb<x+16; xb++) {
+				color=ov9655_ram_buffer[buffNum%2][yb*OV9655_MAXX+xb];
+				RGB16x16[yb][xb-x].Blue = ((color&0x001F)<<3);	// 5bit blue
+				RGB16x16[yb][xb-x].Green = ((color&0x07E0)>>3);	// 6bit green
+				RGB16x16[yb][xb-x].Red = ((color&0xF800)>>8);	// 5bit red
+			}
+		}
+
+		// Encode JPEG
+		// getting subsampled Cb and Cr
+		subsample2(RGB16x16, Y8x8, Cb8x8, Cr8x8);
+
+		dct(Y8x8[0][0], Y8x8[0][0]);	// 1 Y-transform
+		dct(Y8x8[0][1], Y8x8[0][1]);	// 2 Y-transform
+		dct(Y8x8[1][0], Y8x8[1][0]);	// 3 Y-transform
+		dct(Y8x8[1][1], Y8x8[1][1]);	// 4 Y-transform
+		dct(Cb8x8, Cb8x8);				// Cb-transform
+		dct(Cr8x8, Cr8x8);				// Cr-transform
+
+		huffman_encode(HUFFMAN_CTX_Y, (short*)Y8x8[0][0]);
+		huffman_encode(HUFFMAN_CTX_Y, (short*)Y8x8[0][1]);
+		huffman_encode(HUFFMAN_CTX_Y, (short*)Y8x8[1][0]);
+		huffman_encode(HUFFMAN_CTX_Y, (short*)Y8x8[1][1]);
+		huffman_encode(HUFFMAN_CTX_Cb, (short*)Cb8x8);
+		huffman_encode(HUFFMAN_CTX_Cr, (short*)Cr8x8);
+	}
+
 	buffNum++;
+
+	if(buffNum == OV9655_MAXY / 16) // Disable DMA Stream when finished
+	{
+		dmaStreamDisable(STM32_DMA2_STREAM1);
+	}
 }
 
 /**
