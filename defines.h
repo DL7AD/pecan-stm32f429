@@ -67,6 +67,7 @@ typedef struct {
 	uint32_t freq;		// Frequency
 	uint8_t power;		// Power
 	mod_t mod;			// Modulation
+	bool done;			// Transmitted flag
 } radioMSG_t;
 
 #endif

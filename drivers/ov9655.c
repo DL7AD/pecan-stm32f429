@@ -175,15 +175,11 @@ void write_jpeg(const unsigned char buff[], unsigned size)
 
 void OV9655_Snapshot2RAM(void)
 {
+	// Reset output pointer
+	jpeg_pos = 0;
+
 	// Add JPEG header to buffer
 	huffman_start(OV9655_MAXY & -16, OV9655_MAXX & -16);
-
-	// DCMI init
-	OV9655_InitDCMI();
-	// DCMI enable
-	DCMI->CR |= (uint32_t)DCMI_CR_ENABLE;
-	// Capture enable
-	DCMI->CR |= (uint32_t)DCMI_CR_CAPTURE;
 
 	// Encode JPEG data
 	uint32_t lines = 0;
@@ -242,9 +238,7 @@ void OV9655_Snapshot2RAM(void)
 void dma_avail(uint32_t flags)
 {
 	(void)flags;
-	palWritePad(PORT(LED_YELLOW), PIN(LED_YELLOW), true);
 	buffNum++;
-	palWritePad(PORT(LED_YELLOW), PIN(LED_YELLOW), false);
 }
 
 /**
@@ -281,6 +275,11 @@ void OV9655_InitDCMI(void)
 				DCMI_CR_FCRC_1 | DCMI_CR_EDM_0 | DCMI_CR_EDM_1); 
 	DCMI->CR =	DCMI_CaptureMode_SnapShot | DCMI_SynchroMode_Hardware | DCMI_PCKPolarity_Falling |
 				DCMI_VSPolarity_High | DCMI_HSPolarity_High | DCMI_CaptureRate_All_Frame | DCMI_ExtendedDataMode_8b;
+
+	// DCMI enable
+	DCMI->CR |= (uint32_t)DCMI_CR_ENABLE;
+	// Capture enable
+	DCMI->CR |= (uint32_t)DCMI_CR_CAPTURE;
 }
 
 /**
@@ -338,7 +337,12 @@ void OV9655_init(void) {
 	TRACE_INFO("CAM  > Transmit config to camera");
 	OV9655_TransmitConfig();
 
+	// DCMI DMA
 	TRACE_INFO("CAM  > Init DMA");
 	OV9655_InitDMA();
+
+	// DCMI Init
+	TRACE_INFO("CAM  > Init DCMI");
+	OV9655_InitDCMI();
 }
 

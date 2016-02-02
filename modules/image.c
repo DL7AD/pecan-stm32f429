@@ -63,6 +63,7 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 				msg.freq = (*fptr)();
 				msg.power = parm->power;
 				msg.msg = pkt;
+				msg.done = false;
 				msg.bin_len = 8*sizeof(pkt);
 				chMBPost(&radioMBP, (msg_t)&msg, 0);
 				break;
@@ -71,7 +72,8 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 				TRACE_ERROR("POS  > Unsupported protocol selected for module POSITION");
 		}
 
-		chThdSleepMilliseconds(7000); // Wait for packet to be flushed
+		while(!msg.done) // Flush message so buffer can be used again
+			chThdSleepMilliseconds(1);
 
 		i++;
 	}
@@ -85,19 +87,18 @@ THD_FUNCTION(moduleIMG, arg) {
 	TRACE_INFO("IMG  > Startup module IMAGE");
 	TRACE_MODULE_INFO(parm, "IMG", "IMAGE");
 
+	// Init I2C
+	TRACE_INFO("IMG  > Init camera I2C");
+	i2cCamInit();
+
+	// Init OV9655
+	OV9655_init();
+
 	systime_t time = chVTGetSystemTimeX();
 	while(true)
 	{
 		parm->lastCycle = chVTGetSystemTimeX(); // Watchdog timer
 		TRACE_INFO("IMG  > Do module IMAGE cycle");
-		TRACE_WARN("IMG  > Module IMAGE not fully implemented"); // FIXME
-
-		// Init I2C
-		TRACE_INFO("IMG  > Init camera I2C");
-		i2cCamInit();
-
-		// Init OV9655
-		OV9655_init();
 
 		// Sample data from DCMI through DMA to RAM
 		TRACE_INFO("IMG  > Capture image");

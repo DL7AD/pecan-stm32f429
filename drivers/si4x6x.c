@@ -32,9 +32,6 @@ uint32_t outdiv;
  * @param mv Oscillator voltage in mv
  */
 void Si446x_Init(radio_t radio, mod_t modulation) {
-	// Tracing
-	TRACE_INFO("SI %d > Initialize Si4x6x", radio);
-
 	// Initialize SPI
 	palSetPadMode(GPIOB, 13, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_HIGHEST);		// SCK
 	palSetPadMode(GPIOB, 14, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_HIGHEST);		// MISO
@@ -102,9 +99,6 @@ void Si446x_Init(radio_t radio, mod_t modulation) {
 		case MOD_DOMINOEX16:
 			TRACE_WARN("SI %d > Unimplemented modulation %s", radio, VAL2MOULATION(modulation)); // TODO: Implement DominoEX16
 	}
-
-	// Temperature readout
-	TRACE_INFO("SI %d > Transmitter temperature %d degC", radio, Si446x_getTemperature(radio));
 }
 
 void Si446x_write(radio_t radio, uint8_t* txData, uint32_t len) {
@@ -295,9 +289,6 @@ void stopTx(radio_t radio) {
 }
 
 void radioShutdown(radio_t radio) {
-	// Tracing
-	TRACE_INFO("SI %d > Shutdown Si4x6x", radio);
-
 	RADIO_SDN_SET(radio, true);	// Power down chip
 	RF_GPIO1_SET(radio, false);	// Set GPIO1 low
 }

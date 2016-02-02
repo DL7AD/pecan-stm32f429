@@ -61,7 +61,7 @@
 
 #define initModules() MODULES()
 #define initEssentialModules() { \
-	MODULE_TRACKING(CYCLE_TIME); /* Tracker data input */ \
+	/*MODULE_TRACKING(CYCLE_TIME);*/ /* Tracker data input */ \
 	MODULE_RADIO(); /* Tracker data output */ \
 	chThdSleepMilliseconds(1000); \
 }

@@ -37,13 +37,14 @@ uint32_t getCustomFrequency(void) {
 
 THD_FUNCTION(moduleRADIO, arg) {
 	module_params_t* parm = (module_params_t*)arg;
+	time_t lastMessage[2];
 
 	// Print infos
 	TRACE_INFO("RAD  > Startup module RADIO");
 
 	// Setup mailbox
 	TRACE_INFO("RAD  > Setup radio mailbox");
-	chMBObjectInit(&radioMBP, (msg_t*)buf, sizeof(buf));
+	chMBObjectInit(&radioMBP, (msg_t*)buf, sizeof(buf)/sizeof(radioMSG_t));
 
 	while(true)
 	{
@@ -64,11 +65,11 @@ THD_FUNCTION(moduleRADIO, arg) {
 			}
 
 			if(radio) { // Radio found
-				TRACE_INFO(	"RAD  > Transmit on radio\r\n"
+				TRACE_INFO(	"RAD  > Transmit on radio (%x)\r\n"
 							"%s Radio %d\r\n"
 							"%s Frequency %d MHz\r\n"
 							"%s Power %d dBm (%d)\r\n"
-							"%s Modulation %s",
+							"%s Modulation %s",msg,
 							TRACE_TAB, radio,
 							TRACE_TAB, msg->freq,
 							TRACE_TAB, msg->power, dBm2powerLvl(msg->power),
@@ -90,6 +91,9 @@ THD_FUNCTION(moduleRADIO, arg) {
 						break;
 				}
 
+				msg->done = true; // Set transmitted flag
+				lastMessage[radio] = chVTGetSystemTimeX(); // Mark time for radio shutdown
+
 			} else { // Error
 
 				TRACE_ERROR("RAD  > No radio available for this frequency\r\n"
@@ -104,8 +108,13 @@ THD_FUNCTION(moduleRADIO, arg) {
 				);
 
 			}
+		} else {
+			for(uint8_t i=0; i<2; i++) {
+				if(ST2MS(chVTGetSystemTimeX() - lastMessage[i]) >= RADIO_TIMEOUT)
+					radioShutdown(i); // Shutdown radio
+			}
 		}
-		chThdSleepMilliseconds(100);
+		chThdSleepMilliseconds(1);
 	}
 }
 
@@ -132,8 +141,6 @@ void sendAFSK(radio_t radio, radioMSG_t *msg) {
 				i++;
 		lastSystemTime++;
 	}
-
-	radioShutdown(radio);	// Shutdown radio
 }
 
 bool afsk_handler(radio_t radio, radioMSG_t *msg) {
@@ -182,9 +189,6 @@ void sendCW(radio_t radio, radioMSG_t *msg) {
 
 		time = chThdSleepUntilWindowed(time, time + MS2ST(10));
 	}
-
-	// Shutdown radio
-	radioShutdown(radio);	// Shutdown radio
 }
 
 void send2FSK(radio_t radio, radioMSG_t *msg) {
@@ -247,10 +251,6 @@ void send2FSK(radio_t radio, radioMSG_t *msg) {
 		// Synchronization
 		time = chThdSleepUntilWindowed(time, time + US2ST(1000000 / FSK_BAUD));
 	}
-
-	// Shutdown radio
-	chThdSleepMilliseconds(50);	
-	radioShutdown(radio);		// Shutdown radio
 }
 
 

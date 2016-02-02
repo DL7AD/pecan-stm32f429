@@ -19,8 +19,8 @@
 
 // FSK configuration
 #define FSK_CALLSIGN			"D-11"			/* UKHAS callsign for RTTY or DominoEX */
-#define FSK_PREDELAY			500				/* 2FSK pre-transmission delay */
-#define FSK_POSTDELAY			100				/* 2FSK post-transmission delay */
+#define FSK_PREDELAY			0				/* 2FSK pre-transmission delay */
+#define FSK_POSTDELAY			0				/* 2FSK post-transmission delay */
 #define FSK_BAUD				600				/* 2FSK baudrate */
 #define FSK_STOPBITS			2				/* 2FSK stopbits */
 #define FSK_ASCII				8				/* 2FSK bits */
@@ -34,9 +34,12 @@
 #define SAT_TLE1 				"1 25544U 98067A   15353.57439117  .00014117  00000-0  21367-3 0  9990" /* ISS (ZARYA) */
 #define SAT_TLE2 				"2 25544  51.6441 238.8813 0008350 299.4829 139.1404 15.54920935976888"
 
+// Radio
+#define RADIO_TIMEOUT			300				/* Radio transmission timeout in ms (radio switched off after x ms in idling) */
+
 #define MODULES() { \
                   /* Cycle (sec)  Sleep                       Frequency         Power Protocol       */ \
-	MODULE_IMAGE    (300,         SLEEP_WHEN_BATT_BELOW_3V5,  CUSTOM_FREQ,      10,   PROT_SSDV_2FSK ); \
+	MODULE_IMAGE    (0,           SLEEP_WHEN_BATT_BELOW_3V5,  CUSTOM_FREQ,      10,   PROT_SSDV_2FSK ); \
 /*	MODULE_POSITION (120,         SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_UKHAS_2FSK);*/ \
 /*	MODULE_SATELLITE(60,          SLEEP_WHEN_ISS_NOT_VISIBLE, APRS_ISS_FREQ,    33,   PROT_APRS_AFSK );*/ \
 /*	MODULE_LOG      (120,         SLEEP_WHEN_BATT_BELOW_3V3,  APRS_REGION_FREQ, 10,   PROT_APRS_AFSK );*/ \
