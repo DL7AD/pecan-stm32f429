@@ -31,6 +31,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 	);
 
 	uint32_t id = 0;
+	lastTrackPoint = &trackPoints[0];
 
 	systime_t time = chVTGetSystemTimeX();
 	while(true)

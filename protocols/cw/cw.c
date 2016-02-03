@@ -2,7 +2,6 @@
 #include "hal.h"
 #include "cw.h"
 #include "debug.h"
-#include <math.h>
 
 // CW use 10ms ticks
 
@@ -262,22 +261,5 @@ void CW_encode_char(char letter)
 		break;
 	}
 	blank(24);
-}
-
-void positionToMaidenhead(double lat, double lon, char m[])
-{
-	lon = lon + 180;
-	lat = lat + 90;
-
-	m[0] = ((uint8_t)'A') + ((uint8_t)(lon / 20));
-	m[1] = ((uint8_t)'A') + ((uint8_t)(lat / 10));
-
-	m[2] = ((uint8_t)'0') + ((uint8_t)(fmod(lon, 20)/2));
-	m[3] = ((uint8_t)'0') + ((uint8_t)(fmod(lat, 10)/1));
-
-	m[4] = ((uint8_t)'A') + ((uint8_t)((lon - ( ((uint8_t)(lon/2))*2)) / (5.0/60.0)));
-	m[5] = ((uint8_t)'A') + ((uint8_t)((lat - ( ((uint8_t)(lat/1))*1)) / (2.5/60.0)));
-
-	m[6] = 0;
 }
 

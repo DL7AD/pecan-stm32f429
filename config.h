@@ -25,6 +25,10 @@
 #define FSK_SHIFT				1000			/* 2FSK baudrate */
 #define FSK_STOPBITS			2				/* 2FSK stopbits */
 #define FSK_ASCII				8				/* 2FSK bits */
+#define FSK_FORMAT				"<CALL>,<ID>,<DATE>,<TIME>,<LAT>,<LON>,<ALT>,<SATS>,<TTFF>,<VBAT>,<VSOL>,<CHARGE>,<IPRESS>,<ITEMP>,<IHUM>,<EPRESS>,<ETEMP>,<EHUM>"
+
+// CW
+#define CW_FORMAT				"<CALL> <LOC> <ALT>M PSE QSL"
 
 // Log configuration
 #define LOG_SIZE				14				/* Log size in days */
@@ -41,7 +45,8 @@
 #define MODULES() { \
                   /* Cycle (sec)  Sleep                       Frequency         Power Protocol       */ \
 /*	MODULE_IMAGE    (0,           SLEEP_WHEN_BATT_BELOW_3V5,  CUSTOM_FREQ,      10,   PROT_SSDV_2FSK );*/ \
-	MODULE_POSITION (120,         SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_UKHAS_2FSK); \
+/*	MODULE_POSITION (120,         SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_UKHAS_2FSK);*/ \
+	MODULE_POSITION (120,         SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_RAW_CW    ); \
 /*	MODULE_SATELLITE(60,          SLEEP_WHEN_ISS_NOT_VISIBLE, APRS_ISS_FREQ,    33,   PROT_APRS_AFSK );*/ \
 /*	MODULE_LOG      (120,         SLEEP_WHEN_BATT_BELOW_3V3,  APRS_REGION_FREQ, 10,   PROT_APRS_AFSK );*/ \
 }
