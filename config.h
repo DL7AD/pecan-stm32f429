@@ -40,8 +40,8 @@
 
 #define MODULES() { \
                   /* Cycle (sec)  Sleep                       Frequency         Power Protocol       */ \
-	MODULE_IMAGE    (0,           SLEEP_WHEN_BATT_BELOW_3V5,  CUSTOM_FREQ,      10,   PROT_SSDV_2FSK ); \
-/*	MODULE_POSITION (120,         SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_UKHAS_2FSK);*/ \
+/*	MODULE_IMAGE    (0,           SLEEP_WHEN_BATT_BELOW_3V5,  CUSTOM_FREQ,      10,   PROT_SSDV_2FSK );*/ \
+	MODULE_POSITION (120,         SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_UKHAS_2FSK); \
 /*	MODULE_SATELLITE(60,          SLEEP_WHEN_ISS_NOT_VISIBLE, APRS_ISS_FREQ,    33,   PROT_APRS_AFSK );*/ \
 /*	MODULE_LOG      (120,         SLEEP_WHEN_BATT_BELOW_3V3,  APRS_REGION_FREQ, 10,   PROT_APRS_AFSK );*/ \
 }

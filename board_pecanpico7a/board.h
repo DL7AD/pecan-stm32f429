@@ -569,7 +569,7 @@
                                      PIN_MODE_ALTERNATE(GPIOC_SD_SCK) |     \
                                      PIN_MODE_ALTERNATE(GPIOC_SD_MOSI) |    \
                                      PIN_MODE_ALTERNATE(GPIOC_SD_MISO) |    \
-                                     PIN_MODE_OUTPUT(GPIOC_LED_YELLOW) |          \
+                                     PIN_MODE_OUTPUT(GPIOC_LED_YELLOW) |    \
                                      PIN_MODE_INPUT(GPIOC_OSC32_IN) |       \
                                      PIN_MODE_OUTPUT(GPIOC_LED_RED))
 #define VAL_GPIOC_OTYPER            (PIN_OTYPE_PUSHPULL(GPIOC_PIN0) |       \
@@ -585,7 +585,7 @@
                                      PIN_OTYPE_PUSHPULL(GPIOC_SD_SCK) |     \
                                      PIN_OTYPE_PUSHPULL(GPIOC_SD_MOSI) |    \
                                      PIN_OTYPE_PUSHPULL(GPIOC_SD_MISO) |    \
-                                     PIN_OTYPE_PUSHPULL(GPIOC_LED_YELLOW) |       \
+                                     PIN_OTYPE_PUSHPULL(GPIOC_LED_YELLOW) | \
                                      PIN_OTYPE_PUSHPULL(GPIOC_OSC32_IN) |   \
                                      PIN_OTYPE_PUSHPULL(GPIOC_LED_RED))
 #define VAL_GPIOC_OSPEEDR           (PIN_OSPEED_VERYLOW(GPIOC_PIN0) |       \
@@ -601,7 +601,7 @@
                                      PIN_OSPEED_HIGH(GPIOC_SD_SCK) |        \
                                      PIN_OSPEED_HIGH(GPIOC_SD_MOSI) |       \
                                      PIN_OSPEED_HIGH(GPIOC_SD_MISO) |       \
-                                     PIN_OSPEED_VERYLOW(GPIOC_LED_YELLOW) |       \
+                                     PIN_OSPEED_VERYLOW(GPIOC_LED_YELLOW) | \
                                      PIN_OSPEED_HIGH(GPIOC_OSC32_IN) |      \
                                      PIN_OSPEED_VERYLOW(GPIOC_LED_RED))
 #define VAL_GPIOC_PUPDR             (PIN_PUPDR_PULLUP(GPIOC_PIN0) |         \
@@ -617,7 +617,7 @@
                                      PIN_PUPDR_PULLUP(GPIOC_SD_SCK) |       \
                                      PIN_PUPDR_PULLUP(GPIOC_SD_MOSI) |      \
                                      PIN_PUPDR_PULLUP(GPIOC_SD_MISO) |      \
-                                     PIN_PUPDR_PULLUP(GPIOC_LED_YELLOW) |         \
+                                     PIN_PUPDR_PULLUP(GPIOC_LED_YELLOW) |   \
                                      PIN_PUPDR_FLOATING(GPIOC_OSC32_IN) |   \
                                      PIN_PUPDR_PULLUP(GPIOC_LED_RED))
 #define VAL_GPIOC_ODR               (PIN_ODR_HIGH(GPIOC_PIN0) |             \
@@ -633,7 +633,7 @@
                                      PIN_ODR_HIGH(GPIOC_SD_SCK) |           \
                                      PIN_ODR_HIGH(GPIOC_SD_MOSI) |          \
                                      PIN_ODR_HIGH(GPIOC_SD_MISO) |          \
-                                     PIN_ODR_HIGH(GPIOC_LED_YELLOW) |             \
+                                     PIN_ODR_HIGH(GPIOC_LED_YELLOW) |       \
                                      PIN_ODR_HIGH(GPIOC_OSC32_IN) |         \
                                      PIN_ODR_HIGH(GPIOC_LED_RED))
 #define VAL_GPIOC_AFRL              (PIN_AFIO_AF(GPIOC_PIN0, 0) |           \
@@ -649,7 +649,7 @@
                                      PIN_AFIO_AF(GPIOC_SD_SCK, 6) |         \
                                      PIN_AFIO_AF(GPIOC_SD_MOSI, 6) |        \
                                      PIN_AFIO_AF(GPIOC_SD_MISO, 6) |        \
-                                     PIN_AFIO_AF(GPIOC_LED_YELLOW, 0) |           \
+                                     PIN_AFIO_AF(GPIOC_LED_YELLOW, 0) |     \
                                      PIN_AFIO_AF(GPIOC_OSC32_IN, 0) |       \
                                      PIN_AFIO_AF(GPIOC_LED_RED, 0))
 
@@ -676,7 +676,7 @@
 #define VAL_GPIOE_MODER             (PIN_MODE_OUTPUT(GPIOE_CAM_OFF) |       \
                                      PIN_MODE_INPUT(GPIOE_PIN1) |           \
                                      PIN_MODE_INPUT(GPIOE_PIN2) |           \
-                                     PIN_MODE_INPUT(GPIOE_LED_GREEN) |           \
+                                     PIN_MODE_INPUT(GPIOE_LED_GREEN) |      \
                                      PIN_MODE_ALTERNATE(GPIOE_CAM_D6) |     \
                                      PIN_MODE_ALTERNATE(GPIOE_CAM_D8) |     \
                                      PIN_MODE_ALTERNATE(GPIOE_CAM_D9) |     \
@@ -692,7 +692,7 @@
 #define VAL_GPIOE_OTYPER            (PIN_OTYPE_PUSHPULL(GPIOE_CAM_OFF) |    \
                                      PIN_OTYPE_PUSHPULL(GPIOE_PIN1) |       \
                                      PIN_OTYPE_PUSHPULL(GPIOE_PIN2) |       \
-                                     PIN_OTYPE_PUSHPULL(GPIOE_LED_GREEN) |       \
+                                     PIN_OTYPE_PUSHPULL(GPIOE_LED_GREEN) |  \
                                      PIN_OTYPE_PUSHPULL(GPIOE_CAM_D6) |     \
                                      PIN_OTYPE_PUSHPULL(GPIOE_CAM_D8) |     \
                                      PIN_OTYPE_PUSHPULL(GPIOE_CAM_D9) |     \
@@ -708,10 +708,10 @@
 #define VAL_GPIOE_OSPEEDR           (PIN_OSPEED_VERYLOW(GPIOE_CAM_OFF) |    \
                                      PIN_OSPEED_VERYLOW(GPIOE_PIN1) |       \
                                      PIN_OSPEED_VERYLOW(GPIOE_PIN2) |       \
-                                     PIN_OSPEED_VERYLOW(GPIOE_LED_GREEN) |       \
-                                     PIN_OSPEED_HIGH(GPIOE_CAM_D6) |    \
-                                     PIN_OSPEED_HIGH(GPIOE_CAM_D8) |    \
-                                     PIN_OSPEED_HIGH(GPIOE_CAM_D9) |    \
+                                     PIN_OSPEED_VERYLOW(GPIOE_LED_GREEN) |  \
+                                     PIN_OSPEED_HIGH(GPIOE_CAM_D6) |        \
+                                     PIN_OSPEED_HIGH(GPIOE_CAM_D8) |        \
+                                     PIN_OSPEED_HIGH(GPIOE_CAM_D9) |        \
                                      PIN_OSPEED_VERYLOW(GPIOE_GPS_OFF) |    \
                                      PIN_OSPEED_VERYLOW(GPIOE_PIN8) |       \
                                      PIN_OSPEED_VERYLOW(GPIOE_PIN9) |       \
@@ -724,7 +724,7 @@
 #define VAL_GPIOE_PUPDR             (PIN_PUPDR_PULLUP(GPIOE_CAM_OFF) |      \
                                      PIN_PUPDR_PULLUP(GPIOE_PIN1) |         \
                                      PIN_PUPDR_PULLUP(GPIOE_PIN2) |         \
-                                     PIN_PUPDR_PULLUP(GPIOE_LED_GREEN) |         \
+                                     PIN_PUPDR_PULLUP(GPIOE_LED_GREEN) |    \
                                      PIN_PUPDR_PULLUP(GPIOE_CAM_D6) |       \
                                      PIN_PUPDR_PULLUP(GPIOE_CAM_D8) |       \
                                      PIN_PUPDR_PULLUP(GPIOE_CAM_D9) |       \
@@ -740,7 +740,7 @@
 #define VAL_GPIOE_ODR               (PIN_ODR_HIGH(GPIOE_CAM_OFF) |          \
                                      PIN_ODR_HIGH(GPIOE_PIN1) |             \
                                      PIN_ODR_HIGH(GPIOE_PIN2) |             \
-                                     PIN_ODR_HIGH(GPIOE_LED_GREEN) |             \
+                                     PIN_ODR_HIGH(GPIOE_LED_GREEN) |        \
                                      PIN_ODR_HIGH(GPIOE_CAM_D6) |           \
                                      PIN_ODR_HIGH(GPIOE_CAM_D8) |           \
                                      PIN_ODR_HIGH(GPIOE_CAM_D9) |           \
@@ -756,7 +756,7 @@
 #define VAL_GPIOE_AFRL              (PIN_AFIO_AF(GPIOE_CAM_OFF, 0) |        \
                                      PIN_AFIO_AF(GPIOE_PIN1, 0) |           \
                                      PIN_AFIO_AF(GPIOE_PIN2, 0) |           \
-                                     PIN_AFIO_AF(GPIOE_LED_GREEN, 0) |           \
+                                     PIN_AFIO_AF(GPIOE_LED_GREEN, 0) |      \
                                      PIN_AFIO_AF(GPIOE_CAM_D6, 13) |        \
                                      PIN_AFIO_AF(GPIOE_CAM_D8, 13) |        \
                                      PIN_AFIO_AF(GPIOE_CAM_D9, 13) |        \
