@@ -112,7 +112,7 @@ void ax25_send_header(const s_address_t addresses[], int num_addresses)
 	crc = 0xffff;
 
 	// Send sync ("a bunch of 0s")
-	for (i = 0; i < APRS_TXDELAY; i++)
+	for (i = 0; i < AFSK_TXDELAY; i++)
 	{
 		ax25_send_sync();
 	}

@@ -18,7 +18,7 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 	uint16_t bi = 0;
 	uint8_t c = SSDV_OK;
 
-	ssdv_enc_init(&ssdv, SSDV_TYPE_NORMAL, FSK_CALLSIGN, ++image_id);
+	ssdv_enc_init(&ssdv, SSDV_TYPE_NORMAL, SSDV_CALLSIGN, ++image_id);
 	ssdv_enc_set_buffer(&ssdv, pkt);
 
 	while(true)

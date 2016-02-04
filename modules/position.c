@@ -10,6 +10,8 @@
 #include <string.h>
 #include <math.h>
 
+char buf[16];
+
 void str_replace(char *string, uint32_t size, char *search, char *replace) {
 	for(uint32_t i=0; string[i] != 0; i++) { // Find search string
 		uint32_t j=0;
@@ -67,10 +69,6 @@ void positionToMaidenhead(char m[], double lat, double lon)
   * Replaces placeholders with variables
   */
 void replace_placeholders(char* fskmsg, uint16_t size, trackPoint_t *trackPoint) {
-	char buf[16];
-
-	str_replace(fskmsg, size, "<CALL>", FSK_CALLSIGN);
-	chsnprintf(buf, sizeof(buf), "%d", trackPoint->id);
 	str_replace(fskmsg, size, "<ID>", buf);
 	chsnprintf(buf, sizeof(buf), "%04d-%02d-%02d", trackPoint->time.year, trackPoint->time.month, trackPoint->time.day);
 	str_replace(fskmsg, size, "<DATE>", buf);
@@ -144,8 +142,10 @@ THD_FUNCTION(modulePOS, arg) {
 
 				char fskmsg[256];
 
-				memcpy(fskmsg, FSK_FORMAT, sizeof(FSK_FORMAT));
+				memcpy(fskmsg, UKHAS_FORMAT, sizeof(UKHAS_FORMAT));
 				replace_placeholders(fskmsg, sizeof(fskmsg), trackPoint);
+				str_replace(fskmsg, sizeof(fskmsg), "<CALL>", UKHAS_CALLSIGN);
+
 				msg.bin_len = 8*chsnprintf((char*)msg.msg, sizeof(fskmsg), "$$$$$%s*%04X\n", fskmsg, crc16(fskmsg));
 				transmitOnRadio(&msg);
 				break;
@@ -156,6 +156,8 @@ THD_FUNCTION(modulePOS, arg) {
 				char cwmsg[256];
 				memcpy(cwmsg, CW_FORMAT, sizeof(CW_FORMAT));
 				replace_placeholders(cwmsg, sizeof(cwmsg), trackPoint);
+				str_replace(fskmsg, sizeof(fskmsg), "<CALL>", CW_CALLSIGN);
+
 				msg.bin_len = CW_encode(msg.msg, cwmsg);
 				transmitOnRadio(&msg);
 				break;

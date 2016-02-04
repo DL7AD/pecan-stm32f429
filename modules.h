@@ -20,7 +20,7 @@
 
 #define MODULE_POSITION(CYCLE,SLEEP,FREQ,PWR,PROT) { \
 	ARG2PARM("POS", CYCLE,SLEEP,FREQ,PWR,PROT); \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), NORMALPRIO, modulePOS, parm); \
+	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(2048), NORMALPRIO, modulePOS, parm); \
 	modules[moduleCount++] = parm; \
 }
 
