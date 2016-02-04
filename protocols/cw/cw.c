@@ -3,7 +3,7 @@
 #include "cw.h"
 #include "debug.h"
 
-// CW use 10ms ticks
+// CW use 20ms ticks
 
 static uint8_t *buffer;
 static uint32_t c;
@@ -14,16 +14,16 @@ static uint32_t c;
 
 void dah(void)
 {
-	for(uint32_t i=0; i<18; i++)
+	for(uint32_t i=0; i<9; i++)
 		ADDB(1);
-	for(uint32_t i=0; i<6; i++)
+	for(uint32_t i=0; i<3; i++)
 		ADDB(0);
 }
 void dit(void)
 {
-	for(uint32_t i=0; i<6; i++)
+	for(uint32_t i=0; i<3; i++)
 		ADDB(1);
-	for(uint32_t i=0; i<6; i++)
+	for(uint32_t i=0; i<3; i++)
 		ADDB(0);
 }
 void blank(uint32_t ticks) {
@@ -239,7 +239,7 @@ void CW_encode_char(char letter)
 			dah();
 		break;
 		case ' ':
-			blank(16);
+			blank(8);
 		break;
 		case '.':
 			dit();
@@ -250,13 +250,18 @@ void CW_encode_char(char letter)
 			dah();
 		break;
 	}
-	blank(24);
+	blank(12);
 }
 
 uint32_t CW_encode(uint8_t* data, const char* letter)
 {
-	c = 0;
-	buffer = data;
+	// Blanking bits
+	for(uint32_t i=0; i<256; i++)
+		data[i] = 0;
+
+	// Encode CW
+	buffer = data; // Buffer
+	c = 0; // Bitlength
 	for(uint32_t i=0; letter[i]!=0; i++)
 		CW_encode_char(letter[i]);
 

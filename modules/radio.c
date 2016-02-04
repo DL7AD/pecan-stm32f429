@@ -87,6 +87,9 @@ void sendAFSK(radio_t radio, radioMSG_t *msg) {
 	}
 }
 
+/**
+  * Transmits binary CW message. One bit = 20ms (1 TONE, 0, NO TONE)
+  */
 void sendCW(radio_t radio, radioMSG_t *msg) {
 	// Initialize radio and tune
 	Si446x_Init(radio, MOD_CW);
@@ -99,7 +102,7 @@ void sendCW(radio_t radio, radioMSG_t *msg) {
 		MOD_GPIO_SET(radio, (msg->msg[bit/8] >> (bit%8)) & 0x1);
 		bit++;
 
-		time = chThdSleepUntilWindowed(time, time + MS2ST(10));
+		time = chThdSleepUntilWindowed(time, time + MS2ST(20));
 	}
 }
 
