@@ -5,8 +5,8 @@
 #include "modules.h"
 #include "ov9655.h"
 #include "pi2c.h"
-
 #include "ssdv.h"
+#include <string.h>
 
 static uint32_t image_id;
 
@@ -55,25 +55,23 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 			case PROT_SSDV_APRS_AFSK:
 				TRACE_ERROR("IMG  > APRS not implemented!");
 
-				//chMBPost(&radioMBP, (msg_t)&msg, 0);
+				//transmitOnRadio(radioMSG_t *msg);
 				break;
 
 			case PROT_SSDV_2FSK:
 				msg.mod = MOD_2FSK;
 				msg.freq = (*fptr)();
 				msg.power = parm->power;
-				msg.msg = pkt;
-				msg.done = false;
+				memcpy(msg.msg, pkt, sizeof(pkt));
 				msg.bin_len = 8*sizeof(pkt);
-				chMBPost(&radioMBP, (msg_t)&msg, 0);
+				transmitOnRadio(&msg);
+				chThdSleepMilliseconds(5000);
+
 				break;
 
 			default:
 				TRACE_ERROR("POS  > Unsupported protocol selected for module POSITION");
 		}
-
-		while(!msg.done) // Flush message so buffer can be used again
-			chThdSleepMilliseconds(1);
 
 		i++;
 	}

@@ -19,6 +19,7 @@
 #include "aprs.h"
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 #include "base64.h"
 #include "max.h"
 
@@ -46,7 +47,7 @@ s_address_t addresses[] =
  * - Number of satellites being used
  * - Number of cycles where GPS has been lost (if applicable in cycle)
  */
-uint32_t aprs_encode_position(uint8_t** message, trackPoint_t *trackPoint)
+uint32_t aprs_encode_position(uint8_t* message, trackPoint_t *trackPoint)
 {
 	ptime_t date = trackPoint->time;
 
@@ -159,7 +160,7 @@ uint32_t aprs_encode_position(uint8_t** message, trackPoint_t *trackPoint)
 
 	ax25_send_footer();
 
-	*message = modem_packet;
+	memcpy(message, modem_packet, modem_packet_size);
 	return modem_packet_size;
 }
 

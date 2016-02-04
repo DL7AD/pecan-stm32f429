@@ -3,24 +3,29 @@
 
 #include "ch.h"
 #include "hal.h"
-#include "defines.h"
 #include "config.h"
 #include "si4x6x.h"
 
-extern mailbox_t radioMBP;
-
-#define inRadio1band(freq) (RADIO1_MIN_FREQ <= (freq) && (freq) <= RADIO1_MAX_FREQ)
-#define inRadio2band(freq) (RADIO2_MIN_FREQ <= (freq) && (freq) <= RADIO2_MAX_FREQ)
+typedef struct { // Radio message type
+	uint8_t msg[256];	// Message (Largest type: SSDV packet => 256byte)
+	uint32_t bin_len;	// Binary length
+	uint32_t freq;		// Frequency
+	uint8_t power;		// Power
+	mod_t mod;			// Modulation
+} radioMSG_t;
 
 uint32_t getAPRSRegionFrequency(void);
 uint32_t getAPRSISSFrequency(void);
 uint32_t getCustomFrequency(void);
 
+void transmitOnRadio(radioMSG_t *msg);
+
+//void sendAFSK(radio_t radio, radioMSG_t *msg);
+//bool afsk_handler(radio_t radio, radioMSG_t *msg);
+//void sendCW(radio_t radio, radioMSG_t *msg);
+//void send2FSK(radio_t radio, radioMSG_t *msg);
+
 THD_FUNCTION(moduleRADIO, arg);
-void sendAFSK(radio_t radio, radioMSG_t *msg);
-bool afsk_handler(radio_t radio, radioMSG_t *msg);
-void sendCW(radio_t radio, radioMSG_t *msg);
-void send2FSK(radio_t radio, radioMSG_t *msg);
 
 #endif
 

@@ -34,8 +34,6 @@
 #define HIGH	true
 #define LOW		false
 
-typedef uint32_t radio_t;
-
 // Sleep mode type
 typedef enum {
 	MOD_ACTIVE,
@@ -51,24 +49,6 @@ typedef enum {
 	PROT_SSDV_APRS_AFSK,
 	PROT_RAW_CW
 } prot_t;
-
-// Modulation type
-typedef enum {
-	MOD_CW,
-	MOD_2FSK,
-	MOD_DOMINOEX16,
-	MOD_AFSK
-} mod_t;
-
-// Radio message type
-typedef struct {
-	uint8_t *msg;		// Message
-	uint32_t bin_len;	// Binary length
-	uint32_t freq;		// Frequency
-	uint8_t power;		// Power
-	mod_t mod;			// Modulation
-	bool done;			// Transmitted flag
-} radioMSG_t;
 
 #endif
 

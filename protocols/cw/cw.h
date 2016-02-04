@@ -4,10 +4,7 @@
 #include "ch.h"
 #include "hal.h"
 
-void dah(void);
-void dit(void);
-uint32_t CW_encode(uint8_t** data, const char* letter);
-void CW_encode_char(char letter);
+uint32_t CW_encode(uint8_t* data, const char* letter);
 
 #endif
 

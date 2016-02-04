@@ -5,7 +5,7 @@
 
 // CW use 10ms ticks
 
-static uint8_t buffer[512];
+static uint8_t *buffer;
 static uint32_t c;
 #define ADDB(bit) { \
 	buffer[c/8] |= ((bit & 0x1) << (c % 8)); \
@@ -29,16 +29,6 @@ void dit(void)
 void blank(uint32_t ticks) {
 	for(uint32_t i=0; i<ticks; i++)
 		ADDB(0);
-}
-
-uint32_t CW_encode(uint8_t** data, const char* letter)
-{
-	c = 0;
-	for(uint32_t i=0; letter[i]!=0; i++)
-		CW_encode_char(letter[i]);
-
-	*data = buffer;
-	return c;
 }
 
 void CW_encode_char(char letter)
@@ -261,5 +251,15 @@ void CW_encode_char(char letter)
 		break;
 	}
 	blank(24);
+}
+
+uint32_t CW_encode(uint8_t* data, const char* letter)
+{
+	c = 0;
+	buffer = data;
+	for(uint32_t i=0; letter[i]!=0; i++)
+		CW_encode_char(letter[i]);
+
+	return c;
 }
 

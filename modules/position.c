@@ -135,23 +135,19 @@ THD_FUNCTION(modulePOS, arg) {
 
 			case PROT_APRS_AFSK: // Encode APRS
 				msg.mod = MOD_AFSK;
-				msg.bin_len = aprs_encode_position(&msg.msg, trackPoint);
-
-				chMBPost(&radioMBP, (msg_t)&msg, 0);
+				msg.bin_len = aprs_encode_position(msg.msg, trackPoint);
+				transmitOnRadio(&msg);
 				break;
 
 			case PROT_UKHAS_2FSK: // Encode UKHAS
 				msg.mod = MOD_2FSK;
 
 				char fskmsg[256];
-				char final[256];
 
 				memcpy(fskmsg, FSK_FORMAT, sizeof(FSK_FORMAT));
 				replace_placeholders(fskmsg, sizeof(fskmsg), trackPoint);
-				msg.bin_len = 8*chsnprintf(final, sizeof(fskmsg), "$$$$$%s*%04X\n", fskmsg, crc16(fskmsg)); // TODO: Implement protocol
-				msg.msg = (uint8_t*)final;
-
-				chMBPost(&radioMBP, (msg_t)&msg, 0);
+				msg.bin_len = 8*chsnprintf((char*)msg.msg, sizeof(fskmsg), "$$$$$%s*%04X\n", fskmsg, crc16(fskmsg));
+				transmitOnRadio(&msg);
 				break;
 
 			case PROT_RAW_CW: // Encode CW
@@ -160,9 +156,8 @@ THD_FUNCTION(modulePOS, arg) {
 				char cwmsg[256];
 				memcpy(cwmsg, CW_FORMAT, sizeof(CW_FORMAT));
 				replace_placeholders(cwmsg, sizeof(cwmsg), trackPoint);
-				msg.bin_len = CW_encode(&msg.msg, cwmsg);
-
-				chMBPost(&radioMBP, (msg_t)&msg, 0);
+				msg.bin_len = CW_encode(msg.msg, cwmsg);
+				transmitOnRadio(&msg);
 				break;
 
 			default:

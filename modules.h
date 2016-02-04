@@ -1,12 +1,12 @@
 #ifndef __MODULES_H__
 #define __MODULES_H__
 
-#include "modules/position.h"
-#include "modules/image.h"
-#include "modules/tracking.h"
-#include "modules/satellite.h"
-#include "modules/log.h"
-#include "modules/radio.h"
+#include "position.h"
+#include "image.h"
+#include "tracking.h"
+#include "satellite.h"
+#include "log.h"
+#include "radio.h"
 #include "sgp4.h"
 
 #define ARG2PARM(NAME,CYCLE,SLEEP,FREQ,PWR,PROT) \
