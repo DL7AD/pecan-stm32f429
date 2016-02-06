@@ -47,7 +47,6 @@ THD_FUNCTION(moduleTRACKING, arg) {
 
 		do {
 			gps_get_fix(&gpsFix);
-			TRACE_DEBUG("type=%d sats=%d lat=%d lon=%d", gpsFix.type, gpsFix.num_svs, gpsFix.lat, gpsFix.lon);
 		} while(!isGPSLocked(&gpsFix) && chVTGetSystemTimeX() <= time + S2ST(parm->cycle-3)); // Do as long no GPS lock and within timeout, timeout=cycle-1sec (-1sec in order to keep synchronization)
 
 		if(isGPSLocked(&gpsFix)) { // GPS locked
@@ -107,10 +106,9 @@ THD_FUNCTION(moduleTRACKING, arg) {
 		tp->id = id; // Serial ID
 		tp->gps_ttff = ST2S(chVTGetSystemTimeX() - time); // Time to first fix
 
-		// Power management TODO: Implement this!
-		pac1720_init();
-		tp->adc_solar = 0;
-		tp->adc_battery = 0;
+		// Power management
+		tp->adc_solar = 0; // TODO: Implement ADC
+		tp->adc_battery = 0; // TODO: Implement ADC
 		tp->adc_charge = pac1720_getAveragePower();
 
 		bme280_t bmeInt;
