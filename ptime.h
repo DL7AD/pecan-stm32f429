@@ -16,7 +16,8 @@ typedef struct {
 
 uint64_t date2UnixTimestamp(ptime_t time);
 ptime_t unixTimestamp2Date(uint64_t time);
-ptime_t getTime(void);
+void getTime(ptime_t *date);
 void setTime(ptime_t date);
 
 #endif
+

@@ -8,8 +8,8 @@
 
 const I2CConfig _i2cfg = {
 	OPMODE_I2C,
-	200000,
-	FAST_DUTY_CYCLE_2,
+	100000,
+	STD_DUTY_CYCLE,
 };
 
 void write8(uint8_t address, uint8_t reg, uint8_t value)

@@ -75,9 +75,9 @@ void replace_placeholders(char* fskmsg, uint16_t size, trackPoint_t *trackPoint)
 	str_replace(fskmsg, size, "<DATE>", buf);
 	chsnprintf(buf, sizeof(buf), "%02d:%02d:%02d", trackPoint->time.hour, trackPoint->time.minute, trackPoint->time.second);
 	str_replace(fskmsg, size, "<TIME>", buf);
-	chsnprintf(buf, sizeof(buf), "%d.%07d", trackPoint->gps_lat/10000000, trackPoint->gps_lat%10000000);
+	chsnprintf(buf, sizeof(buf), "%d.%07d", trackPoint->gps_lat/10000000, trackPoint->gps_lat%10000000); // TODO: this calculation does not work in other hemispheres
 	str_replace(fskmsg, size, "<LAT>", buf);
-	chsnprintf(buf, sizeof(buf), "%d.%07d", trackPoint->gps_lon/10000000, trackPoint->gps_lon%10000000);
+	chsnprintf(buf, sizeof(buf), "%d.%07d", trackPoint->gps_lon/10000000, trackPoint->gps_lon%10000000); // TODO: this calculation does not work in other hemispheres
 	str_replace(fskmsg, size, "<LON>", buf);
 	chsnprintf(buf, sizeof(buf), "%d", trackPoint->gps_alt);
 	str_replace(fskmsg, size, "<ALT>", buf);
@@ -85,23 +85,23 @@ void replace_placeholders(char* fskmsg, uint16_t size, trackPoint_t *trackPoint)
 	str_replace(fskmsg, size, "<SATS>", buf);
 	chsnprintf(buf, sizeof(buf), "%d", trackPoint->gps_ttff);
 	str_replace(fskmsg, size, "<TTFF>", buf);
-	chsnprintf(buf, sizeof(buf), "%d", trackPoint->adc_battery);
+	chsnprintf(buf, sizeof(buf), "%d.%02d", trackPoint->adc_battery/1000, (trackPoint->adc_battery%1000)/10);
 	str_replace(fskmsg, size, "<VBAT>", buf);
-	chsnprintf(buf, sizeof(buf), "%d", trackPoint->adc_solar);
+	chsnprintf(buf, sizeof(buf), "%d.%02d", trackPoint->adc_solar/1000, (trackPoint->adc_solar%1000)/10);
 	str_replace(fskmsg, size, "<VSOL>", buf);
-	chsnprintf(buf, sizeof(buf), "%d", trackPoint->adc_charge);
+	chsnprintf(buf, sizeof(buf), "%d.%03d", trackPoint->adc_charge/1000, trackPoint->adc_charge%1000);
 	str_replace(fskmsg, size, "<CHARGE>", buf);
-	chsnprintf(buf, sizeof(buf), "%d", trackPoint->air_press);
+	chsnprintf(buf, sizeof(buf), "%d", trackPoint->air_press/10);
 	str_replace(fskmsg, size, "<IPRESS>", buf);
-	chsnprintf(buf, sizeof(buf), "%d", trackPoint->air_temp);
+	chsnprintf(buf, sizeof(buf), "%d.%d", trackPoint->air_temp/100, (trackPoint->air_temp%100)/10);
 	str_replace(fskmsg, size, "<ITEMP>", buf);
-	chsnprintf(buf, sizeof(buf), "%d", trackPoint->air_hum);
+	chsnprintf(buf, sizeof(buf), "%d", trackPoint->air_hum/10);
 	str_replace(fskmsg, size, "<IHUM>", buf);
-	chsnprintf(buf, sizeof(buf), "%d", trackPoint->bal_press);
+	chsnprintf(buf, sizeof(buf), "%d", trackPoint->bal_press/10);
 	str_replace(fskmsg, size, "<EPRESS>", buf);
-	chsnprintf(buf, sizeof(buf), "%d", trackPoint->bal_temp);
+	chsnprintf(buf, sizeof(buf), "%d.%d", trackPoint->bal_temp/100, (trackPoint->bal_temp%100)/10);
 	str_replace(fskmsg, size, "<ETEMP>", buf);
-	chsnprintf(buf, sizeof(buf), "%d", trackPoint->bal_hum);
+	chsnprintf(buf, sizeof(buf), "%d", trackPoint->bal_hum/10);
 	str_replace(fskmsg, size, "<EHUM>", buf);
 	positionToMaidenhead(buf, trackPoint->gps_lat/10000000.0, trackPoint->gps_lon/10000000.0);
 	str_replace(fskmsg, size, "<LOC>", buf);

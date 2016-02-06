@@ -62,20 +62,17 @@ ptime_t unixTimestamp2Date(uint64_t time) {
 	return date;
 }
 
-ptime_t getTime(void) {
+void getTime(ptime_t *date) {
 	RTCDateTime timespec;
 	rtcGetTime(&RTCD1, &timespec);
 
-	ptime_t date;
-	date.year = timespec.year + 2000;
-	date.month = timespec.month;
-	date.day = timespec.day;
-	date.hour = timespec.millisecond / 3600000;
-	date.minute = (timespec.millisecond%3600000) / 60000;
-	date.second = (timespec.millisecond / 1000) % 60;
-	date.millisecond = timespec.millisecond % 1000;
-
-	return date;
+	date->year = timespec.year + 2000;
+	date->month = timespec.month;
+	date->day = timespec.day;
+	date->hour = timespec.millisecond / 3600000;
+	date->minute = (timespec.millisecond%3600000) / 60000;
+	date->second = (timespec.millisecond / 1000) % 60;
+	date->millisecond = timespec.millisecond % 1000;
 }
 
 void setTime(ptime_t date) {

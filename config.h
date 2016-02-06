@@ -16,14 +16,14 @@
 #define APRS_PATH_SAT			"RS0ISS"		/* APRS path */
 
 // SSDV configuration
-#define SSDV_CALLSIGN			"D-11"			/* SSDV callsign */
+#define SSDV_CALLSIGN			"D-9"			/* SSDV callsign */
 
 // UKHAS configuration
-#define UKHAS_CALLSIGN			"D-11"			/* UKHAS callsign */
-#define UKHAS_FORMAT			"<CALL>,<ID>,<DATE>,<TIME>,<LAT>,<LON>,<ALT>,<SATS>,<TTFF>,<VBAT>,<VSOL>,<CHARGE>,<IPRESS>,<ITEMP>,<IHUM>,<EPRESS>,<ETEMP>,<EHUM>"
+#define UKHAS_CALLSIGN			"D-9"			/* UKHAS callsign */
+#define UKHAS_FORMAT			"<CALL>,<ID>,<TIME>,<LAT>,<LON>,<ALT>,<SATS>,<TTFF>,<VBAT>,<VSOL>,<CHARGE>,<IPRESS>,<ITEMP>,<IHUM>,<EPRESS>,<ETEMP>,<EHUM>"
 
 // CW configuration
-#define CW_CALLSIGN				"D-11"			/* CW callsign */
+#define CW_CALLSIGN				"D-9"			/* CW callsign */
 #define CW_FORMAT				"<CALL> <LOC> <ALT>M PSE QSL"
 
 // Log configuration

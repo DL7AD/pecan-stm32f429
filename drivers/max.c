@@ -162,18 +162,21 @@ bool gps_get_fix(gpsFix_t *fix) {
 	static uint8_t response[92];	/* PVT response length is 92 bytes */
 	uint8_t pvt[] = {0xB5, 0x62, 0x01, 0x07, 0x00, 0x00, 0x08, 0x19};
 	int32_t alt_tmp;
-	uint32_t try = 0;
+	uint8_t try = 0;
+	bool resp;
 
 	// Read GPS data
 	do {
-		TRACE_DEBUG("TRY %d", try+1);
 		gps_transmit_string(pvt, sizeof(pvt));
-	} while(!gps_receive_payload(0x01, 0x07, response, 2000) && ++try < 3);
+		resp = gps_receive_payload(0x01, 0x07, response, 1500);
+	} while(!resp && ++try < 3);
 
-	if(try == 3) { // Failed to aquire GPS data
+	if(!resp) { // Failed to aquire GPS data
 		TRACE_ERROR("GPS  > Polling FAILED");
 		return false;
 	}
+
+	TRACE_DEBUG("type %02x %d sats %02x %d", response[20], response[20], response[23], response[23]);
 
 	fix->num_svs = response[23];
 	fix->type = response[20];

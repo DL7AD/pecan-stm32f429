@@ -64,8 +64,8 @@ extern const SerialConfig uart_config;
 		"%s Altitude: %d Meter", \
 		TRACE_TAB, (fix)->time.year, (fix)->time.month, (fix)->time.day, (fix)->time.hour, (fix)->time.minute, (fix)->time.second, \
 		TRACE_TAB, (fix)->num_svs, \
-		TRACE_TAB, (fix)->lat/10000000, (fix)->lat%10000000, \
-		TRACE_TAB, (fix)->lon/10000000, (fix)->lon%10000000, \
+		TRACE_TAB, (fix)->lat/10000000, (fix)->lat%10000000, /* TODO: this calculation does not work in other hemispheres */ \
+		TRACE_TAB, (fix)->lon/10000000, (fix)->lon%10000000, /* TODO: this calculation does not work in other hemispheres */ \
 		TRACE_TAB, (fix)->alt \
 	); \
 }
@@ -81,8 +81,9 @@ extern const SerialConfig uart_config;
 }
 
 #define PRINT_TIME(thd) { \
-	ptime_t time = getTime(); \
-	TRACE_INFO("%-4s > Current time: %02d-%02d-%02d %02d:%02d:%02d:%03d", thd, time.year, time.month, time.day, time.hour, time.minute, time.second, time.millisecond); \
+	ptime_t dbgtime; \
+	getTime(&dbgtime); \
+	TRACE_INFO("%-4s > Current time: %02d-%02d-%02d %02d:%02d:%02d:%03d", thd, dbgtime.year, dbgtime.month, dbgtime.day, dbgtime.hour, dbgtime.minute, dbgtime.second, dbgtime.millisecond); \
 }
 
 #endif

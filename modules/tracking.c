@@ -38,48 +38,74 @@ THD_FUNCTION(moduleTRACKING, arg) {
 	{
 		parm->lastCycle = chVTGetSystemTimeX(); // Watchdog timer
 		TRACE_INFO("TRAC > Do module TRACKING MANAGER cycle");
-		trackPoint_t* tp = &trackPoints[id % (sizeof(trackPoints) / sizeof(trackPoint_t))];
+		trackPoint_t* tp = &trackPoints[id % (sizeof(trackPoints) / sizeof(trackPoint_t))]; // Current track point
+		trackPoint_t* ltp = &trackPoints[(id-1) % (sizeof(trackPoints) / sizeof(trackPoint_t))]; // Last track point
 
 		// Search for GPS satellites
 		gpsFix_t gpsFix;
 		GPS_Init();
 
 		do {
-			chThdSleepMilliseconds(100);
 			gps_get_fix(&gpsFix);
-			TRACE_DEBUG("type=%d sats=%d", gpsFix.type, gpsFix.num_svs);
+			TRACE_DEBUG("type=%d sats=%d lat=%d lon=%d", gpsFix.type, gpsFix.num_svs, gpsFix.lat, gpsFix.lon);
 		} while(!isGPSLocked(&gpsFix) && chVTGetSystemTimeX() <= time + S2ST(parm->cycle-3)); // Do as long no GPS lock and within timeout, timeout=cycle-1sec (-1sec in order to keep synchronization)
 
 		if(isGPSLocked(&gpsFix)) { // GPS locked
-			GPS_Deinit(); // Switch off GPS
 
+			// Switch off GPS
+			GPS_Deinit();
+
+			// Debug
 			TRACE_INFO("TRAC > GPS sampling finished GPS LOCK");
 			TRACE_GPSFIX(&gpsFix);
-		} else { // GPS lost
+
+			// Calibrate RTC
+			setTime(gpsFix.time);
+
+			// Take time from GPS
+			tp->time.year = gpsFix.time.year;
+			tp->time.month = gpsFix.time.month;
+			tp->time.day = gpsFix.time.day;
+			tp->time.hour = gpsFix.time.hour;
+			tp->time.minute = gpsFix.time.minute;
+			tp->time.second = gpsFix.time.second;
+
+			// Set new GPS fix
+			tp->gps_lat = gpsFix.lat;
+			tp->gps_lon = gpsFix.lon;
+			tp->gps_alt = gpsFix.alt;
+
+			tp->gps_lock = isGPSLocked(&gpsFix);
+			tp->gps_sats = gpsFix.num_svs;
+
+		} else { // GPS lost (keep GPS switched on)
+
+			// Debug
 			TRACE_WARN("TRAC > GPS sampling finished GPS LOSS");
+
+			// Take time from internal RTC
+			ptime_t time;
+			getTime(&time);
+			tp->time.year = time.year;
+			tp->time.month = time.month;
+			tp->time.day = time.day;
+			tp->time.hour = time.hour;
+			tp->time.minute = time.minute;
+			tp->time.second = time.second;
+
+			// Take GPS fix from old lock
+			tp->gps_lat = ltp->gps_lat;
+			tp->gps_lon = ltp->gps_lon;
+			tp->gps_alt = ltp->gps_alt;
+
+			// Mark gpsloss
+			tp->gps_lock = false;
+			tp->gps_sats = 0;
+
 		}
 
-		// Calibrate RTC
-		setTime(gpsFix.time);
-
-
-		// Fill tracking point
-
-		// GPS fix and time
-		tp->id = id;
-		tp->time.year = gpsFix.time.year;
-		tp->time.month = gpsFix.time.month;
-		tp->time.day = gpsFix.time.day;
-		tp->time.hour = gpsFix.time.hour;
-		tp->time.minute = gpsFix.time.minute;
-		tp->time.second = gpsFix.time.second;
-		tp->gps_lock = isGPSLocked(&gpsFix);
-		tp->gps_lat = gpsFix.lat;
-		tp->gps_lon = gpsFix.lon;
-		tp->gps_alt = gpsFix.alt;
-		tp->gps_sats = gpsFix.num_svs;
-		tp->gps_ttff = ST2S(chVTGetSystemTimeX() - time);
-
+		tp->id = id; // Serial ID
+		tp->gps_ttff = ST2S(chVTGetSystemTimeX() - time); // Time to first fix
 
 		// Power management TODO: Implement this!
 		pac1720_init();
