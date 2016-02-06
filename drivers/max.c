@@ -166,8 +166,9 @@ bool gps_get_fix(gpsFix_t *fix) {
 
 	// Read GPS data
 	do {
+		TRACE_DEBUG("TRY %d", try+1);
 		gps_transmit_string(pvt, sizeof(pvt));
-	} while(!gps_receive_payload(0x01, 0x07, response, 2000) && try++ < 3);
+	} while(!gps_receive_payload(0x01, 0x07, response, 2000) && ++try < 3);
 
 	if(try == 3) { // Failed to aquire GPS data
 		TRACE_ERROR("GPS  > Polling FAILED");

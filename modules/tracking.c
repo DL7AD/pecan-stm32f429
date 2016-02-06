@@ -47,6 +47,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 		do {
 			chThdSleepMilliseconds(100);
 			gps_get_fix(&gpsFix);
+			TRACE_DEBUG("type=%d sats=%d", gpsFix.type, gpsFix.num_svs);
 		} while(!isGPSLocked(&gpsFix) && chVTGetSystemTimeX() <= time + S2ST(parm->cycle-3)); // Do as long no GPS lock and within timeout, timeout=cycle-1sec (-1sec in order to keep synchronization)
 
 		if(isGPSLocked(&gpsFix)) { // GPS locked

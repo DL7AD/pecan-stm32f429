@@ -69,6 +69,7 @@ void positionToMaidenhead(char m[], double lat, double lon)
   * Replaces placeholders with variables
   */
 void replace_placeholders(char* fskmsg, uint16_t size, trackPoint_t *trackPoint) {
+	chsnprintf(buf, sizeof(buf), "%d", trackPoint->id);
 	str_replace(fskmsg, size, "<ID>", buf);
 	chsnprintf(buf, sizeof(buf), "%04d-%02d-%02d", trackPoint->time.year, trackPoint->time.month, trackPoint->time.day);
 	str_replace(fskmsg, size, "<DATE>", buf);

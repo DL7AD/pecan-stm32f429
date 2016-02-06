@@ -61,7 +61,7 @@ extern const SerialConfig uart_config;
 		"%s Sats: %d (used for solution)\r\n" \
 		"%s Latitude: %d.%07ddeg\r\n" \
 		"%s Longitude: %d.%07ddeg\r\n" \
-		"%s Altitude: %d Meter" \
+		"%s Altitude: %d Meter", \
 		TRACE_TAB, (fix)->time.year, (fix)->time.month, (fix)->time.day, (fix)->time.hour, (fix)->time.minute, (fix)->time.second, \
 		TRACE_TAB, (fix)->num_svs, \
 		TRACE_TAB, (fix)->lat/10000000, (fix)->lat%10000000, \
