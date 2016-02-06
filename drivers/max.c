@@ -176,8 +176,6 @@ bool gps_get_fix(gpsFix_t *fix) {
 		return false;
 	}
 
-	TRACE_DEBUG("type %02x %d sats %02x %d", response[20], response[20], response[23], response[23]);
-
 	fix->num_svs = response[23];
 	fix->type = response[20];
 
