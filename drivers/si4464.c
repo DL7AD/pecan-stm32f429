@@ -99,7 +99,7 @@ void Si4464_Init(radio_t radio, mod_t modulation) {
 	}
 
 	// Temperature readout
-	TRACE_INFO("SI %d > Transmitter temperature %d degC", radio, Si4464_getTemperature(radio));
+	// TRACE_INFO("SI %d > Transmitter temperature %d degC", radio, Si4464_getTemperature(radio));
 }
 
 void Si4464_write(radio_t radio, uint8_t* txData, uint32_t len) {
