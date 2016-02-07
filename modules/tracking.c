@@ -30,7 +30,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 			   TRACE_TAB, parm->cycle
 	);
 
-	uint32_t id = 0;
+	uint32_t id = 1;
 	lastTrackPoint = &trackPoints[0];
 
 	systime_t time = chVTGetSystemTimeX();

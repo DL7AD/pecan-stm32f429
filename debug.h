@@ -42,21 +42,35 @@ extern const SerialConfig uart_config;
 #define TRACE_MODULE_INFO(parm, thd, name) { \
 	uint32_t (*fptr)(void); \
 	fptr = (parm)->frequencyMethod; \
-	TRACE_INFO(	"%-4s > Module %s info\r\n" \
-		"%s Cycle: %d sec\r\n" \
-		"%s Power: %d dBm\r\n" \
-		"%s Frequency: %d.%03d MHz (current)\r\n" \
-		"%s Protocol: %s", \
-		thd, name, \
-		TRACE_TAB, (parm)->cycle, \
-		TRACE_TAB, (parm)->power, \
-		TRACE_TAB, (*fptr)()/1000000, ((*fptr)()%1000000)/1000, \
-		TRACE_TAB, VAL2PROTOCOL((parm)->protocol) \
-	); \
+	if((parm)->cycle == WAIT_FOR_TRACKING_POINT) { \
+		TRACE_INFO("%-4s > Module %s info\r\n" \
+			"%s Cycle: wait for new tracking point\r\n" \
+			"%s Power: %d dBm\r\n" \
+			"%s Frequency: %d.%03d MHz (current)\r\n" \
+			"%s Protocol: %s", \
+			thd, name, \
+			TRACE_TAB, \
+			TRACE_TAB, (parm)->power, \
+			TRACE_TAB, (*fptr)()/1000000, ((*fptr)()%1000000)/1000, \
+			TRACE_TAB, VAL2PROTOCOL((parm)->protocol) \
+		); \
+	} else { \
+		TRACE_INFO("%-4s > Module %s info\r\n" \
+			"%s Cycle: %d sec\r\n" \
+			"%s Power: %d dBm\r\n" \
+			"%s Frequency: %d.%03d MHz (current)\r\n" \
+			"%s Protocol: %s", \
+			thd, name, \
+			TRACE_TAB, (parm)->cycle, \
+			TRACE_TAB, (parm)->power, \
+			TRACE_TAB, (*fptr)()/1000000, ((*fptr)()%1000000)/1000, \
+			TRACE_TAB, VAL2PROTOCOL((parm)->protocol) \
+		); \
+	} \
 }
 
 #define TRACE_GPSFIX(fix) { \
-	TRACE_INFO(	"GPS  > New GPS Fix\r\n"\
+	TRACE_INFO("GPS  > New GPS Fix\r\n"\
 		"%s GPS Time: %04d-%02d-%02d %02d:%02d:%02d\r\n" \
 		"%s Sats: %d (used for solution)\r\n" \
 		"%s Latitude: %d.%07ddeg\r\n" \

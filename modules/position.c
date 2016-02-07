@@ -167,7 +167,17 @@ THD_FUNCTION(modulePOS, arg) {
 				TRACE_ERROR("POS  > Unsupported modulation/protocol selected for module POSITION");
 		}
 
-		time = chThdSleepUntilWindowed(time, time + S2ST(parm->cycle)); // Wait until time + cycletime
+		if(parm->cycle == WAIT_FOR_TRACKING_POINT) { // Wait for new tracking point
+
+			trackPoint_t *newtp;
+			do { // Wait for new serial ID to be deployed
+				chThdSleepMilliseconds(100);
+				newtp = getLastTrackPoint();
+			} while(newtp->id == trackPoint->id);
+
+		} else { // Wait for specified timeout
+			time = chThdSleepUntilWindowed(time, time + S2ST(parm->cycle)); // Wait until time + cycletime
+		}
 	}
 }
 
