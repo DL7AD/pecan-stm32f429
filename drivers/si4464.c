@@ -112,8 +112,8 @@ void Si4464_write(radio_t radio, uint8_t* txData, uint32_t len) {
 	spiReleaseBus(&SPID2);
 
 	// Reqest ACK by Si4464
-	rxData[0] = 0x00;
-	while(rxData[0] != 0xFF) {
+	rxData[1] = 0x00;
+	while(rxData[1] != 0xFF) {
 
 		// Request ACK by Si4464
 		uint8_t rx_ready[] = {0x44};
@@ -122,16 +122,13 @@ void Si4464_write(radio_t radio, uint8_t* txData, uint32_t len) {
 		spiAcquireBus(&SPID2);
 		spiStart(&SPID2, getSPIDriver(radio));
 		spiSelect(&SPID2);
-		spiExchange(&SPID2, 1, rx_ready, rxData);
+		spiExchange(&SPID2, 3, rx_ready, rxData);
 		spiUnselect(&SPID2);
 		spiReleaseBus(&SPID2);
 
-		if(rxData[0] != 0xFF) { // Si not finished, wait for it
+		if(rxData[1] != 0xFF) // Si not finished, wait for it
 			chThdSleepMilliseconds(1);
-		}
 	}
-
-	chThdSleepMilliseconds(20); // FIXME: Workaround, this function does not detect CTS from Si4464
 }
 
 /**
@@ -149,8 +146,8 @@ void Si4464_read(radio_t radio, uint8_t* txData, uint32_t txlen, uint8_t* rxData
 	spiReleaseBus(&SPID2);
 
 	// Reqest ACK by Si4464
-	rxData[0] = 0x00;
-	while(rxData[0] != 0xFF) {
+	rxData[1] = 0x00;
+	while(rxData[1] != 0xFF) {
 
 		// Request ACK by Si4464
 		uint16_t rx_ready[rxlen];
@@ -164,7 +161,7 @@ void Si4464_read(radio_t radio, uint8_t* txData, uint32_t txlen, uint8_t* rxData
 		spiUnselect(&SPID2);
 		spiReleaseBus(&SPID2);
 
-		if(rxData[0] != 0xFF) // Si not finished, wait for it
+		if(rxData[1] != 0xFF) // Si not finished, wait for it
 			chThdSleepMilliseconds(1);
 	}
 }
