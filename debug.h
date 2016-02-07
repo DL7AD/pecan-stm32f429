@@ -26,7 +26,7 @@ extern const SerialConfig uart_config;
 
 #define TRACE_BASE(format, type, args...) { \
 	chMtxLock(&trace_mtx); \
-	chprintf((BaseSequentialStream*)&SD4, "[%8d.%03d][%s] ", ST2MS(chVTGetSystemTimeX())/1000, ST2MS(chVTGetSystemTimeX())%1000, type); \
+	chprintf((BaseSequentialStream*)&SD4, "[%8d.%03d][%s] ", chVTGetSystemTimeX()/CH_CFG_ST_FREQUENCY, (chVTGetSystemTimeX()*1000/CH_CFG_ST_FREQUENCY)%1000, type); \
 	chprintf((BaseSequentialStream*)&SD4, (format), ##args); \
 	chprintf((BaseSequentialStream*)&SD4, "\r\n"); \
 	chMtxUnlock(&trace_mtx); \
@@ -72,7 +72,7 @@ extern const SerialConfig uart_config;
 
 #define TRACE_BIN(data, len) { \
 	chMtxLock(&trace_mtx); \
-	chprintf((BaseSequentialStream*)&SD4, "[%8d.%03d][     ] ", ST2MS(chVTGetSystemTimeX())/1000, ST2MS(chVTGetSystemTimeX())%1000); \
+	chprintf((BaseSequentialStream*)&SD4, "[%8d.%03d][     ] ", chVTGetSystemTimeX()/CH_CFG_ST_FREQUENCY, (chVTGetSystemTimeX()*1000/CH_CFG_ST_FREQUENCY)%1000); \
 	chprintf((BaseSequentialStream*)&SD4, "RAD  > Transmit binary data (%d bits)\r\n", len); \
 	for(uint32_t i=0; i<(len+7)/8; i+=8) \
 		chprintf((BaseSequentialStream*)&SD4, "%s 0x%03x ... 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\r\n", \
