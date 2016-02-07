@@ -8,10 +8,13 @@
 
 void OV9655_Snapshot2RAM(void);
 void OV9655_InitDMA(void);
+void OV9655_DeinitDMA(void);
 void OV9655_InitDCMI(void);
+void OV9655_DeinitDCMI(void);
 void OV9655_InitGPIO(void);
 uint32_t OV9655_getBuffer(uint8_t** buffer);
 void OV9655_TransmitConfig(void);
 void OV9655_init(void);
+void OV9655_deinit(void);
 
 #endif

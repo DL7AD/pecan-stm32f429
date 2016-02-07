@@ -37,6 +37,7 @@
 #include "pi2c.h"
 #include "stm32f4xx_rcc.h"
 #include "stm32f4xx_dcmi.h"
+#include "board.h"
 
 #include "jpegant/arch.h"
 #include "jpegant/dct.h"
@@ -264,6 +265,12 @@ void OV9655_InitDMA(void)
     dmaStreamEnable(stream);
 }
 
+void OV9655_DeinitDMA(void)
+{
+    const stm32_dma_stream_t *stream = STM32_DMA2_STREAM1;
+    dmaStreamDisable(stream);
+}
+
 /**
   * Initializes DCMI
   */
@@ -285,6 +292,12 @@ void OV9655_InitDCMI(void)
 	DCMI->CR |= (uint32_t)DCMI_CR_CAPTURE;
 }
 
+void OV9655_DeinitDCMI(void)
+{
+	// Clock enable
+	RCC->AHB2ENR &= ~RCC_AHB2Periph_DCMI;
+}
+
 /**
   * Initializes GPIO (for DCMI) and setup a CLOCKOUT pin (PA8)
   * which is needed by the camera (XCLK pin)
@@ -292,26 +305,26 @@ void OV9655_InitDCMI(void)
   */
 void OV9655_InitGPIO(void)
 {
-	palSetPadMode(GPIOA, 4, PAL_MODE_ALTERNATE(13)); // HSYNC -> PA4
-	palSetPadMode(GPIOA, 6, PAL_MODE_ALTERNATE(13)); // PCLK  -> PA6
-	palSetPadMode(GPIOB, 7, PAL_MODE_ALTERNATE(13)); // VSYNC -> PB7
-	palSetPadMode(GPIOC, 6, PAL_MODE_ALTERNATE(13)); // D0    -> PC6
-	palSetPadMode(GPIOC, 7, PAL_MODE_ALTERNATE(13)); // D1    -> PC7
-	palSetPadMode(GPIOC, 8, PAL_MODE_ALTERNATE(13)); // D2    -> PC8
-	palSetPadMode(GPIOC, 9, PAL_MODE_ALTERNATE(13)); // D3    -> PC9
-	palSetPadMode(GPIOE, 4, PAL_MODE_ALTERNATE(13)); // D4    -> PE4
-	palSetPadMode(GPIOB, 6, PAL_MODE_ALTERNATE(13)); // D5    -> PB6
-	palSetPadMode(GPIOE, 5, PAL_MODE_ALTERNATE(13)); // D6    -> PE5
-	palSetPadMode(GPIOE, 6, PAL_MODE_ALTERNATE(13)); // D7    -> PE6
+	palSetPadMode(PORT(CAM_HREF), PIN(CAM_HREF), PAL_MODE_ALTERNATE(13));	// HSYNC -> PA4
+	palSetPadMode(PORT(CAM_PCLK), PIN(CAM_PCLK), PAL_MODE_ALTERNATE(13));	// PCLK  -> PA6
+	palSetPadMode(PORT(CAM_VSYNC), PIN(CAM_VSYNC), PAL_MODE_ALTERNATE(13));	// VSYNC -> PB7
+	palSetPadMode(PORT(CAM_D2), PIN(CAM_D2), PAL_MODE_ALTERNATE(13));		// D0    -> PC6
+	palSetPadMode(PORT(CAM_D3), PIN(CAM_D3), PAL_MODE_ALTERNATE(13));		// D1    -> PC7
+	palSetPadMode(PORT(CAM_D4), PIN(CAM_D4), PAL_MODE_ALTERNATE(13));		// D2    -> PC8
+	palSetPadMode(PORT(CAM_D5), PIN(CAM_D5), PAL_MODE_ALTERNATE(13));		// D3    -> PC9
+	palSetPadMode(PORT(CAM_D6), PIN(CAM_D6), PAL_MODE_ALTERNATE(13));		// D4    -> PE4
+	palSetPadMode(PORT(CAM_D7), PIN(CAM_D7), PAL_MODE_ALTERNATE(13));		// D5    -> PB6
+	palSetPadMode(PORT(CAM_D8), PIN(CAM_D8), PAL_MODE_ALTERNATE(13));		// D6    -> PE5
+	palSetPadMode(PORT(CAM_D9), PIN(CAM_D9), PAL_MODE_ALTERNATE(13));		// D7    -> PE6
 
-	palSetPadMode(GPIOE, 0, PAL_MODE_OUTPUT_PUSHPULL); // CAM_OFF
+	palSetPadMode(PORT(CAM_OFF), PIN(CAM_OFF), PAL_MODE_OUTPUT_PUSHPULL);	// CAM_OFF
 
 	i2cCamInit();
 }
 
 void OV9655_InitClockout(void)
 {
-	palSetPadMode(GPIOA, 8, PAL_MODE_ALTERNATE(0)); // PA8    -> XCLK
+	palSetPadMode(PORT(CAM_XCLK), PIN(CAM_XCLK), PAL_MODE_ALTERNATE(0));	// PA8    -> XCLK
 	RCC->CFGR = (RCC->CFGR & 0xF8FFFFFF) | (0x4 << 24);
 }
 
@@ -334,7 +347,7 @@ void OV9655_init(void) {
 
 	// Power on OV9655
 	TRACE_INFO("CAM  > Switch on");
-	palClearPad(GPIOE, 0);	// Switch on camera
+	palClearPad(PORT(CAM_OFF), PIN(CAM_OFF));	// Switch on camera
 
 	// Send settings to OV9655
 	TRACE_INFO("CAM  > Transmit config to camera");
@@ -347,5 +360,19 @@ void OV9655_init(void) {
 	// DCMI Init
 	TRACE_INFO("CAM  > Init DCMI");
 	OV9655_InitDCMI();
+}
+
+void OV9655_deinit(void) {
+	// DCMI DMA
+	TRACE_INFO("CAM  > Deinit DMA");
+	OV9655_DeinitDMA();
+
+	// DCMI Init
+	TRACE_INFO("CAM  > Deinit DCMI");
+	OV9655_DeinitDCMI();
+
+	// Power on OV9655
+	TRACE_INFO("CAM  > Switch off");
+	palSetPad(PORT(CAM_OFF), PIN(CAM_OFF));	// Switch off camera
 }
 

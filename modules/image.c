@@ -95,7 +95,7 @@ THD_FUNCTION(moduleIMG, arg) {
 		TRACE_INFO("IMG  > Init camera I2C");
 		i2cCamInit();
 
-		// Init OV9655
+		// Init camera
 		OV9655_init();
 
 		// Sample data from DCMI through DMA to RAM
@@ -106,6 +106,9 @@ THD_FUNCTION(moduleIMG, arg) {
 
 		uint8_t *image;
 		uint32_t image_len = OV9655_getBuffer(&image);
+
+		// Switch off camera
+		OV9655_deinit();
 
 		TRACE_INFO("IMG  > Encode/Transmit SSDV");
 		encode_ssdv(image, image_len, parm);
