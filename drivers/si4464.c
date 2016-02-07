@@ -6,7 +6,7 @@
 
 #include "ch.h"
 #include "hal.h"
-#include "si4x6x.h"
+#include "si4464.h"
 #include "modules.h"
 #include "debug.h"
 
@@ -133,7 +133,7 @@ void Si446x_write(radio_t radio, uint8_t* txData, uint32_t len) {
 		}
 	}
 
-	chThdSleepMilliseconds(20); // FIXME: Workaround, this function does not detect CTS from Si4x6x
+	chThdSleepMilliseconds(20); // FIXME: Workaround, this function does not detect CTS from Si4464
 }
 
 /**
@@ -301,7 +301,7 @@ void radioShutdown(radio_t radio) {
  */
 bool radioTune(radio_t radio, uint32_t frequency, uint16_t shift, int8_t level) {
 	// Tracing
-	TRACE_INFO("SI %d > Tune Si4x6x", radio);
+	TRACE_INFO("SI %d > Tune Si4464", radio);
 
 	if(!RADIO_WITHIN_FREQ_RANGE(frequency)) {
 		TRACE_ERROR("SI %d > Frequency out of range", radio);
@@ -332,7 +332,7 @@ int8_t Si446x_getTemperature(radio_t radio) {
 }
 
 /**
-  * Converts power level from dBm to Si4x6x power level. The calculation
+  * Converts power level from dBm to Si4464 power level. The calculation
   * assumes Vcc = 2.6V and Si4464/Si4463 or Si4063.
   */
 uint8_t dBm2powerLvl(int32_t dBm) {

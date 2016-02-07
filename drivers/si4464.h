@@ -1,5 +1,5 @@
-#ifndef __SI4X6X__H__
-#define __SI4X6X__H__
+#ifndef __SI4464__H__
+#define __SI4464__H__
 
 #include "ch.h"
 #include "hal.h"

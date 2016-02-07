@@ -129,7 +129,7 @@ CSRC = $(STARTUPSRC) \
        modules/satellite.c \
        modules/log.c \
        drivers/max.c \
-       drivers/si4x6x.c \
+       drivers/si4464.c \
        drivers/bme280.c \
        drivers/pac1720.c \
        drivers/pi2c.c \
