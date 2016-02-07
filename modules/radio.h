@@ -4,7 +4,7 @@
 #include "ch.h"
 #include "hal.h"
 #include "config.h"
-#include "si4x6x.h"
+#include "si4464.h"
 
 typedef struct { // Radio message type
 	uint8_t msg[256];	// Message (Largest type: SSDV packet => 256byte)

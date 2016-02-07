@@ -27,35 +27,33 @@ static const SPIConfig ls_spicfg2 = {
 uint32_t outdiv;
 
 /**
- * Initializes Si446x transceiver chip. Adjustes the frequency which is shifted by variable
+ * Initializes Si4464 transceiver chip. Adjustes the frequency which is shifted by variable
  * oscillator voltage.
  * @param mv Oscillator voltage in mv
  */
-void Si446x_Init(radio_t radio, mod_t modulation) {
+void Si4464_Init(radio_t radio, mod_t modulation) {
 	// Initialize SPI
-	palSetPadMode(GPIOB, 13, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_HIGHEST);		// SCK
-	palSetPadMode(GPIOB, 14, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_HIGHEST);		// MISO
-	palSetPadMode(GPIOB, 15, PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_HIGHEST);		// MOSI
-	palSetPadMode(GPIOA, 11, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_HIGHEST);	// RADIO1 CS
-	palSetPad(GPIOA, 11);
-	palSetPadMode(GPIOA, 11, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_HIGHEST);	// RADIO1 CS
-	palSetPad(GPIOA, 11);
-	palSetPadMode(GPIOB, 0, PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_HIGHEST);	// RADIO2 CS
-	palSetPad(GPIOB, 0);
+	palSetPadMode(PORT(SPI_SCK), PIN(SPI_SCK), PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_HIGHEST);			// SCK
+	palSetPadMode(PORT(SPI_MISO), PIN(SPI_MISO), PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_HIGHEST);			// MISO
+	palSetPadMode(PORT(SPI_MOSI), PIN(SPI_MOSI), PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_HIGHEST);			// MOSI
+	palSetPadMode(PORT(RADIO1_CS), PIN(RADIO1_CS), PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_HIGHEST);	// RADIO1 CS
+	palSetPad(PORT(RADIO1_CS), PIN(RADIO1_CS));
+	palSetPadMode(PORT(RADIO2_CS), PIN(RADIO2_CS), PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_HIGHEST);	// RADIO2 CS
+	palSetPad(PORT(RADIO2_CS), PIN(RADIO2_CS));
 
 	if(radio == RADIO_2M) {
 
 		// Configure pins
-		palSetPadMode(GPIOA, 12, PAL_MODE_OUTPUT_PUSHPULL);	// RADIO1 SDN
-		palSetPadMode(GPIOA, 9, PAL_MODE_OUTPUT_PUSHPULL);	// RADIO1 GPIO0
-		palSetPadMode(GPIOA, 10, PAL_MODE_OUTPUT_PUSHPULL);	// RADIO1 GPIO1
+		palSetPadMode(PORT(RADIO1_SDN), PIN(RADIO1_SDN), PAL_MODE_OUTPUT_PUSHPULL);		// RADIO1 SDN
+		palSetPadMode(PORT(RADIO1_GPIO0), PIN(RADIO1_GPIO0), PAL_MODE_OUTPUT_PUSHPULL);	// RADIO1 GPIO0
+		palSetPadMode(PORT(RADIO1_GPIO1), PIN(RADIO1_GPIO1), PAL_MODE_OUTPUT_PUSHPULL);	// RADIO1 GPIO1
 
 	} else if (radio == RADIO_70CM) {
 
 		// Configure pins
-		palSetPadMode(GPIOB, 12, PAL_MODE_OUTPUT_PUSHPULL);	// RADIO2 SDN
-		palSetPadMode(GPIOE, 13, PAL_MODE_OUTPUT_PUSHPULL);	// RADIO2 GPIO0
-		palSetPadMode(GPIOE, 14, PAL_MODE_OUTPUT_PUSHPULL);	// RADIO2 GPIO1
+		palSetPadMode(PORT(RADIO2_SDN), PIN(RADIO2_SDN), PAL_MODE_OUTPUT_PUSHPULL);		// RADIO2 SDN
+		palSetPadMode(PORT(RADIO2_GPIO0), PIN(RADIO2_GPIO0), PAL_MODE_OUTPUT_PUSHPULL);	// RADIO2 GPIO0
+		palSetPadMode(PORT(RADIO2_GPIO1), PIN(RADIO2_GPIO1), PAL_MODE_OUTPUT_PUSHPULL);	// RADIO2 GPIO1
 
 	}
 
@@ -69,7 +67,7 @@ void Si446x_Init(radio_t radio, mod_t modulation) {
 	uint8_t x1 = (OSC_FREQ >>  8) & 0x0FF;
 	uint8_t x0 = (OSC_FREQ >>  0) & 0x0FF;
 	uint8_t init_command[] = {0x02, 0x01, 0x01, x3, x2, x1, x0};
-	Si446x_write(radio, init_command, 7);
+	Si4464_write(radio, init_command, 7);
 
 	// Set transmitter GPIOs
 	uint8_t gpio_pin_cfg_command[] = {
@@ -82,7 +80,7 @@ void Si446x_Init(radio_t radio, mod_t modulation) {
 		0x00,	// SDO
 		0x00	// GEN_CONFIG
 	};
-	Si446x_write(radio, gpio_pin_cfg_command, 8);
+	Si4464_write(radio, gpio_pin_cfg_command, 8);
 
 	// Set modem
 	switch(modulation)
@@ -101,7 +99,7 @@ void Si446x_Init(radio_t radio, mod_t modulation) {
 	}
 }
 
-void Si446x_write(radio_t radio, uint8_t* txData, uint32_t len) {
+void Si4464_write(radio_t radio, uint8_t* txData, uint32_t len) {
 	// Transmit data by SPI
 	uint8_t rxData[len];
 
@@ -113,11 +111,11 @@ void Si446x_write(radio_t radio, uint8_t* txData, uint32_t len) {
 	spiUnselect(&SPID2);
 	spiReleaseBus(&SPID2);
 
-	// Reqest ACK by Si446x
+	// Reqest ACK by Si4464
 	rxData[0] = 0x00;
 	while(rxData[0] != 0xFF) {
 
-		// Request ACK by Si446x
+		// Request ACK by Si4464
 		uint8_t rx_ready[] = {0x44};
 
 		// SPI transfer
@@ -137,9 +135,9 @@ void Si446x_write(radio_t radio, uint8_t* txData, uint32_t len) {
 }
 
 /**
- * Read register from Si446x. First Register CTS is included.
+ * Read register from Si4464. First Register CTS is included.
  */
-void Si446x_read(radio_t radio, uint8_t* txData, uint32_t txlen, uint8_t* rxData, uint32_t rxlen) {
+void Si4464_read(radio_t radio, uint8_t* txData, uint32_t txlen, uint8_t* rxData, uint32_t rxlen) {
 	// Transmit data by SPI
 	uint8_t null_spi[txlen];
 	// SPI transfer
@@ -150,11 +148,11 @@ void Si446x_read(radio_t radio, uint8_t* txData, uint32_t txlen, uint8_t* rxData
 	spiUnselect(&SPID2);
 	spiReleaseBus(&SPID2);
 
-	// Reqest ACK by Si446x
+	// Reqest ACK by Si4464
 	rxData[0] = 0x00;
 	while(rxData[0] != 0xFF) {
 
-		// Request ACK by Si446x
+		// Request ACK by Si4464
 		uint16_t rx_ready[rxlen];
 		rx_ready[0] = 0x44;
 
@@ -172,7 +170,7 @@ void Si446x_read(radio_t radio, uint8_t* txData, uint32_t txlen, uint8_t* rxData
 }
 
 void setFrequency(radio_t radio, uint32_t freq, uint16_t shift) {
-	// Set the output divider according to recommended ranges given in Si446x datasheet
+	// Set the output divider according to recommended ranges given in Si4464 datasheet
 	uint32_t band = 0;
 	if(freq < 705000000UL) {outdiv = 6;  band = 1;};
 	if(freq < 525000000UL) {outdiv = 8;  band = 2;};
@@ -183,7 +181,7 @@ void setFrequency(radio_t radio, uint32_t freq, uint16_t shift) {
 	// Set the band parameter
 	uint32_t sy_sel = 8;
 	uint8_t set_band_property_command[] = {0x11, 0x20, 0x01, 0x51, (band + sy_sel)};
-	Si446x_write(radio, set_band_property_command, 5);
+	Si4464_write(radio, set_band_property_command, 5);
 
 	// Set the PLL parameters
 	uint32_t f_pfd = 2 * OSC_FREQ / outdiv;
@@ -202,14 +200,14 @@ void setFrequency(radio_t radio, uint32_t freq, uint16_t shift) {
 
 	// Transmit frequency to chip
 	uint8_t set_frequency_property_command[] = {0x11, 0x40, 0x04, 0x00, n, m2, m1, m0, c1, c0};
-	Si446x_write(radio, set_frequency_property_command, 10);
+	Si4464_write(radio, set_frequency_property_command, 10);
 
 	uint32_t x = ((((uint32_t)1 << 19) * outdiv * 1300.0)/(2*OSC_FREQ))*2;
 	uint8_t x2 = (x >> 16) & 0xFF;
 	uint8_t x1 = (x >>  8) & 0xFF;
 	uint8_t x0 = (x >>  0) & 0xFF;
 	uint8_t set_deviation[] = {0x11, 0x20, 0x03, 0x0a, x2, x1, x0};
-	Si446x_write(radio, set_deviation, 7);
+	Si4464_write(radio, set_deviation, 7);
 }
 
 void setShift(radio_t radio, uint16_t shift) {
@@ -222,17 +220,17 @@ void setShift(radio_t radio, uint16_t shift) {
 	uint8_t modem_freq_dev_2 = 0xFF & (modem_freq_dev >> 16);
 
 	uint8_t set_modem_freq_dev_command[] = {0x11, 0x20, 0x03, 0x0A, modem_freq_dev_2, modem_freq_dev_1, modem_freq_dev_0};
-	Si446x_write(radio, set_modem_freq_dev_command, 7);
+	Si4464_write(radio, set_modem_freq_dev_command, 7);
 }
 
 void setModemAFSK(radio_t radio) {
 	// Disable preamble
 	uint8_t disable_preamble[] = {0x11, 0x10, 0x01, 0x00, 0x00};
-	Si446x_write(radio, disable_preamble, 5);
+	Si4464_write(radio, disable_preamble, 5);
 
 	// Do not transmit sync word
 	uint8_t no_sync_word[] = {0x11, 0x11, 0x01, 0x11, (0x01 << 7)};
-	Si446x_write(radio, no_sync_word, 5);
+	Si4464_write(radio, no_sync_word, 5);
 
 	// Setup the NCO modulo and oversampling mode
 	uint32_t s = OSC_FREQ / 10;
@@ -241,51 +239,51 @@ void setModemAFSK(radio_t radio) {
 	uint8_t f1 = (s >>  8) & 0xFF;
 	uint8_t f0 = (s >>  0) & 0xFF;
 	uint8_t setup_oversampling[] = {0x11, 0x20, 0x04, 0x06, f3, f2, f1, f0};
-	Si446x_write(radio, setup_oversampling, 8);
+	Si4464_write(radio, setup_oversampling, 8);
 
 	// setup the NCO data rate for APRS
 	uint8_t setup_data_rate[] = {0x11, 0x20, 0x03, 0x03, 0x00, 0x11, 0x30};
-	Si446x_write(radio, setup_data_rate, 7);
+	Si4464_write(radio, setup_data_rate, 7);
 
 	// use 2GFSK from async GPIO1
 	uint8_t use_2gfsk[] = {0x11, 0x20, 0x01, 0x00, 0x2B};
-	Si446x_write(radio, use_2gfsk, 5);
+	Si4464_write(radio, use_2gfsk, 5);
 
 	// Set AFSK filter
 	uint8_t coeff[] = {0x81, 0x9f, 0xc4, 0xee, 0x18, 0x3e, 0x5c, 0x70, 0x76};
 	uint8_t i;
 	for(i=0; i<sizeof(coeff); i++) {
 		uint8_t msg[] = {0x11, 0x20, 0x01, 0x17-i, coeff[i]};
-		Si446x_write(radio, msg, 5);
+		Si4464_write(radio, msg, 5);
 	}
 }
 
 void setModemCW(radio_t radio) {
 	// use CW from async GPIO1
 	uint8_t use_cw[] = {0x11, 0x20, 0x01, 0x00, 0xA9};
-	Si446x_write(radio, use_cw, 5);
+	Si4464_write(radio, use_cw, 5);
 }
 
 void setModem2FSK(radio_t radio) {
 	// use 2FSK from async GPIO1
 	uint8_t use_2fsk[] = {0x11, 0x20, 0x01, 0x00, 0xAA};
-	Si446x_write(radio, use_2fsk, 5);
+	Si4464_write(radio, use_2fsk, 5);
 }
 
 void setPowerLevel(radio_t radio, int8_t level) {
 	// Set the Power
 	uint8_t set_pa_pwr_lvl_property_command[] = {0x11, 0x22, 0x01, 0x01, dBm2powerLvl(level)};
-	Si446x_write(radio, set_pa_pwr_lvl_property_command, 5);
+	Si4464_write(radio, set_pa_pwr_lvl_property_command, 5);
 }
 
 void startTx(radio_t radio) {
 	uint8_t change_state_command[] = {0x34, 0x07};
-	Si446x_write(radio, change_state_command, 2);
+	Si4464_write(radio, change_state_command, 2);
 }
 
 void stopTx(radio_t radio) {
 	uint8_t change_state_command[] = {0x34, 0x03};
-	Si446x_write(radio, change_state_command, 2);
+	Si4464_write(radio, change_state_command, 2);
 }
 
 void radioShutdown(radio_t radio) {
@@ -323,10 +321,10 @@ bool radioTune(radio_t radio, uint32_t frequency, uint16_t shift, int8_t level) 
 	return true;
 }
 
-int8_t Si446x_getTemperature(radio_t radio) {
+int8_t Si4464_getTemperature(radio_t radio) {
 	uint8_t txData[2] = {0x14, 0x10};
 	uint8_t rxData[8];
-	Si446x_read(radio, txData, 2, rxData, 8);
+	Si4464_read(radio, txData, 2, rxData, 8);
 	uint16_t adc = rxData[7] | ((rxData[6] & 0x7) << 8);
 	return (899*adc)/4096 - 293;
 }

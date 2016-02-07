@@ -4,7 +4,7 @@
 #include "debug.h"
 #include "modules.h"
 #include "radio.h"
-#include "si4x6x.h"
+#include "si4464.h"
 #include <string.h>
 
 #define TX_CPU_CLOCK			10200
@@ -64,7 +64,7 @@ bool afsk_handler(radio_t radio, radioMSG_t *msg) {
 
 void sendAFSK(radio_t radio, radioMSG_t *msg) {
 	// Initialize radio and tune
-	Si446x_Init(radio, MOD_AFSK);
+	Si4464_Init(radio, MOD_AFSK);
 	radioTune(radio, msg->freq, 0, msg->power);
 
 	// Initialize variables for AFSK
@@ -92,7 +92,7 @@ void sendAFSK(radio_t radio, radioMSG_t *msg) {
   */
 void sendCW(radio_t radio, radioMSG_t *msg) {
 	// Initialize radio and tune
-	Si446x_Init(radio, MOD_CW);
+	Si4464_Init(radio, MOD_CW);
 	radioTune(radio, msg->freq, 0, msg->power);
 
 	// Transmit data
@@ -108,7 +108,7 @@ void sendCW(radio_t radio, radioMSG_t *msg) {
 
 void send2FSK(radio_t radio, radioMSG_t *msg) {
 	// Initialize radio and tune
-	Si446x_Init(radio, MOD_2FSK);
+	Si4464_Init(radio, MOD_2FSK);
 	MOD_GPIO_SET(radio, HIGH);
 	radioTune(radio, msg->freq, FSK_SHIFT, msg->power);
 
