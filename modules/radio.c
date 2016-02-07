@@ -200,11 +200,11 @@ THD_FUNCTION(moduleRADIO, arg) {
 			if(radio) { // Radio found
 				TRACE_INFO(	"RAD  > Transmit on radio\r\n"
 							"%s Radio %d\r\n"
-							"%s Frequency %d MHz\r\n"
+							"%s Frequency %d.%03d MHz\r\n"
 							"%s Power %d dBm (%d)\r\n"
 							"%s Modulation %s",
 							TRACE_TAB, radio,
-							TRACE_TAB, msg->freq,
+							TRACE_TAB, msg->freq/1000000, (msg->freq%1000000)/1000,
 							TRACE_TAB, msg->power, dBm2powerLvl(msg->power),
 							TRACE_TAB, VAL2MOULATION(msg->mod)
 				);
@@ -230,11 +230,11 @@ THD_FUNCTION(moduleRADIO, arg) {
 
 				TRACE_ERROR("RAD  > No radio available for this frequency\r\n"
 							"%s Radio %d\r\n"
-							"%s Frequency %d MHz\r\n"
+							"%s Frequency %d.%03d MHz\r\n"
 							"%s Power %d dBm (%d)\r\n"
 							"%s Modulation %s",
 							TRACE_TAB, 10,
-							TRACE_TAB, msg->freq,
+							TRACE_TAB, msg->freq/1000000, (msg->freq%1000000)/1000,
 							TRACE_TAB, msg->power, dBm2powerLvl(msg->power),
 							TRACE_TAB, VAL2MOULATION(msg->mod)
 				);

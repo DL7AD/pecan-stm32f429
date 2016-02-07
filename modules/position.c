@@ -89,7 +89,7 @@ void replace_placeholders(char* fskmsg, uint16_t size, trackPoint_t *trackPoint)
 	str_replace(fskmsg, size, "<VBAT>", buf);
 	chsnprintf(buf, sizeof(buf), "%d.%02d", trackPoint->adc_solar/1000, (trackPoint->adc_solar%1000)/10);
 	str_replace(fskmsg, size, "<VSOL>", buf);
-	chsnprintf(buf, sizeof(buf), "%d.%03d", trackPoint->adc_charge/1000, trackPoint->adc_charge%1000);
+	chsnprintf(buf, sizeof(buf), "%d.%03d", trackPoint->adc_charge/1000, (trackPoint->adc_charge >= 0 ? 1 : -1) * (trackPoint->adc_charge%1000));
 	str_replace(fskmsg, size, "<CHARGE>", buf);
 	chsnprintf(buf, sizeof(buf), "%d", trackPoint->air_press/10);
 	str_replace(fskmsg, size, "<IPRESS>", buf);
