@@ -22,8 +22,11 @@ uint32_t error = 0;
 static void led_cb(void *led_sw) {
 	// Switch LEDs
 	palWritePad(PORT(LED_GREEN), PIN(LED_GREEN), (bool)led_sw);	// Show I'M ALIVE
-	if(error)
+	if(error) {
 		palWritePad(PORT(LED_RED), PIN(LED_RED), (bool)led_sw);	// Show error
+	} else {
+		palSetPad(PORT(LED_RED), PIN(LED_RED));	// Shut off error
+	}
 
 	led_sw = !led_sw; // Set next state
 

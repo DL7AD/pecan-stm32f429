@@ -23,6 +23,8 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 
 	while(true)
 	{
+		parm->lastCycle = chVTGetSystemTimeX(); // Update Watchdog timer
+
 		while((c = ssdv_enc_get_packet(&ssdv)) == SSDV_FEED_ME)
 		{
 			b = &image[bi];
@@ -65,10 +67,6 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 				memcpy(msg.msg, pkt, sizeof(pkt));
 				msg.bin_len = 8*sizeof(pkt);
 				transmitOnRadio(&msg);
-
-				//chThdSleepMilliseconds(5000);
-				//chMBGetFreeCountI chMBGetUsedCountI chMBSizeI
-
 				break;
 
 			default:
@@ -90,15 +88,15 @@ THD_FUNCTION(moduleIMG, arg) {
 	systime_t time = chVTGetSystemTimeX();
 	while(true)
 	{
+		parm->lastCycle = chVTGetSystemTimeX(); // Watchdog timer
+		TRACE_INFO("IMG  > Do module IMAGE cycle");
+
 		// Init I2C
 		TRACE_INFO("IMG  > Init camera I2C");
 		i2cCamInit();
 
 		// Init OV9655
 		OV9655_init();
-
-		parm->lastCycle = chVTGetSystemTimeX(); // Watchdog timer
-		TRACE_INFO("IMG  > Do module IMAGE cycle");
 
 		// Sample data from DCMI through DMA to RAM
 		TRACE_INFO("IMG  > Capture image");
