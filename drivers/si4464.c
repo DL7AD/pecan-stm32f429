@@ -105,7 +105,7 @@ void Si4464_Init(radio_t radio, mod_t modulation) {
 void Si4464_write(radio_t radio, uint8_t* txData, uint32_t len) {
 	// Transmit data by SPI
 	uint8_t rxData[len];
-
+	
 	// SPI transfer
 	spiAcquireBus(&SPID2);
 	spiStart(&SPID2, getSPIDriver(radio));
@@ -115,8 +115,9 @@ void Si4464_write(radio_t radio, uint8_t* txData, uint32_t len) {
 	spiReleaseBus(&SPID2);
 
 	// Reqest ACK by Si4464
+	uint8_t counter = 0; // FIXME: Sometimes CTS is not returned by Si4464 correctly
 	rxData[1] = 0x00;
-	while(rxData[1] != 0xFF) {
+	while(rxData[1] != 0xFF && ++counter < 20) {
 
 		// Request ACK by Si4464
 		uint8_t rx_ready[] = {0x44};
@@ -149,8 +150,9 @@ void Si4464_read(radio_t radio, uint8_t* txData, uint32_t txlen, uint8_t* rxData
 	spiReleaseBus(&SPID2);
 
 	// Reqest ACK by Si4464
+	uint8_t counter = 0; // FIXME: Sometimes CTS is not returned by Si4464 correctly
 	rxData[1] = 0x00;
-	while(rxData[1] != 0xFF) {
+	while(rxData[1] != 0xFF && ++counter < 20) {
 
 		// Request ACK by Si4464
 		uint16_t rx_ready[rxlen];

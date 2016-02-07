@@ -15,12 +15,14 @@
 #define PHASE_DELTA_1200		(10066329600 / CLOCK_PER_TICK / PLAYBACK_RATE) // Fixed point 9.7 // 1258 / 2516
 #define PHASE_DELTA_2200		(18454937600 / CLOCK_PER_TICK / PLAYBACK_RATE) // 2306 / 4613
 
-#define MB_SIZE 3
+#define MB_SIZE 4
 
 mailbox_t radioMB;
 msg_t mb_pbuffer[MB_SIZE];
 radioMSG_t mb_buffer[MB_SIZE];
 uint32_t mb_buffer_index;
+static uint8_t mb_free = MB_SIZE;
+mutex_t radio_mtx;
 
 static uint16_t current_byte;
 static uint16_t current_sample_in_baud;		// 1 bit = SAMPLES_PER_BAUD samples
@@ -178,6 +180,7 @@ THD_FUNCTION(moduleRADIO, arg) {
 	// Setup mailbox
 	TRACE_INFO("RAD  > Setup radio mailbox");
 	chMBObjectInit(&radioMB, mb_pbuffer, MB_SIZE);
+	chMtxObjectInit(&radio_mtx);
 
 	while(true)
 	{
@@ -240,6 +243,11 @@ THD_FUNCTION(moduleRADIO, arg) {
 				);
 
 			}
+
+			chMtxLock(&radio_mtx);
+			mb_free++;
+			chMtxUnlock(&radio_mtx);
+
 		} else {
 			for(uint8_t i=0; i<2; i++) {
 				if(ST2MS(chVTGetSystemTimeX() - lastMessage[i]) >= RADIO_TIMEOUT)
@@ -267,15 +275,18 @@ uint32_t getCustomFrequency(void) {
   */
 void transmitOnRadio(radioMSG_t *msg) {
 	while(true) {
-		msg_t stat = chMBPost(&radioMB, (msg_t)&mb_buffer[mb_buffer_index % MB_SIZE], 0);
-		if(stat == MSG_TIMEOUT) {
-			chThdSleepMilliseconds(50);
-			continue;
+		chMtxLock(&radio_mtx);
+		if(mb_free > 0) { // Buffer is free
+			chMBPost(&radioMB, (msg_t)&mb_buffer[mb_buffer_index % MB_SIZE], TIME_IMMEDIATE);	// Post pointer into messagebox
+			memcpy(&mb_buffer[mb_buffer_index % MB_SIZE], msg, sizeof(radioMSG_t));				// Copy buffer into messagebox-buffer
+			mb_buffer_index++;																	// Increment buffer index
+			mb_free--;																			// Decrement free counter
+			chMtxUnlock(&radio_mtx);
+			return;
 		}
-		break;
+		chMtxUnlock(&radio_mtx);
+		chThdSleepMilliseconds(50);																// Wait 50ms if message box full
 	}
-	memcpy(&mb_buffer[mb_buffer_index % MB_SIZE], msg, sizeof(radioMSG_t));
-	mb_buffer_index++;
 }
 
 
