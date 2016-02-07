@@ -20,11 +20,6 @@ uint32_t getCustomFrequency(void);
 
 void transmitOnRadio(radioMSG_t *msg);
 
-//void sendAFSK(radio_t radio, radioMSG_t *msg);
-//bool afsk_handler(radio_t radio, radioMSG_t *msg);
-//void sendCW(radio_t radio, radioMSG_t *msg);
-//void send2FSK(radio_t radio, radioMSG_t *msg);
-
 THD_FUNCTION(moduleRADIO, arg);
 
 #endif

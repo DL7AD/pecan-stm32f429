@@ -65,7 +65,9 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 				memcpy(msg.msg, pkt, sizeof(pkt));
 				msg.bin_len = 8*sizeof(pkt);
 				transmitOnRadio(&msg);
-				chThdSleepMilliseconds(5000);
+
+				//chThdSleepMilliseconds(5000);
+				//chMBGetFreeCountI chMBGetUsedCountI chMBSizeI
 
 				break;
 

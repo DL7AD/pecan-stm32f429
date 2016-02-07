@@ -15,7 +15,7 @@
 #define PHASE_DELTA_1200		(10066329600 / CLOCK_PER_TICK / PLAYBACK_RATE) // Fixed point 9.7 // 1258 / 2516
 #define PHASE_DELTA_2200		(18454937600 / CLOCK_PER_TICK / PLAYBACK_RATE) // 2306 / 4613
 
-#define MB_SIZE 8
+#define MB_SIZE 3
 
 mailbox_t radioMB;
 msg_t mb_pbuffer[MB_SIZE];
@@ -266,12 +266,20 @@ uint32_t getCustomFrequency(void) {
   * message box is full
   */
 void transmitOnRadio(radioMSG_t *msg) {
-	bool sentToMB = false;
-	while(!sentToMB) { // TODO: This method does currently not about buffer overflow. The oldest buffer will be overwritten.
-		memcpy(&mb_buffer[mb_buffer_index % MB_SIZE], msg, sizeof(radioMSG_t));
-		chMBPost(&radioMB, (msg_t)&mb_buffer[mb_buffer_index % MB_SIZE], 0);
-		mb_buffer_index++;
-		sentToMB = true;
+	while(true) {
+		msg_t stat = chMBPost(&radioMB, (msg_t)&mb_buffer[mb_buffer_index % MB_SIZE], 0);
+		if(stat == MSG_TIMEOUT) {
+			chThdSleepMilliseconds(50);
+			continue;
+		}
+		break;
 	}
+	memcpy(&mb_buffer[mb_buffer_index % MB_SIZE], msg, sizeof(radioMSG_t));
+	mb_buffer_index++;
 }
+
+
+
+
+
 
