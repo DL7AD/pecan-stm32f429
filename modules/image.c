@@ -66,7 +66,8 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 				msg.power = parm->power;
 				memcpy(msg.msg, pkt, sizeof(pkt));
 				msg.bin_len = 8*sizeof(pkt);
-				transmitOnRadio(&msg);
+				while(!transmitOnRadio(&msg)) // Try to insert message into message box less aggressively
+					chThdSleepMilliseconds(2000);
 				break;
 
 			default:

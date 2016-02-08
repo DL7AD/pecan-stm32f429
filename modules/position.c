@@ -135,7 +135,8 @@ THD_FUNCTION(modulePOS, arg) {
 			case PROT_APRS_AFSK: // Encode APRS
 				msg.mod = MOD_AFSK;
 				msg.bin_len = aprs_encode_position(msg.msg, trackPoint);
-				transmitOnRadio(&msg);
+				while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively
+					chThdSleepMilliseconds(20);
 				break;
 
 			case PROT_UKHAS_2FSK: // Encode UKHAS
@@ -148,7 +149,8 @@ THD_FUNCTION(modulePOS, arg) {
 				str_replace(fskmsg, sizeof(fskmsg), "<CALL>", UKHAS_CALLSIGN);
 
 				msg.bin_len = 8*chsnprintf((char*)msg.msg, sizeof(fskmsg), "$$$$$%s*%04X\n", fskmsg, crc16(fskmsg));
-				transmitOnRadio(&msg);
+				while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively
+					chThdSleepMilliseconds(20);
 				break;
 
 			case PROT_RAW_CW: // Encode CW
@@ -160,7 +162,8 @@ THD_FUNCTION(modulePOS, arg) {
 				str_replace(fskmsg, sizeof(fskmsg), "<CALL>", CW_CALLSIGN);
 
 				msg.bin_len = CW_encode(msg.msg, cwmsg);
-				transmitOnRadio(&msg);
+				while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively
+					chThdSleepMilliseconds(20);
 				break;
 
 			default:

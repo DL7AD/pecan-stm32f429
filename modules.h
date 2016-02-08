@@ -20,26 +20,26 @@
 
 #define MODULE_POSITION(CYCLE,SLEEP,FREQ,PWR,PROT) { \
 	ARG2PARM("POS", CYCLE,SLEEP,FREQ,PWR,PROT); \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(2048), NORMALPRIO, modulePOS, parm); \
+	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(2048), LOWPRIO, modulePOS, parm); \
 	modules[moduleCount++] = parm; \
 }
 
 #define MODULE_SATELLITE(CYCLE,SLEEP,FREQ,PWR,PROT) { \
 	ARG2PARM("SAT", CYCLE,SLEEP,FREQ,PWR,PROT); \
 	parm->sleepMethod = sgp4_visible; \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), NORMALPRIO, moduleSAT, parm); \
+	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), LOWPRIO, moduleSAT, parm); \
 	modules[moduleCount++] = parm; \
 }
 
 #define MODULE_IMAGE(CYCLE,SLEEP,FREQ,PWR,PROT) { \
 	ARG2PARM("IMG", CYCLE,SLEEP,FREQ,PWR,PROT); \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(8192), HIGHPRIO, moduleIMG, parm); \
+	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(2048), NORMALPRIO, moduleIMG, parm); \
 	modules[moduleCount++] = parm; \
 }
 
 #define MODULE_LOG(CYCLE,SLEEP,FREQ,PWR,PROT) { \
 	ARG2PARM("LOG", CYCLE,SLEEP,FREQ,PWR,PROT); \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), NORMALPRIO, moduleLOG, parm); \
+	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), LOWPRIO, moduleLOG, parm); \
 	modules[moduleCount++] = parm; \
 }
 
@@ -63,7 +63,6 @@
 #define initEssentialModules() { \
 	MODULE_TRACKING(CYCLE_TIME); /* Tracker data input */ \
 	MODULE_RADIO(); /* Tracker data output */ \
-	chThdSleepMilliseconds(1000); \
 }
 
 #define MODULE_SD() (void)0; /* TODO */

@@ -124,7 +124,7 @@ void send2FSK(radio_t radio, radioMSG_t *msg) {
 	while(txs != 0)
 	{
 		switch(txs)
-		{      
+		{
 			case 6: // TX-delay
 				txj++;
 				if(txj > FSK_PREDELAY) {
@@ -270,23 +270,20 @@ uint32_t getCustomFrequency(void) {
 }
 
 /**
-  * Sends radio message into message box. This method will block until when
-  * message box is full
+  * Sends radio message into message box. This method will return false if message box is full.
   */
-void transmitOnRadio(radioMSG_t *msg) {
-	while(true) {
-		chMtxLock(&radio_mtx);
-		if(mb_free > 0) { // Buffer is free
-			chMBPost(&radioMB, (msg_t)&mb_buffer[mb_buffer_index % MB_SIZE], TIME_IMMEDIATE);	// Post pointer into messagebox
-			memcpy(&mb_buffer[mb_buffer_index % MB_SIZE], msg, sizeof(radioMSG_t));				// Copy buffer into messagebox-buffer
-			mb_buffer_index++;																	// Increment buffer index
-			mb_free--;																			// Decrement free counter
-			chMtxUnlock(&radio_mtx);
-			return;
-		}
+bool transmitOnRadio(radioMSG_t *msg) {
+	chMtxLock(&radio_mtx);
+	if(mb_free > 0) { // Buffer is free
+		chMBPost(&radioMB, (msg_t)&mb_buffer[mb_buffer_index % MB_SIZE], TIME_IMMEDIATE);	// Post pointer into messagebox
+		memcpy(&mb_buffer[mb_buffer_index % MB_SIZE], msg, sizeof(radioMSG_t));				// Copy buffer into messagebox-buffer
+		mb_buffer_index++;																	// Increment buffer index
+		mb_free--;																			// Decrement free counter
 		chMtxUnlock(&radio_mtx);
-		chThdSleepMilliseconds(50);																// Wait 50ms if message box full
+		return true;
 	}
+	chMtxUnlock(&radio_mtx);
+	return false;
 }
 
 

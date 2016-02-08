@@ -14,11 +14,12 @@ typedef struct { // Radio message type
 	mod_t mod;			// Modulation
 } radioMSG_t;
 
+extern mutex_t radio_image_mtx;
+
 uint32_t getAPRSRegionFrequency(void);
 uint32_t getAPRSISSFrequency(void);
 uint32_t getCustomFrequency(void);
-
-void transmitOnRadio(radioMSG_t *msg);
+bool transmitOnRadio(radioMSG_t *msg);
 
 THD_FUNCTION(moduleRADIO, arg);
 
