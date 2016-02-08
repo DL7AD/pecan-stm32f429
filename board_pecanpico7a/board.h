@@ -581,7 +581,7 @@
                                      PIN_OTYPE_PUSHPULL(GPIOC_CAM_D2) |     \
                                      PIN_OTYPE_PUSHPULL(GPIOC_CAM_D3) |     \
                                      PIN_OTYPE_PUSHPULL(GPIOC_CAM_D4) |     \
-                                     PIN_OTYPE_OPENDRAIN(GPIOC_CAM_D5) |    \
+                                     PIN_OTYPE_PUSHPULL(GPIOC_CAM_D5) |    \
                                      PIN_OTYPE_PUSHPULL(GPIOC_SD_SCK) |     \
                                      PIN_OTYPE_PUSHPULL(GPIOC_SD_MOSI) |    \
                                      PIN_OTYPE_PUSHPULL(GPIOC_SD_MISO) |    \
