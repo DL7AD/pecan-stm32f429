@@ -6,7 +6,7 @@
 
 #define  OV9655_I2C_ADR        0x30  /* Slave-address vom OV9655 */
 
-void OV9655_Snapshot2RAM(void);
+bool OV9655_Snapshot2RAM(void);
 void OV9655_InitDMA(void);
 void OV9655_DeinitDMA(void);
 void OV9655_InitDCMI(void);

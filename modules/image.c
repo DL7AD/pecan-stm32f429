@@ -99,10 +99,14 @@ THD_FUNCTION(moduleIMG, arg) {
 		// Init camera
 		OV9655_init();
 
-		// Sample data from DCMI through DMA to RAM
+		// Sample data from DCMI through DMA into RAM
 		TRACE_INFO("IMG  > Capture image");
-		palClearPad(PORT(LED_YELLOW), PIN(LED_YELLOW));
-		OV9655_Snapshot2RAM();
+		palClearPad(PORT(LED_YELLOW), PIN(LED_YELLOW)); // Yellow LED shows when image is captured
+		uint8_t tries = 5; // Try 5 times at maximum
+		bool status;
+		do { // Try capturing image until capture successful
+			status = OV9655_Snapshot2RAM();
+		} while(!status && --tries);
 		palSetPad(PORT(LED_YELLOW), PIN(LED_YELLOW));
 
 		uint8_t *image;
@@ -111,8 +115,12 @@ THD_FUNCTION(moduleIMG, arg) {
 		// Switch off camera
 		OV9655_deinit();
 
-		TRACE_INFO("IMG  > Encode/Transmit SSDV");
-		encode_ssdv(image, image_len, parm);
+		if(tries) { // Capture successful
+			TRACE_INFO("IMG  > Encode/Transmit SSDV");
+			encode_ssdv(image, image_len, parm);
+		} else {
+			TRACE_ERROR("IMG  > Image capturing failed");
+		}
 
 		time = chThdSleepUntilWindowed(time, time + S2ST(parm->cycle)); // Wait until time + cycletime
 	}

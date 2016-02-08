@@ -174,7 +174,11 @@ void write_jpeg(const unsigned char buff[], unsigned size)
 	jpeg_pos += size;
 }
 
-void OV9655_Snapshot2RAM(void)
+/**
+  * Captures an image from the camera.
+  * Returns false in case of an error.
+  */
+bool OV9655_Snapshot2RAM(void)
 {
 	// Reset output pointer
 	jpeg_pos = 0;
@@ -187,11 +191,17 @@ void OV9655_Snapshot2RAM(void)
 	OV9655_InitDCMI();
 
 	// Encode JPEG data
-	while(buffNum < OV9655_MAXY / 16)
+	systime_t timeout = chVTGetSystemTimeX() + MS2ST(1000); // Timeout 1sec
+	while(buffNum < OV9655_MAXY / 16 && chVTGetSystemTimeX() < timeout)
 		chThdSleepMilliseconds(10);
+
+	if(chVTGetSystemTimeX() >= timeout)
+		return false;
 
 	// Add JPEG footer to buffer
 	huffman_stop();
+
+	return true;
 }
 
 /**
