@@ -159,7 +159,7 @@ THD_FUNCTION(modulePOS, arg) {
 				char cwmsg[256];
 				memcpy(cwmsg, CW_FORMAT, sizeof(CW_FORMAT));
 				replace_placeholders(cwmsg, sizeof(cwmsg), trackPoint);
-				str_replace(fskmsg, sizeof(fskmsg), "<CALL>", CW_CALLSIGN);
+				str_replace(cwmsg, sizeof(cwmsg), "<CALL>", CW_CALLSIGN);
 
 				msg.bin_len = CW_encode(msg.msg, cwmsg);
 				while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively

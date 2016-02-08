@@ -37,7 +37,7 @@ extern const SerialConfig uart_config;
 #define TRACE_WARN(format, args...) TRACE_BASE(format, "WARN ", ##args)
 #define TRACE_ERROR(format, args...) TRACE_BASE(format, "ERROR", ##args)
 
-#define TRACE_TAB "                             "
+#define TRACE_TAB "                            "
 
 #define TRACE_MODULE_INFO(parm, thd, name) { \
 	uint32_t (*fptr)(void); \
