@@ -363,15 +363,7 @@ void OV9655_init(void) {
 }
 
 void OV9655_deinit(void) {
-	// DCMI DMA
-	TRACE_INFO("CAM  > Deinit DMA");
-	OV9655_DeinitDMA();
-
-	// DCMI Init
-	TRACE_INFO("CAM  > Deinit DCMI");
-	OV9655_DeinitDCMI();
-
-	// Power on OV9655
+	// Power off OV9655
 	TRACE_INFO("CAM  > Switch off");
 	palSetPad(PORT(CAM_OFF), PIN(CAM_OFF));	// Switch off camera
 }
