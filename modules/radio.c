@@ -172,7 +172,8 @@ void send2FSK(radio_t radio, radioMSG_t *msg) {
 
 THD_FUNCTION(moduleRADIO, arg) {
 	module_params_t* parm = (module_params_t*)arg;
-	time_t lastMessage[2];
+	time_t lastMessage[2]; // Last transmission time (end of transmission)
+	mod_t lastModulation[2]; // Last modulation
 
 	// Print infos
 	TRACE_INFO("RAD  > Startup module RADIO");
@@ -212,6 +213,10 @@ THD_FUNCTION(moduleRADIO, arg) {
 							TRACE_TAB, VAL2MOULATION(msg->mod)
 				);
 				TRACE_BIN(msg->msg, msg->bin_len);
+
+				if(msg->mod != lastModulation[radio]) // Modulation of last msg was different
+					radioShutdown(radio); // Shutdown radio for reinitialization
+
 				switch(msg->mod) {
 					case MOD_2FSK:
 						send2FSK(radio, msg);
@@ -228,6 +233,7 @@ THD_FUNCTION(moduleRADIO, arg) {
 				}
 
 				lastMessage[radio] = chVTGetSystemTimeX(); // Mark time for radio shutdown
+				lastModulation[radio] = msg->mod;
 
 			} else { // Error
 

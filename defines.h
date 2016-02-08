@@ -35,6 +35,7 @@
 #define LOW		false
 
 #define WAIT_FOR_TRACKING_POINT		-1
+#define TX_CONTINUOSLY				0
 
 // Sleep mode type
 typedef enum {
