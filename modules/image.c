@@ -92,6 +92,8 @@ THD_FUNCTION(moduleIMG, arg) {
 		parm->lastCycle = chVTGetSystemTimeX(); // Watchdog timer
 		TRACE_INFO("IMG  > Do module IMAGE cycle");
 
+		chThdSleepMilliseconds(60000);
+
 		// Init I2C
 		TRACE_INFO("IMG  > Init camera I2C");
 		i2cCamInit();

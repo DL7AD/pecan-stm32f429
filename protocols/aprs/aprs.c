@@ -22,6 +22,7 @@
 #include <string.h>
 #include "base64.h"
 #include "max.h"
+#include "debug.h"
 
 #define METER_TO_FEET(m) (((m)*26876) / 8192)
 #define MAX_INT_DIGITS 19
@@ -160,7 +161,7 @@ uint32_t aprs_encode_position(uint8_t* message, trackPoint_t *trackPoint)
 
 	ax25_send_footer();
 
-	memcpy(message, modem_packet, modem_packet_size);
+	memcpy(message, modem_packet, (modem_packet_size+1)/8);
 	return modem_packet_size;
 }
 

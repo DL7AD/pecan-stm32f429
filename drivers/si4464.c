@@ -72,8 +72,8 @@ void Si4464_Init(radio_t radio, mod_t modulation) {
 	// Set transmitter GPIOs
 	uint8_t gpio_pin_cfg_command[] = {
 		0x13,	// Command type = GPIO settings
-		0x00,	// GPIO0        0 - PULL_CTL[1bit] - GPIO_MODE[6bit]
-		0x44,	// GPIO1        0 - PULL_CTL[1bit] - GPIO_MODE[6bit]
+		0x44,	// GPIO0        0 - PULL_CTL[1bit] - GPIO_MODE[6bit]
+		0x00,	// GPIO1        0 - PULL_CTL[1bit] - GPIO_MODE[6bit]
 		0x00,	// GPIO2        0 - PULL_CTL[1bit] - GPIO_MODE[6bit]
 		0x00,	// GPIO3        0 - PULL_CTL[1bit] - GPIO_MODE[6bit]
 		0x00,	// NIRQ
@@ -133,6 +133,7 @@ void Si4464_write(radio_t radio, uint8_t* txData, uint32_t len) {
 		if(rxData[1] != 0xFF) // Si not finished, wait for it
 			chThdSleepMilliseconds(1);
 	}
+	chThdSleepMilliseconds(100); // FIXME
 }
 
 /**
@@ -200,7 +201,6 @@ void setFrequency(radio_t radio, uint32_t freq, uint16_t shift) {
 	uint8_t c1 = channel_increment / 0x100;
 	uint8_t c0 = channel_increment - (0x100 * c1);
 
-	// Transmit frequency to chip
 	uint8_t set_frequency_property_command[] = {0x11, 0x40, 0x04, 0x00, n, m2, m1, m0, c1, c0};
 	Si4464_write(radio, set_frequency_property_command, 10);
 
@@ -213,6 +213,9 @@ void setFrequency(radio_t radio, uint32_t freq, uint16_t shift) {
 }
 
 void setShift(radio_t radio, uint16_t shift) {
+	if(!shift)
+		return;
+
 	float units_per_hz = (( 0x40000 * outdiv ) / (float)OSC_FREQ);
 
 	// Set deviation for 2FSK
@@ -247,8 +250,8 @@ void setModemAFSK(radio_t radio) {
 	uint8_t setup_data_rate[] = {0x11, 0x20, 0x03, 0x03, 0x00, 0x11, 0x30};
 	Si4464_write(radio, setup_data_rate, 7);
 
-	// use 2GFSK from async GPIO1
-	uint8_t use_2gfsk[] = {0x11, 0x20, 0x01, 0x00, 0x2B};
+	// use 2GFSK from async GPIO0
+	uint8_t use_2gfsk[] = {0x11, 0x20, 0x01, 0x00, 0x0B};
 	Si4464_write(radio, use_2gfsk, 5);
 
 	// Set AFSK filter
@@ -315,9 +318,9 @@ bool radioTune(radio_t radio, uint32_t frequency, uint16_t shift, int8_t level) 
 		TRACE_WARN("SI %d > continue transmission", radio);
 	}
 
-	setFrequency(radio, frequency, shift);	// Frequency
-	setShift(radio, shift);					// Shift
-	setPowerLevel(radio, level);			// Power level
+	setFrequency(radio, frequency, shift);	// Set frequency
+	setShift(radio, shift);					// Set shift
+	setPowerLevel(radio, level);			// Set power level
 
 	startTx(radio);
 	return true;

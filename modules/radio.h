@@ -7,7 +7,7 @@
 #include "si4464.h"
 
 typedef struct { // Radio message type
-	uint8_t msg[256];	// Message (Largest type: SSDV packet => 256byte)
+	uint8_t msg[512];	// Message (Largest type: SSDV packet => 256byte)
 	uint32_t bin_len;	// Binary length
 	uint32_t freq;		// Frequency
 	uint8_t power;		// Power
