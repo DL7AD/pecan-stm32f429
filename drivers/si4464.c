@@ -265,13 +265,13 @@ void setModemAFSK(radio_t radio) {
 
 void setModemCW(radio_t radio) {
 	// use CW from async GPIO1
-	uint8_t use_cw[] = {0x11, 0x20, 0x01, 0x00, 0xA9};
+	uint8_t use_cw[] = {0x11, 0x20, 0x01, 0x00, 0x89};
 	Si4464_write(radio, use_cw, 5);
 }
 
 void setModem2FSK(radio_t radio) {
 	// use 2FSK from async GPIO1
-	uint8_t use_2fsk[] = {0x11, 0x20, 0x01, 0x00, 0xAA};
+	uint8_t use_2fsk[] = {0x11, 0x20, 0x01, 0x00, 0x8A};
 	Si4464_write(radio, use_2fsk, 5);
 }
 
