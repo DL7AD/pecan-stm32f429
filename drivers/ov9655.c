@@ -45,9 +45,15 @@
 
 #include <string.h>
 
+#define QVGA
 
+#ifdef QVGA
 #define OV9655_MAXX			320
 #define OV9655_MAXY			240
+#else
+#define OV9655_MAXX			640
+#define OV9655_MAXY			480
+#endif
 
 #define OV9655_BUFFER_SIZE	OV9655_MAXX*16
 
@@ -97,7 +103,12 @@ static const uint8_t OV9655_CONFIG[] =
 	0xb6,0xaf,0xbb,0xae,0xbc,0x7f,0xbd,0x7f,0xbe,0x7f,0xbf,0x7f,
 	0xbf,0x7f,0xc0,0xaa,0xc1,0xc0,0xc2,0x01,0xc3,0x4e,0xc6,0x05,
 	0xc9,0xe0,0xca,0xe8,0xcb,0xf0,0xcc,0xd8,0xcd,0x93,0x12,0x63,
-	0x40,0x10,0x15,0x08,0x32,0x12,0x72,0x11,0x73,0x01,0xc7,0x81
+	0x40,0x10,
+	#ifdef QVGA
+	0x15,0x08,0x32,0x12,0x72,0x11,0x73,0x01,0xc7,0x81
+	#else
+	0x15,0x08,0x32,0x09,0x72,0x00,0x73,0x00,0xc7,0x80
+	#endif
 };
 
 
@@ -195,7 +206,7 @@ bool OV9655_Snapshot2RAM(void)
 	while(buffNum < OV9655_MAXY / 16 && chVTGetSystemTimeX() < timeout)
 		chThdSleepMilliseconds(10);
 
-	if(chVTGetSystemTimeX() >= timeout)
+	if(chVTGetSystemTimeX() >= timeout) // Timeout has occurred
 		return false;
 
 	// Add JPEG footer to buffer
@@ -332,10 +343,16 @@ void OV9655_InitGPIO(void)
 	i2cCamInit();
 }
 
-void OV9655_InitClockout(void)
+void OV9655_InitFastClockout(void)
 {
 	palSetPadMode(PORT(CAM_XCLK), PIN(CAM_XCLK), PAL_MODE_ALTERNATE(0));	// PA8    -> XCLK
 	RCC->CFGR = (RCC->CFGR & 0xF8FFFFFF) | (0x4 << 24);
+}
+
+void OV9655_InitSlowClockout(void)
+{
+	palSetPadMode(PORT(CAM_XCLK), PIN(CAM_XCLK), PAL_MODE_ALTERNATE(0));	// PA8    -> XCLK
+	RCC->CFGR = (RCC->CFGR & 0xF8FFFFFF) | (0x7 << 24);
 }
 
 uint32_t OV9655_getBuffer(uint8_t** buffer) {
@@ -346,13 +363,13 @@ uint32_t OV9655_getBuffer(uint8_t** buffer) {
 void OV9655_TransmitConfig(void) {
 	for(uint32_t i=0; i<sizeof(OV9655_CONFIG); i+=2) {
 		i2cCamSend(OV9655_I2C_ADR, &OV9655_CONFIG[i], 2, NULL, 0, MS2ST(100));
-		chThdSleepMilliseconds(3);
+		chThdSleepMilliseconds(10);
 	}
 }
 
 void OV9655_init(void) {
 	TRACE_INFO("CAM  > Init pins");
-	OV9655_InitClockout();
+	OV9655_InitFastClockout();
 	OV9655_InitGPIO();
 
 	// Power on OV9655
@@ -362,6 +379,11 @@ void OV9655_init(void) {
 	// Send settings to OV9655
 	TRACE_INFO("CAM  > Transmit config to camera");
 	OV9655_TransmitConfig();
+
+	#ifndef QVGA
+	// Switch back to slow clock
+	OV9655_InitSlowClockout();
+	#endif
 
 	// DCMI DMA
 	TRACE_INFO("CAM  > Init DMA");
