@@ -40,6 +40,14 @@ int16_t pac1720_getAveragePower(void) {
 	return ret;
 }
 
+uint16_t pac1720_getBatteryVoltage(void) {
+	uint16_t reg = read16(PAC1720_ADDRESS, PAC1720_CH2_VSOURCE_HIGH);
+	uint32_t uv = 0;
+	for(uint32_t i=0, b=20000000; i<11; i++, b/=2)
+		uv += (reg >> (15-i)) & 0x1 ? b : 0;
+	return uv/1000;
+}
+
 bool pac1720_isAvailable(void)
 {
 	return read8(PAC1720_ADDRESS, PAC1720_PRODUCT_ID) == 0x57;

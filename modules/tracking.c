@@ -4,9 +4,9 @@
 
 #include "ptime.h"
 #include "config.h"
-#include "drivers/max.h"
-#include "drivers/bme280.h"
-#include "drivers/pac1720.h"
+#include "max.h"
+#include "bme280.h"
+#include "pac1720.h"
 
 trackPoint_t trackPoints[2];
 trackPoint_t* lastTrackPoint;
@@ -108,7 +108,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 
 		// Power management
 		tp->adc_solar = 0; // TODO: Implement ADC
-		tp->adc_battery = 0; // TODO: Implement ADC
+		tp->adc_battery = pac1720_getBatteryVoltage();
 		tp->adc_charge = pac1720_getAveragePower();
 
 		bme280_t bmeInt;
@@ -154,7 +154,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 					"%s Time %04d-%02d-%02d %02d:%02d:%02d\r\n"
 					"%s Pos  %d.%07d %d.%07d Alt %dm\r\n"
 					"%s Sats %d  TTFF %dsec\r\n"
-					"%s ADC Vbat=%d.%dV  Vsol=%d.%dV  P=%dmW\r\n"
+					"%s ADC Vbat=%d.%03dV  Vsol=%03d.%dV  P=%dmW\r\n"
 					"%s Air  p=%6d.%01dPa T=%2d.%02ddegC phi=%2d.%01d%%\r\n"
 					"%s Ball p=%6d.%01dPa T=%2d.%02ddegC phi=%2d.%01d%%\r\n"
 					"%s Acc %05d %05d %05d\r\n"
@@ -163,7 +163,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 					TRACE_TAB, tp->time.year, tp->time.month, tp->time.day, tp->time.hour, tp->time.minute, tp->time.day,
 					TRACE_TAB, tp->gps_lat/10000000, tp->gps_lat%10000000, tp->gps_lon/10000000, tp->gps_lon%10000000, tp->gps_alt,
 					TRACE_TAB, tp->gps_sats, tp->gps_ttff,
-					TRACE_TAB, tp->adc_solar/1000, (tp->adc_solar%1000)%10, tp->adc_battery/1000, (tp->adc_battery%1000)%10, tp->adc_charge,
+					TRACE_TAB, tp->adc_battery/1000, (tp->adc_battery%1000), tp->adc_solar/1000, (tp->adc_solar%1000), tp->adc_charge,
 					TRACE_TAB, tp->air_press/10, tp->air_press%10, tp->air_temp/100, tp->air_temp%100, tp->air_hum/10, tp->air_hum%10,
 					TRACE_TAB, tp->bal_press/10, tp->bal_press%10, tp->bal_temp/100, tp->bal_temp%100, tp->bal_hum/10, tp->bal_hum%10,
 					TRACE_TAB, tp->acc_x, tp->acc_y, tp->acc_z,

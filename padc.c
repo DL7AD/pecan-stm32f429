@@ -3,6 +3,7 @@
 #include "defines.h"
 #include "config.h"
 #include "padc.h"
+#include "pac1720.h"
 
 #define ADC_GRP1_NUM_CHANNELS	3	// Amount of channels (solar, battery, temperature)
 
@@ -65,8 +66,7 @@ void doConversion(void)
 
 uint16_t getBatteryVoltageMV(void)
 {
-	doConversion();
-	return samples[0];
+	return pac1720_getBatteryVoltage(); // Get value from PAC1720
 }
 uint16_t getSolarVoltageMV(void)
 {
