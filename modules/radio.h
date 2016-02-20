@@ -6,6 +6,13 @@
 #include "config.h"
 #include "si4464.h"
 
+#define RADIO_2M	1	/* Radio 1 => 2m */
+#define RADIO_70CM	2	/* Radio 2 => 70cm */
+
+#define APRS_REGION_FREQ			getAPRSRegionFrequency
+#define APRS_ISS_FREQ				getAPRSISSFrequency
+#define CUSTOM_FREQ					getCustomFrequency
+
 typedef struct { // Radio message type
 	uint8_t msg[512];	// Message (Largest type: SSDV packet => 256byte)
 	uint32_t bin_len;	// Binary length

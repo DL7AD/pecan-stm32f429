@@ -16,43 +16,19 @@
 #define PORT(A)				ARGN(0, A)
 #define PIN(A)				ARGN(1, A)
 
-#define APRS_REGION_FREQ			getAPRSRegionFrequency
-#define APRS_ISS_FREQ				getAPRSISSFrequency
-#define CUSTOM_FREQ					getCustomFrequency
-#define SYM_BALLOON					('/', 'O')
-#define SYM_SMALLAIRCRAFT			('/', '\'')
-#define SYM_SATELLITE				('\\', 'S')
-
 // Sleep definitions
 #define SLEEP_BELOW_BATTVOLT(v)				(getBatteryVoltage() < (v) ? MOD_SLEEP : MOD_ACTIVE)
 #define SLEEP_BELOW_SOLVOLT(v)				(getSolarVoltage() < (v) ? MOD_SLEEP : MOD_ACTIVE)
 #define SLEEP_BELOW_SOLBATTVOLT(sol, batt)	(getSolarVoltage() < (sol) || getBatteryVoltage() < (batt) ? MOD_SLEEP : MOD_ACTIVE)
 
-#define RADIO_2M	1	/* Radio 1 => 2m */
-#define RADIO_70CM	2	/* Radio 2 => 70cm */
-
 #define HIGH	true
 #define LOW		false
-
-#define WAIT_FOR_TRACKING_POINT		-1
-#define TX_CONTINUOSLY				0
 
 // Sleep mode type
 typedef enum {
 	MOD_ACTIVE,
 	MOD_SLEEP
 } smode_t;
-
-// Protocol type
-typedef enum {
-	PROT_UKHAS_2FSK,
-	PROT_UKHAS_DOMINOEX16,
-	PROT_APRS_AFSK,
-	PROT_APRS_2GFSK,
-	PROT_SSDV_2FSK,
-	PROT_SSDV_APRS_AFSK,
-	PROT_RAW_CW
-} prot_t;
 
 #endif
 

@@ -65,14 +65,26 @@
 	MODULE_RADIO(); /* Tracker data output */ \
 }
 
-#define MODULE_SD() (void)0; /* TODO */
-
 extern char *SMODE_STRING[];
 extern char *MOULATION_STRING[];
 extern char *PROTOCOL_STRING[];
 #define VAL2SMODE(v) SMODE_STRING[v]			/* Returns sleep as string */
 #define VAL2MOULATION(v) MOULATION_STRING[v]	/* Returns modulation as string */
 #define VAL2PROTOCOL(v) PROTOCOL_STRING[v]		/* Returns protocol as string */
+
+#define WAIT_FOR_TRACKING_POINT		-1
+#define TX_CONTINUOSLY				0
+
+// Protocol type
+typedef enum {
+	PROT_UKHAS_2FSK,
+	PROT_UKHAS_DOMINOEX16,
+	PROT_APRS_AFSK,
+	PROT_APRS_2GFSK,
+	PROT_SSDV_2FSK,
+	PROT_SSDV_APRS_AFSK,
+	PROT_RAW_CW
+} prot_t;
 
 typedef struct {
 	char* name;					// Name of this module

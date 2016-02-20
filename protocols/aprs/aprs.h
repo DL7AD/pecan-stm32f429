@@ -40,6 +40,10 @@
 #define APRS_DEST_CALLSIGN				"APECAN" // APExxx = Pecan device
 #define APRS_DEST_SSID					0
 
+#define SYM_BALLOON						('/', 'O')
+#define SYM_SMALLAIRCRAFT				('/', '\'')
+#define SYM_SATELLITE					('\\', 'S')
+
 typedef enum {
 	CONFIG_PARM,
 	CONFIG_UNIT,
