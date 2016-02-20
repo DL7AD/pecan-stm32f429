@@ -94,6 +94,9 @@ void Si4464_Init(radio_t radio, mod_t modulation) {
 		case MOD_2FSK:
 			setModem2FSK(radio);
 			break;
+		case MOD_2GFSK:
+			setModem2GFSK(radio);
+			break;
 		case MOD_DOMINOEX16:
 			TRACE_WARN("SI %d > Unimplemented modulation %s", radio, VAL2MOULATION(modulation)); // TODO: Implement DominoEX16
 	}
@@ -264,15 +267,22 @@ void setModemAFSK(radio_t radio) {
 }
 
 void setModemCW(radio_t radio) {
-	// use CW from async GPIO1
+	// use CW from async GPIO0
 	uint8_t use_cw[] = {0x11, 0x20, 0x01, 0x00, 0x89};
 	Si4464_write(radio, use_cw, 5);
 }
 
 void setModem2FSK(radio_t radio) {
-	// use 2FSK from async GPIO1
+	// use 2FSK from async GPIO0
 	uint8_t use_2fsk[] = {0x11, 0x20, 0x01, 0x00, 0x8A};
 	Si4464_write(radio, use_2fsk, 5);
+}
+
+void setModem2GFSK(radio_t radio) {
+	// use 2GFSK from async GPIO0
+	uint8_t use_2gfsk[] = {0x11, 0x20, 0x01, 0x00, 0x0B};
+	Si4464_write(radio, use_2gfsk, 5);
+
 }
 
 void setPowerLevel(radio_t radio, int8_t level) {

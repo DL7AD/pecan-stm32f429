@@ -38,7 +38,7 @@
 /* ------------------------------------------------------------- Modulation ------------------------------------------------------------- */
 
 // AFSK configuration
-#define AFSK_TXDELAY			200				/* APRS preamble length in ms */
+#define AFSK_TXDELAY			60				/* APRS preamble length in ms */
 
 // 2FSK configuration
 #define FSK_PREDELAY			0				/* 2FSK pre-transmission delay */
@@ -62,10 +62,10 @@
 #define MODULES() { \
                   /* Cycle (sec)              Sleep                       Frequency         Power Protocol       */ \
 \
-	MODULE_IMAGE    (TX_CONTINUOSLY,          SLEEP_WHEN_BATT_BELOW_3V5,  CUSTOM_FREQ,      10,   PROT_SSDV_2FSK ); \
+/*	MODULE_IMAGE    (TX_CONTINUOSLY,          SLEEP_WHEN_BATT_BELOW_3V5,  CUSTOM_FREQ,      10,   PROT_SSDV_2FSK );*/ \
 /*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_UKHAS_2FSK);*/ \
 /*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_RAW_CW    );*/ \
-/*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_APRS_AFSK );*/ \
+	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  APRS_REGION_FREQ, 10,   PROT_APRS_AFSK ); \
 /*	MODULE_SATELLITE(60,                      SLEEP_WHEN_ISS_NOT_VISIBLE, APRS_ISS_FREQ,    33,   PROT_APRS_AFSK );*/ \
 /*	MODULE_LOG      (120,                     SLEEP_WHEN_BATT_BELOW_3V3,  APRS_REGION_FREQ, 10,   PROT_APRS_AFSK );*/ \
 }

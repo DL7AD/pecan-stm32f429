@@ -132,8 +132,9 @@ THD_FUNCTION(modulePOS, arg) {
 
 		switch(parm->protocol) {
 
-			case PROT_APRS_AFSK: // Encode APRS
-				msg.mod = MOD_AFSK;
+			case PROT_APRS_2GFSK: // Encode APRS
+			case PROT_APRS_AFSK:
+				msg.mod = parm->protocol == PROT_APRS_AFSK ? MOD_AFSK : MOD_2GFSK;
 				msg.bin_len = aprs_encode_position(msg.msg, trackPoint);
 				while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively
 					chThdSleepMilliseconds(20);

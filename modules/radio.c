@@ -95,7 +95,7 @@ static void afsk_callback(GPTDriver *gptp) {
 	}
 }
 
-static GPTConfig gptcfg = {
+static GPTConfig gptcfg_afsk = {
 	240000,
 	afsk_callback,
 	0,
@@ -118,9 +118,10 @@ void sendAFSK(radio_t radio, radioMSG_t *msg) {
 	timer_running = true;
 
 	// Start timer
-	gptStart(&GPTD1, &gptcfg);
+	gptStart(&GPTD1, &gptcfg_afsk);
 	gptStartContinuous(&GPTD1, 2);
 
+	// Wait for routine to finish
 	while(timer_running)
 		chThdSleepMilliseconds(1);
 
@@ -147,66 +148,116 @@ void sendCW(radio_t radio, radioMSG_t *msg) {
 	}
 }
 
+
+// Transmit data (Software UART)
+static uint8_t txs;			// TX state
+static uint8_t txc;			// Current char
+static uint32_t txi;
+static uint32_t txj;
+static radio_t fsk_radio;	// Current radio
+static radioMSG_t *fsk_msg;	// Current message
+
+static void serial_callback(GPTDriver *gptp) {
+	(void)gptp;
+
+	switch(txs)
+	{
+		case 6: // TX-delay
+			txj++;
+			if(txj > FSK_PREDELAY) {
+				txj = 0;
+				txs = 7;
+			}
+			break;
+
+		case 7: // Transmit a single char
+			if(txj < fsk_msg->bin_len/8) {
+				txc = fsk_msg->msg[txj]; // Select char
+				txj++;
+				MOD_GPIO_SET(fsk_radio, LOW); // Start Bit (Synchronizing)
+				txi = 0;
+				txs = 8;
+			} else {
+				txj = 0;
+				txs = 0; // Finished to transmit string
+				MOD_GPIO_SET(fsk_radio, HIGH);
+			}
+			break;
+
+		case 8:
+			if(txi < FSK_ASCII) {
+				txi++;
+				MOD_GPIO_SET(fsk_radio, txc & 1);
+				txc = txc >> 1;
+			} else {
+				MOD_GPIO_SET(fsk_radio, HIGH); // Stop Bit
+				txi = 0;
+				txs = 9;
+			}
+			break;
+
+		case 9:
+			if(FSK_STOPBITS == 2)
+				MOD_GPIO_SET(fsk_radio, HIGH); // Stop Bit
+			txs = 7;
+	}
+}
+
+static GPTConfig gptcfg_serial = {
+	19200,
+	serial_callback,
+	0,
+	0
+};
+
 void send2FSK(radio_t radio, radioMSG_t *msg) {
 	// Initialize radio and tune
 	Si4464_Init(radio, MOD_2FSK);
 	MOD_GPIO_SET(radio, HIGH);
 	radioTune(radio, msg->freq, FSK_SHIFT, msg->power);
 
-	// Transmit data (Software UART)
-	uint8_t txs = 6;	// TX state
-	uint8_t txc = 0;	// Current char
-	uint32_t txi = 0;
-	uint32_t txj = 0;
+	txs = 6;
+	txc = 0;
+	txi = 0;
+	txj = 0;
+	fsk_msg = msg;
+	fsk_radio = radio;
 
-	systime_t time = chVTGetSystemTimeX();
-	while(txs != 0)
-	{
-		switch(txs)
-		{
-			case 6: // TX-delay
-				txj++;
-				if(txj > FSK_PREDELAY) {
-					txj = 0;
-					txs = 7;
-				}
-				break;
+	// Start timer
+	gptStart(&GPTD1, &gptcfg_serial);
+	gptStartContinuous(&GPTD1, gptcfg_serial.frequency / FSK_BAUD);
 
-			case 7: // Transmit a single char
-				if(txj < msg->bin_len/8) {
-					txc = msg->msg[txj]; // Select char
-					txj++;
-					MOD_GPIO_SET(radio, LOW); // Start Bit (Synchronizing)
-					txi = 0;
-					txs = 8;
-				} else {
-					txj = 0;
-					txs = 0; // Finished to transmit string
-					MOD_GPIO_SET(radio, HIGH);
-				}
-				break;
+	// Wait for routine to finish
+	while(txs)
+		chThdSleepMilliseconds(1);
 
-			case 8:
-				if(txi < FSK_ASCII) {
-					txi++;
-					MOD_GPIO_SET(radio, txc & 1);
-					txc = txc >> 1;
-				} else {
-					MOD_GPIO_SET(radio, HIGH); // Stop Bit
-					txi = 0;
-					txs = 9;
-				}
-				break;
+	// Stop timer
+	gptStopTimer(&GPTD1);
+}
 
-			case 9:
-				if(FSK_STOPBITS == 2)
-					MOD_GPIO_SET(radio, HIGH); // Stop Bit
-				txs = 7;
-		}
+void send2GFSK(radio_t radio, radioMSG_t *msg) {
+	// Initialize radio and tune
+	Si4464_Init(radio, MOD_2GFSK);
+	MOD_GPIO_SET(radio, HIGH);
+	radioTune(radio, msg->freq, 9600, msg->power);
 
-		// Synchronization
-		time = chThdSleepUntilWindowed(time, time + US2ST(1000000 / FSK_BAUD));
-	}
+	txs = 6;
+	txc = 0;
+	txi = 0;
+	txj = 0;
+	fsk_msg = msg;
+	fsk_radio = radio;
+
+	// Start timer
+	gptStart(&GPTD1, &gptcfg_serial);
+	gptStartContinuous(&GPTD1, gptcfg_serial.frequency / 9600);
+
+	// Wait for routine to finish
+	while(txs)
+		chThdSleepMilliseconds(1);
+
+	// Stop timer
+	gptStopTimer(&GPTD1);
 }
 
 THD_FUNCTION(moduleRADIO, arg) {
@@ -259,6 +310,9 @@ THD_FUNCTION(moduleRADIO, arg) {
 				switch(msg->mod) {
 					case MOD_2FSK:
 						send2FSK(radio, msg);
+						break;
+					case MOD_2GFSK:
+						send2GFSK(radio, msg);
 						break;
 					case MOD_AFSK:
 						sendAFSK(radio, msg);
