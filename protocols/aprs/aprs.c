@@ -25,7 +25,6 @@
 #include "debug.h"
 
 #define METER_TO_FEET(m) (((m)*26876) / 8192)
-#define MAX_INT_DIGITS 19
 
 static uint16_t loss_of_gps_counter = 0;
 static char temp[22];
@@ -51,126 +50,130 @@ s_address_t addresses[] =
 uint32_t aprs_encode_position(uint8_t* message, trackPoint_t *trackPoint)
 {
 	ptime_t date = trackPoint->time;
+	ax25_t packet;
+	packet.data = message;
+	packet.max_size = 512; // TODO: replace 512 with real size
 
-	ax25_send_header(addresses, sizeof(addresses)/sizeof(s_address_t));
-	ax25_send_byte('/');                // Report w/ timestamp, no APRS messaging. $ = NMEA raw data
+	ax25_send_header(&packet, addresses, sizeof(addresses)/sizeof(s_address_t));
+	ax25_send_byte(&packet, '/');                // Report w/ timestamp, no APRS messaging. $ = NMEA raw data
 
 	// 170915 = 17h:09m:15s zulu (not allowed in Status Reports)
-	ax25_send_string(fitoa(date.hour, temp, 2));
-	ax25_send_string(fitoa(date.minute, temp, 2));
-	ax25_send_string(fitoa(date.second, temp, 2));
-	ax25_send_string("h");
+	chsnprintf(temp, sizeof(temp), "%02d%02d%02dh", date.hour, date.minute, date.second);
+	ax25_send_string(&packet, temp);
 
-	{
-		// Latitude precalculation
-		uint32_t y = 380926 * (90 - trackPoint->gps_lat);
-		uint32_t y3  = y   / 753571;
-		uint32_t y3r = y   % 753571;
-		uint32_t y2  = y3r / 8281;
-		uint32_t y2r = y3r % 8281;
-		uint32_t y1  = y2r / 91;
-		uint32_t y1r = y2r % 91;
+	// Latitude
+	uint32_t y = 380926 * (90 - trackPoint->gps_lat);
+	uint32_t y3  = y   / 753571;
+	uint32_t y3r = y   % 753571;
+	uint32_t y2  = y3r / 8281;
+	uint32_t y2r = y3r % 8281;
+	uint32_t y1  = y2r / 91;
+	uint32_t y1r = y2r % 91;
 
-		// Longitude precalculation
-		uint32_t x = 190463 * (180 + trackPoint->gps_lon);
-		uint32_t x3  = x   / 753571;
-		uint32_t x3r = x   % 753571;
-		uint32_t x2  = x3r / 8281;
-		uint32_t x2r = x3r % 8281;
-		uint32_t x1  = x2r / 91;
-		uint32_t x1r = x2r % 91;
+	// Longitude
+	uint32_t x = 190463 * (180 + trackPoint->gps_lon);
+	uint32_t x3  = x   / 753571;
+	uint32_t x3r = x   % 753571;
+	uint32_t x2  = x3r / 8281;
+	uint32_t x2r = x3r % 8281;
+	uint32_t x1  = x2r / 91;
+	uint32_t x1r = x2r % 91;
 
-		// Altitude precalculation
-		uint32_t a = logf(METER_TO_FEET(trackPoint->gps_alt)) / logf(1.002f);
-		uint32_t a1  = a / 91;
-		uint32_t a1r = a % 91;
+	// Altitude
+	uint32_t a = logf(METER_TO_FEET(trackPoint->gps_alt)) / logf(1.002f);
+	uint32_t a1  = a / 91;
+	uint32_t a1r = a % 91;
 
-		uint8_t gpsFix = trackPoint->gps_lock ? GSP_FIX_CURRENT : GSP_FIX_OLD;
-		uint8_t src = NMEA_SRC_GGA;
-		uint8_t origin = ORIGIN_PICO;
+	uint8_t gpsFix = trackPoint->gps_lock ? GSP_FIX_CURRENT : GSP_FIX_OLD;
+	uint8_t src = NMEA_SRC_GGA;
+	uint8_t origin = ORIGIN_PICO;
 
-		temp[0]  = SYM_GET_TABLE(APRS_SYMBOL);
-		temp[1]  = y3+33;
-		temp[2]  = y2+33;
-		temp[3]  = y1+33;
-		temp[4]  = y1r+33;
-		temp[5]  = x3+33;
-		temp[6]  = x2+33;
-		temp[7]  = x1+33;
-		temp[8]  = x1r+33;
-		temp[9]  = SYM_GET_SYMBOL(APRS_SYMBOL);
-		temp[10] = a1+33;
-		temp[11] = a1r+33;
-		temp[12] = ((gpsFix << 5) | (src << 3) | origin) + 33;
-		temp[13] = 0;
+	temp[0]  = SYM_GET_TABLE(APRS_SYMBOL);
+	temp[1]  = y3+33;
+	temp[2]  = y2+33;
+	temp[3]  = y1+33;
+	temp[4]  = y1r+33;
+	temp[5]  = x3+33;
+	temp[6]  = x2+33;
+	temp[7]  = x1+33;
+	temp[8]  = x1r+33;
+	temp[9]  = SYM_GET_SYMBOL(APRS_SYMBOL);
+	temp[10] = a1+33;
+	temp[11] = a1r+33;
+	temp[12] = ((gpsFix << 5) | (src << 3) | origin) + 33;
+	temp[13] = 0;
 
-		ax25_send_string(temp);
-	}
+	ax25_send_string(&packet, temp);
 
 	// GPS Loss counter
 	if(!trackPoint->gps_lock)
 	{
-		ax25_send_string("GPS LOSS ");
-		ax25_send_string(itoa(++loss_of_gps_counter, temp, 10));
+		ax25_send_string(&packet, "GPS LOSS ");
+		ax25_send_string(&packet, itoa(++loss_of_gps_counter, temp, 10));
 	} else {
 		loss_of_gps_counter = 0;
 	}
 
 	temp[2] = 0;
 
-	ax25_send_byte('|');
+	ax25_send_byte(&packet, '|');
 
 	// Sequence ID
 	uint32_t t = trackPoint->id & 0x1FFF;
 	temp[0] = t/91 + 33;
 	temp[1] = t%91 + 33;
-	ax25_send_string(temp);
+	ax25_send_string(&packet, temp);
 
 	// Battery voltage
-	t = 0; // TODO: trackPoint->vbat
+	t = trackPoint->adc_battery;
 	temp[0] = t/91 + 33;
 	temp[1] = t%91 + 33;
-	ax25_send_string(temp);
+	ax25_send_string(&packet, temp);
 
 	// Solar voltage
-	t = 0; // TODO: trackPoint->vsol
+	t = trackPoint->adc_solar;
 	temp[0] = t/91 + 33;
 	temp[1] = t%91 + 33;
-	ax25_send_string(temp);
+	ax25_send_string(&packet, temp);
 
 	// Temperature
-	t = 0; // TODO: trackPoint->temp + 128
+	t = trackPoint->air_temp/10 + 1000;
 	temp[0] = t/91 + 33;
 	temp[1] = t%91 + 33;
-	ax25_send_string(temp);
+	ax25_send_string(&packet, temp);
 
 	// Sats
 	t = trackPoint->gps_sats;
 	temp[0] = t/91 + 33;
 	temp[1] = t%91 + 33;
-	ax25_send_string(temp);
+	ax25_send_string(&packet, temp);
 
+	// TTFF (Time to first fix)
 	t = trackPoint->gps_ttff;
 	temp[0] = t/91 + 33;
 	temp[1] = t%91 + 33;
-	ax25_send_string(temp);
+	ax25_send_string(&packet, temp);
 
-	ax25_send_byte('|');
+	ax25_send_byte(&packet, '|');
 
-	ax25_send_footer();
+	ax25_send_footer(&packet);
 
-	memcpy(message, modem_packet, (modem_packet_size)/8+1);
-	return modem_packet_size;
+	//memcpy(message, modem_packet, modem_packet_size/8+1);
+	return packet.size;
 }
 
 /**
  * Transmit APRS log packet
  */
-uint32_t aprs_encode_log(uint8_t** message)
+uint32_t aprs_encode_log(uint8_t* message)
 {
+	ax25_t packet;
+	packet.data = message;
+	packet.max_size = 512; // TODO: replace 512 with real size
+
 	// Encode APRS header
-	ax25_send_header(addresses, sizeof(addresses)/sizeof(s_address_t));
-	ax25_send_string("{{L");
+	ax25_send_header(&packet, addresses, sizeof(addresses)/sizeof(s_address_t));
+	ax25_send_string(&packet, "{{L");
 
 	// Encode log message
 	uint8_t i;
@@ -179,60 +182,64 @@ uint32_t aprs_encode_log(uint8_t** message)
 		gpsFix_t *data = &dummy; // TODO: Implement getNextLogPoint() for this assignment
 		uint8_t base64[BASE64LEN(sizeof(gpsFix_t))+1];
 		base64_encode((uint8_t*)data, base64, sizeof(gpsFix_t));
-		ax25_send_string((char*)base64);
+		ax25_send_string(&packet, (char*)base64);
 	}
 
 	// Send footer
-	ax25_send_footer();
+	ax25_send_footer(&packet);
 
-	memcpy(message, modem_packet, (modem_packet_size)/8+1);
-	return modem_packet_size;
+	//memcpy(message, modem_packet, modem_packet_size/8+1);
+	return packet.size;
 }
 
 /**
  * Transmit APRS telemetry configuration
  */
-uint32_t aprs_encode_telemetry_configuration(uint8_t** message, config_t type)
+uint32_t aprs_encode_telemetry_configuration(uint8_t* message, telemetryConfig_t type)
 {
-	ax25_send_header(addresses, sizeof(addresses)/sizeof(s_address_t)); // Header
-	ax25_send_byte(':'); // Message flag
+	ax25_t packet;
+	packet.data = message;
+	packet.max_size = 512; // TODO: replace 512 with real size
+
+	ax25_send_header(&packet, addresses, sizeof(addresses)/sizeof(s_address_t)); // Header
+	ax25_send_byte(&packet, ':'); // Message flag
 
 	// Callsign
-	ax25_send_string(APRS_CALLSIGN);
-	ax25_send_byte('-');
-	ax25_send_string(itoa(APRS_SSID, temp, 10));
+	ax25_send_string(&packet, APRS_CALLSIGN);
+	ax25_send_byte(&packet, '-');
+	ax25_send_string(&packet, itoa(APRS_SSID, temp, 10));
 
-	ax25_send_string(" :"); // Message separator
+	ax25_send_string(&packet, " :"); // Message separator
 
 	switch(type) {
 		case CONFIG_PARM:
-			ax25_send_string("PARM.Battery,Solar,Temp,Sats,TTFF");
+			ax25_send_string(&packet, "PARM.Battery,Solar,Temp,Sats,TTFF");
 			break;
 		case CONFIG_UNIT:
-			ax25_send_string("UNIT.Volt,Volt,degC,,sec");
+			ax25_send_string(&packet, "UNIT.Volt,Volt,degC,,sec");
 			break;
 		case CONFIG_EQNS:
-			ax25_send_string(
+			ax25_send_string(&packet,
 				"EQNS."
 				"0,.001,0,"
 				"0,.001,0,"
-				"0,1,-128,"
+				"0,0.1,-100,"
 				"0,1,0,"
 				"0,1,0"
 			);
 			break;
 		case CONFIG_BITS:
-			ax25_send_string("BITS.11111111,Pecan Balloon");
+			ax25_send_string(&packet, "BITS.11111111,Pecan Balloon");
 			break;
 	}
 
-	ax25_send_footer(); // Footer
+	ax25_send_footer(&packet); // Footer
 	
-	memcpy(message, modem_packet, (modem_packet_size)/8+1);
-	return modem_packet_size;
+	//memcpy(message, modem_packet, modem_packet_size/8+1);
+	return packet.size;
 }
 
-uint32_t aprs_encode_image(uint8_t** message, image_t *image)
+uint32_t aprs_encode_image(uint8_t* message, image_t *image)
 {
 	(void)message;
 	(void)image;
@@ -241,32 +248,6 @@ uint32_t aprs_encode_image(uint8_t** message, image_t *image)
 
 	message = 0;
 	return 0;
-}
-
-/**
- * Formatted itoa
- */
-char* fitoa(uint32_t num, char *buffer, uint32_t min_len)
-{
-	uint32_t digits;
-	if(num)
-	{
-		digits = (uint32_t)floor(log10(abs(num))) + 1;
-	} else {
-		digits = 1;
-	}
-	if(digits > min_len)
-		min_len = digits;
-
-	// Leading zeros
-	for(uint32_t i=0; i<min_len-digits; i++) {
-		buffer[i] = '0';
-	}
-
-	// Convert number
-	itoa(num, &buffer[min_len-digits], 10);
-
-	return buffer;
 }
 
 char *itoa(int32_t num, char *buffer, uint32_t min_len)

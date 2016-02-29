@@ -20,22 +20,14 @@
 #include "config.h"
 #include "debug.h"
 
-// Module globals
-uint16_t crc;
-uint8_t ones_in_a_row;
-
-// TODO: Move the 2 following variables to heap in order to make multiple access to all functions possible
-uint8_t modem_packet[MODEM_MAX_PACKET];  // Upper layer data
-uint16_t modem_packet_size;              // in bits
-
 // Module functions
-static void update_crc(unsigned char bit)
+static void update_crc(ax25_t *packet, char bit)
 {
-	crc ^= bit;
-	if (crc & 1)
-		crc = (crc >> 1) ^ 0x8408;  // X-modem CRC poly
+	packet->crc ^= bit;
+	if(packet->crc & 1)
+		packet->crc = (packet->crc >> 1) ^ 0x8408;  // X-modem CRC poly
 	else
-		crc = crc >> 1;
+		packet->crc = packet->crc >> 1;
 }
 
 
@@ -79,146 +71,148 @@ uint8_t scramble_bitwise(uint8_t bit) {
 }
 
 // naive bitwise G3RUH scrambling
-void bit_scramble(void) {
+void bit_scramble(ax25_t *packet) {
 	uint8_t bit;
 	uint32_t i, shift, idx;
 
-	for(i = (AFSK_TXDELAY+3)*8; i < modem_packet_size; ++i) {
+	for(i = (AFSK_TXDELAY+3)*8; i < packet->size; ++i) {
 		// fetch input bit
 		idx = i / 8;
 		shift = i % 8;
-		bit = 1 & (modem_packet[idx] >> shift);
+		bit = 1 & (packet->data[idx] >> shift);
 
 		// calculate output bit
 		bit = scramble_bitwise(bit);
 
 		// save output in memory
-		modem_packet[idx] &= ~(1 << shift); // clear bit
-		modem_packet[idx] |= bit << shift;  // correct bit
+		packet->data[idx] &= ~(1 << shift); // clear bit
+		packet->data[idx] |= bit << shift;  // correct bit
 	}
 }
 
-static void send_byte(char byte)
+static void send_byte(ax25_t *packet, char byte)
 {
 	int i;
 	for(i = 0; i < 8; i++) {
-		update_crc((byte >> i) & 1);
+		update_crc(packet, (byte >> i) & 1);
 		if((byte >> i) & 1) {
 			// Next bit is a '1'
-			if (modem_packet_size >= MODEM_MAX_PACKET * 8)  // Prevent buffer overrun
+			if (packet->size >= packet->max_size * 8)  // Prevent buffer overrun
 				return;
-			modem_packet[modem_packet_size >> 3] |= (1 << (modem_packet_size & 7));
-			modem_packet_size++;
-			ones_in_a_row++;
-			if(ones_in_a_row < 5)
+			packet->data[packet->size >> 3] |= (1 << (packet->size & 7));
+			packet->size++;
+			packet->ones_in_a_row++;
+			if(packet->ones_in_a_row < 5)
 				continue;
 		}
 		// Next bit is a '0' or a zero padding after 5 ones in a row
-		if(modem_packet_size >= MODEM_MAX_PACKET * 8)    // Prevent buffer overrun
+		if(packet->size >= packet->max_size * 8)    // Prevent buffer overrun
 			return;
-		modem_packet[modem_packet_size >> 3] &= ~(1 << (modem_packet_size & 7));
-		modem_packet_size++;
-		ones_in_a_row = 0;
+		packet->data[packet->size >> 3] &= ~(1 << (packet->size & 7));
+		packet->size++;
+		packet->ones_in_a_row = 0;
 	}
 }
 
 // Exported functions
-void ax25_send_byte(char byte)
+void ax25_send_byte(ax25_t *packet, char byte)
 {
   // Wrap around send_byte, but prints debug info
-  send_byte(byte);
+  send_byte(packet, byte);
 }
 
-void ax25_send_sync(void)
+void ax25_send_sync(ax25_t *packet)
 {
 	unsigned char byte = 0x00;
 	int i;
-	for(i = 0; i < 8; i++, modem_packet_size++) {
-		if(modem_packet_size >= MODEM_MAX_PACKET * 8)  // Prevent buffer overrun
+	for(i = 0; i < 8; i++, packet->size++) {
+		if(packet->size >= packet->max_size * 8)  // Prevent buffer overrun
 			return;
 		if ((byte >> i) & 1)
-			modem_packet[modem_packet_size >> 3] |= (1 << (modem_packet_size & 7));
+			packet->data[packet->size >> 3] |= (1 << (packet->size & 7));
 		else
-			modem_packet[modem_packet_size >> 3] &= ~(1 << (modem_packet_size & 7));
+			packet->data[packet->size >> 3] &= ~(1 << (packet->size & 7));
 	}
 }
 
-void ax25_send_flag(void)
+void ax25_send_flag(ax25_t *packet)
 {
   unsigned char byte = 0x7e;
   int i;
-  for (i = 0; i < 8; i++, modem_packet_size++) {
-    if (modem_packet_size >= MODEM_MAX_PACKET * 8)  // Prevent buffer overrun
+  for (i = 0; i < 8; i++, packet->size++) {
+    if (packet->size >= packet->max_size * 8)  // Prevent buffer overrun
       return;
     if ((byte >> i) & 1)
-      modem_packet[modem_packet_size >> 3] |= (1 << (modem_packet_size & 7));
+      packet->data[packet->size >> 3] |= (1 << (packet->size & 7));
     else
-      modem_packet[modem_packet_size >> 3] &= ~(1 << (modem_packet_size & 7));
+      packet->data[packet->size >> 3] &= ~(1 << (packet->size & 7));
   }
 }
 
-void ax25_send_string(const char *string)
+void ax25_send_string(ax25_t *packet, const char *string)
 {
 	int i;
 	for (i = 0; string[i]; i++) {
-		ax25_send_byte(string[i]);
+		ax25_send_byte(packet, string[i]);
 	}
 }
 
-void ax25_send_header(const s_address_t addresses[], int num_addresses)
+void ax25_send_header(ax25_t *packet, const s_address_t addresses[], int num_addresses)
 {
 	int i, j;
-	modem_packet_size = 0;
-	ones_in_a_row = 0;
-	crc = 0xffff;
+	packet->size = 0;
+	packet->ones_in_a_row = 0;
+	packet->crc = 0xffff;
 
 	// Send sync ("a bunch of 0s")
 	for (i = 0; i < AFSK_TXDELAY; i++)
 	{
-		ax25_send_sync();
+		ax25_send_sync(packet);
 	}
 
 	//start the actual frame. Send 3 of them (one empty frame and the real start)
 	for (i = 0; i < 3; i++)
 	{
-		ax25_send_flag();
+		ax25_send_flag(packet);
 	}
 
 	for (i = 0; i < num_addresses; i++) {
 		// Transmit callsign
 		for (j = 0; addresses[i].callsign[j]; j++) {
-			send_byte(addresses[i].callsign[j] << 1);
+			send_byte(packet, addresses[i].callsign[j] << 1);
 		}
 		// Transmit pad
 		for ( ; j < 6; j++)
-			send_byte(' ' << 1);
+			send_byte(packet, ' ' << 1);
 		// Transmit SSID. Termination signaled with last bit = 1
 		if (i == num_addresses - 1)
-			send_byte(('0' + addresses[i].ssid) << 1 | 1);
+			send_byte(packet, ('0' + addresses[i].ssid) << 1 | 1);
 		else
-			send_byte(('0' + addresses[i].ssid) << 1);
+			send_byte(packet, ('0' + addresses[i].ssid) << 1);
 	}
 
 	// Control field: 3 = APRS-UI frame
-	send_byte(0x03);
+	send_byte(packet, 0x03);
 
 	// Protocol ID: 0xf0 = no layer 3 data
-	send_byte(0xf0);
+	send_byte(packet, 0xf0);
 }
 
-void ax25_send_footer(void)
+void ax25_send_footer(ax25_t *packet)
 {
 	// Save the crc so that it can be treated it atomically
-	unsigned short int final_crc = crc;
+	uint16_t final_crc = packet->crc;
 
-	// Send the CRC
-	send_byte(~(final_crc & 0xff));
+	// Send CRC
+	send_byte(packet, ~(final_crc & 0xff));
 	final_crc >>= 8;
-	send_byte(~(final_crc & 0xff));
+	send_byte(packet, ~(final_crc & 0xff));
+
+	packet->crc = final_crc;
 
 	//bit_scramble();
 
 	// Signal the end of frame
-	ax25_send_flag();
+	ax25_send_flag(packet);
 }
 

@@ -10,8 +10,6 @@
 #include <string.h>
 #include <math.h>
 
-char buf[16];
-
 void str_replace(char *string, uint32_t size, char *search, char *replace) {
 	for(uint32_t i=0; string[i] != 0; i++) { // Find search string
 		uint32_t j=0;
@@ -69,6 +67,7 @@ void positionToMaidenhead(char m[], double lat, double lon)
   * Replaces placeholders with variables
   */
 void replace_placeholders(char* fskmsg, uint16_t size, trackPoint_t *trackPoint) {
+	char buf[16];
 	chsnprintf(buf, sizeof(buf), "%d", trackPoint->id);
 	str_replace(fskmsg, size, "<ID>", buf);
 	chsnprintf(buf, sizeof(buf), "%04d-%02d-%02d", trackPoint->time.year, trackPoint->time.month, trackPoint->time.day);
@@ -136,34 +135,51 @@ THD_FUNCTION(modulePOS, arg) {
 			case PROT_APRS_AFSK:
 				msg.mod = parm->protocol == PROT_APRS_AFSK ? MOD_AFSK : MOD_2GFSK;
 				msg.bin_len = aprs_encode_position(msg.msg, trackPoint);
-				while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively
+				while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively (transmission)
 					chThdSleepMilliseconds(20);
+				break;
+
+			case PROT_APRSCONFIG_2GFSK: // Encode APRS telemetry encoding definition (conversion formulae)
+			case PROT_APRSCONFIG_AFSK:
+				msg.mod = parm->protocol == PROT_APRSCONFIG_AFSK ? MOD_AFSK : MOD_2GFSK;
+
+				telemetryConfig_t config[] = {CONFIG_PARM, CONFIG_UNIT, CONFIG_EQNS, CONFIG_BITS};
+				for(uint8_t i=0; i<sizeof(config); i++) {
+					msg.bin_len = aprs_encode_telemetry_configuration(msg.msg, config[i]); // Encode packet
+					while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively (transmission)
+						chThdSleepMilliseconds(20);
+					chThdSleepMilliseconds(5000); // Take a litte break between the package transmissions
+				}
+
 				break;
 
 			case PROT_UKHAS_2FSK: // Encode UKHAS
 				msg.mod = MOD_2FSK;
 
+				// Encode packet
 				char fskmsg[256];
-
 				memcpy(fskmsg, UKHAS_FORMAT, sizeof(UKHAS_FORMAT));
 				replace_placeholders(fskmsg, sizeof(fskmsg), trackPoint);
 				str_replace(fskmsg, sizeof(fskmsg), "<CALL>", UKHAS_CALLSIGN);
-
 				msg.bin_len = 8*chsnprintf((char*)msg.msg, sizeof(fskmsg), "$$$$$%s*%04X\n", fskmsg, crc16(fskmsg));
-				while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively
+
+				// Transmit message
+				while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively (transmission)
 					chThdSleepMilliseconds(20);
 				break;
 
 			case PROT_RAW_CW: // Encode CW
 				msg.mod = MOD_CW;
 
+				// Encode CW message
 				char cwmsg[256];
 				memcpy(cwmsg, CW_FORMAT, sizeof(CW_FORMAT));
 				replace_placeholders(cwmsg, sizeof(cwmsg), trackPoint);
 				str_replace(cwmsg, sizeof(cwmsg), "<CALL>", CW_CALLSIGN);
 
-				msg.bin_len = CW_encode(msg.msg, cwmsg);
-				while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively
+				// Transmit message
+				msg.bin_len = CW_encode(msg.msg, cwmsg); // Convert message to binary stream
+				while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively (transmission)
 					chThdSleepMilliseconds(20);
 				break;
 

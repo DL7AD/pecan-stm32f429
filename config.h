@@ -12,7 +12,7 @@
 #define APRS_CALLSIGN			"DL7AD"			/* APRS callsign */
 #define APRS_SSID				12				/* APRS SSID */
 #define APRS_SYMBOL				SYM_BALLOON		/* APRS symbol (Options: SYM_BALLOON, SYM_SMALLAIRCRAFT, SYM_SATELLITE) */
-#define APRS_PATH				"WIDE1,WIDE2-1"	/* APRS path */
+#define APRS_PATH				"WIDE1-1,WIDE2-1"	/* APRS path */
 #define APRS_PATH_SAT			"RS0ISS"		/* APRS path */
 
 // SSDV configuration
@@ -124,6 +124,8 @@
  *                  PROT_APRS_AFSK               Transmission by APRS AFSK 1k2 (FIXME: AFSK not decodeable yet)
  *                  PROT_UKHAS_2FSK              Transmission by specific UKHAS protocol in 2FSK (See 2FSK modulation and UKHAS format configuration)
  *                  PROT_RAW_CW                  Transmission by specific CW protocol (See CW modulation and CW format configuration)
+ *                  PROT_APRSCONFIG_AFSK         Transmit APRS telemetry encoding definition (conversion formulae) in AFSK
+ *                  PROT_APRSCONFIG_2GFSK        Transmit APRS telemetry encoding definition (conversion formulae) in 2GFSK
  *
  * MODULE_LOG(trigger, sleep, frequency, power, protocol) (TODO: Not implemented yet!)
  * ----------------------------------------------------------------------------------------------------
@@ -146,11 +148,12 @@
 
 #define MODULES() { \
                   /* Cycle/Trigger (sec)      Sleep                       Frequency         Power Protocol       */ \
-/*	MODULE_IMAGE    (TX_CONTINUOSLY,          SLEEP_WHEN_BATT_BELOW_3V5,  CUSTOM_FREQ,      10,   PROT_SSDV_2FSK );*/ \
-/*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_UKHAS_2FSK);*/ \
-/*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_RAW_CW    );*/ \
-	MODULE_POSITION (10,                      SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_APRS_AFSK ); \
-/*	MODULE_LOG      (120,                     SLEEP_WHEN_BATT_BELOW_3V3,  APRS_REGION_FREQ, 10,   PROT_APRS_AFSK );*/ \
+/*	MODULE_IMAGE    (TX_CONTINUOSLY,          SLEEP_WHEN_BATT_BELOW_3V5,  CUSTOM_FREQ,      10,   PROT_SSDV_2FSK      );*/ \
+/*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_UKHAS_2FSK     );*/ \
+/*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_RAW_CW         );*/ \
+	MODULE_POSITION (3600,                    SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_APRSCONFIG_AFSK); \
+	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_APRS_AFSK      ); \
+/*	MODULE_LOG      (120,                     SLEEP_WHEN_BATT_BELOW_3V3,  APRS_REGION_FREQ, 10,   PROT_APRS_AFSK      );*/ \
 }
 
 /* ------------------------------------------------------------ Miscellaneous ----------------------------------------------------------- */

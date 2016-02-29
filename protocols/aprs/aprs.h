@@ -49,13 +49,12 @@ typedef enum {
 	CONFIG_UNIT,
 	CONFIG_EQNS,
 	CONFIG_BITS
-} config_t;
+} telemetryConfig_t;
 
 uint32_t aprs_encode_position(uint8_t* message, trackPoint_t *trackPoint);
-uint32_t aprs_encode_telemetry_configuration(uint8_t** message, config_t type);
-uint32_t aprs_encode_log(uint8_t** message);
-uint32_t aprs_encode_image(uint8_t** message, image_t *image);
-char *fitoa(uint32_t num, char *buffer, uint32_t min_len); // TODO: Replace this, our CPU has more flash than the LPC824
+uint32_t aprs_encode_telemetry_configuration(uint8_t* message, telemetryConfig_t type);
+uint32_t aprs_encode_log(uint8_t* message);
+uint32_t aprs_encode_image(uint8_t* message, image_t *image);
 char *itoa(int32_t num, char *buffer, uint32_t min_len);
 
 #endif

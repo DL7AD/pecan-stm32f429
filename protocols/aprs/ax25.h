@@ -21,22 +21,23 @@
 #include "ch.h"
 #include "hal.h"
 
-#define MODEM_MAX_PACKET 512 /* Max size of modem packet */
-
 typedef struct s_address {
 	char callsign[7];
 	unsigned char ssid;
 } s_address_t;
 
-extern uint8_t modem_packet[MODEM_MAX_PACKET];  // Upper layer data
-extern uint16_t modem_packet_size;              // in bits
+typedef struct {
+	uint8_t ones_in_a_row;	// Ones in a row (for bitstuffing)
+	uint8_t *data;			// Data
+	uint16_t size;			// Packet size in bits
+	uint16_t max_size;		// Max. Packet size in bits (size of modem packet)
+	uint16_t crc;			// CRC
+} ax25_t;
 
-void ax25_send_header(const s_address_t addresses[], int num_addresses);
-
-void ax25_send_byte(char byte);
-void ax25_send_string(const char *string);
-void ax25_send_footer(void);
-//void bit_scramble(void);
+void ax25_send_header(ax25_t *packet, const s_address_t addresses[], int num_addresses);
+void ax25_send_byte(ax25_t *packet, char byte);
+void ax25_send_string(ax25_t *packet, const char *string);
+void ax25_send_footer(ax25_t *packet);
 
 #endif
 
