@@ -10,10 +10,11 @@ This is the software, which runs the [Pecan Pico 7 balloon trackers](https://git
 - Position and telemetry transmissions by 2FSK (or RTTY)
 - High altitude mode (up to 50km altitude)
 - Debugging (serial connection)
+- APRS encoding (AFSK)
 
 What currently doesn't work at the moment (but planned):
 
-- APRS encoding works but not AFSK and 2GFSK modulation
+- APRS encoding (2GFSK)
 - High resolution image capturing (just QVGA at the moment)
 - High resolution image transmissions by 9k6 APRS
 - Logging and Log transmissions
