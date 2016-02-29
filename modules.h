@@ -20,7 +20,7 @@
 
 #define MODULE_POSITION(CYCLE,SLEEP,FREQ,PWR,PROT) { \
 	ARG2PARM("POS", CYCLE,SLEEP,FREQ,PWR,PROT); \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(4096), LOWPRIO, modulePOS, parm); \
+	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(2048), LOWPRIO, modulePOS, parm); \
 	modules[moduleCount++] = parm; \
 }
 
@@ -85,6 +85,7 @@ typedef enum {
 	PROT_APRSCONFIG_2GFSK,
 	PROT_SSDV_2FSK,
 	PROT_SSDV_APRS_AFSK,
+	PROT_SSDV_APRS_2GFSK,
 	PROT_RAW_CW
 } prot_t;
 

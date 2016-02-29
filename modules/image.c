@@ -6,6 +6,8 @@
 #include "ov9655.h"
 #include "pi2c.h"
 #include "ssdv.h"
+#include "aprs.h"
+#include "base64.h"
 #include <string.h>
 
 static uint32_t image_id;
@@ -13,6 +15,7 @@ static uint32_t image_id;
 void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 	ssdv_t ssdv;
 	uint8_t pkt[SSDV_PKT_SIZE];
+	uint8_t pkt_base64[SSDV_PKT_SIZE*8/6+1];
 	uint16_t i = 0;
 	uint8_t *b;
 	uint16_t bi = 0;
@@ -54,10 +57,18 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 		fptr = parm->frequencyMethod;
 
 		switch(parm->protocol) {
-			case PROT_SSDV_APRS_AFSK:
-				TRACE_ERROR("IMG  > APRS not implemented!");
+			case PROT_SSDV_APRS_2GFSK:
+				TRACE_ERROR("IMG  > 2GFSK not yet implemented")
+				break;
 
-				//transmitOnRadio(radioMSG_t *msg);
+			case PROT_SSDV_APRS_AFSK:
+				msg.mod = MOD_AFSK;
+				msg.freq = (*fptr)();
+				msg.power = parm->power;
+				base64_encode(pkt, pkt_base64, sizeof(pkt));
+				msg.bin_len = aprs_encode_image(msg.msg, pkt_base64, sizeof(pkt_base64));
+				while(!transmitOnRadio(&msg)) // Try to insert message into message box less aggressively
+					chThdSleepMilliseconds(2000);
 				break;
 
 			case PROT_SSDV_2FSK:
@@ -71,7 +82,7 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 				break;
 
 			default:
-				TRACE_ERROR("POS  > Unsupported protocol selected for module POSITION");
+				TRACE_ERROR("IMG  > Unsupported protocol selected for module IMAGE");
 		}
 
 		i++;

@@ -54,7 +54,7 @@ typedef enum {
 uint32_t aprs_encode_position(uint8_t* message, trackPoint_t *trackPoint);
 uint32_t aprs_encode_telemetry_configuration(uint8_t* message, telemetryConfig_t type);
 uint32_t aprs_encode_log(uint8_t* message);
-uint32_t aprs_encode_image(uint8_t* message, image_t *image);
+uint32_t aprs_encode_image(uint8_t* message, uint8_t *image, size_t size);
 char *itoa(int32_t num, char *buffer, uint32_t min_len);
 
 #endif

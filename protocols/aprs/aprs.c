@@ -62,7 +62,7 @@ uint32_t aprs_encode_position(uint8_t* message, trackPoint_t *trackPoint)
 	ax25_send_string(&packet, temp);
 
 	// Latitude
-	uint32_t y = 380926 * (90 - trackPoint->gps_lat);
+	uint32_t y = 380926 * (90 - trackPoint->gps_lat/10000000.0);
 	uint32_t y3  = y   / 753571;
 	uint32_t y3r = y   % 753571;
 	uint32_t y2  = y3r / 8281;
@@ -71,7 +71,7 @@ uint32_t aprs_encode_position(uint8_t* message, trackPoint_t *trackPoint)
 	uint32_t y1r = y2r % 91;
 
 	// Longitude
-	uint32_t x = 190463 * (180 + trackPoint->gps_lon);
+	uint32_t x = 190463 * (180 + trackPoint->gps_lon/10000000.0);
 	uint32_t x3  = x   / 753571;
 	uint32_t x3r = x   % 753571;
 	uint32_t x2  = x3r / 8281;
@@ -239,15 +239,25 @@ uint32_t aprs_encode_telemetry_configuration(uint8_t* message, telemetryConfig_t
 	return packet.size;
 }
 
-uint32_t aprs_encode_image(uint8_t* message, image_t *image)
+uint32_t aprs_encode_image(uint8_t* message, uint8_t *image, size_t size)
 {
-	(void)message;
-	(void)image;
+	ax25_t packet;
+	packet.data = message;
+	packet.max_size = 512; // TODO: replace 512 with real size
 
-	// TODO: Implement image encoding function here
+	// Encode APRS header
+	ax25_send_header(&packet, addresses, sizeof(addresses)/sizeof(s_address_t));
+	ax25_send_string(&packet, "{{I");
 
-	message = 0;
-	return 0;
+	// Encode image message
+	for(uint16_t i=0; i<size; i++)
+		ax25_send_byte(&packet, image[i]);
+
+	// Send footer
+	ax25_send_footer(&packet);
+
+	//memcpy(message, modem_packet, modem_packet_size/8+1);
+	return packet.size;
 }
 
 char *itoa(int32_t num, char *buffer, uint32_t min_len)

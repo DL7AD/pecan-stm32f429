@@ -4,8 +4,6 @@
 #include "ch.h"
 #include "hal.h"
 
-typedef char* image_t;
-
 THD_FUNCTION(moduleIMG, arg);
 
 #endif
