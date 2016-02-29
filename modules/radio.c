@@ -126,6 +126,7 @@ void sendAFSK(radio_t radio, radioMSG_t *msg) {
 	while(timer_running)
 		chThdSleepMilliseconds(1);
 
+	// Stop timer
 	gptStopTimer(&GPTD1);
 }
 

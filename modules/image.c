@@ -15,13 +15,14 @@ static uint32_t image_id;
 void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 	ssdv_t ssdv;
 	uint8_t pkt[SSDV_PKT_SIZE];
-	uint8_t pkt_base64[SSDV_PKT_SIZE*8/6+1];
+	uint8_t pkt_base64[BASE64LEN(SSDV_PKT_SIZE)];
 	uint16_t i = 0;
 	uint8_t *b;
 	uint16_t bi = 0;
 	uint8_t c = SSDV_OK;
 
-	ssdv_enc_init(&ssdv, SSDV_TYPE_NORMAL, SSDV_CALLSIGN, ++image_id);
+	// Init SSDV (FEC at 2FSK, non FEC at APRS)
+	ssdv_enc_init(&ssdv, parm->protocol == PROT_SSDV_2FSK ? SSDV_TYPE_NORMAL : SSDV_TYPE_NOFEC, SSDV_CALLSIGN, ++image_id);
 	ssdv_enc_set_buffer(&ssdv, pkt);
 
 	while(true)

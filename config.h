@@ -103,7 +103,7 @@
  *                  APRS_ISS_FREQ                Transmit on 145.825 MHz (Doppler not considered)
  * PARAM power:     <integer>                    Transmission power in dBm (e.g. 7 for 7dBm = 5mW)
  * PARAM protocol:  PROT_SSDV_2FSK               Transmission by 2FSK (See 2FSK modulation configuration)
- *                  PROT_SSDV_APRS_AFSK          Transmission by APRS AFSK 1k2 (TODO: Not implemented yet)
+ *                  PROT_SSDV_APRS_AFSK          Transmission by APRS AFSK 1k2
  * 
  * MODULE_POSITION(trigger, sleep, frequency, power, protocol)
  * ----------------------------------------------------------------------------------------------------
@@ -121,7 +121,7 @@
  *                  APRS_ISS_FREQ                Transmit on 145.825 MHz (Doppler not considered)
  * PARAM power:     <integer>                    Transmission power in dBm (e.g. 7 for 7dBm = 5mW)
  * PARAM protocol:  PROT_APRS_2GFSK              Transmission by APRS 2GFSK 9k6 (FIXME: 2GFSK not decodeable yet)
- *                  PROT_APRS_AFSK               Transmission by APRS AFSK 1k2 (FIXME: AFSK not decodeable yet)
+ *                  PROT_APRS_AFSK               Transmission by APRS AFSK 1k2
  *                  PROT_UKHAS_2FSK              Transmission by specific UKHAS protocol in 2FSK (See 2FSK modulation and UKHAS format configuration)
  *                  PROT_RAW_CW                  Transmission by specific CW protocol (See CW modulation and CW format configuration)
  *                  PROT_APRSCONFIG_AFSK         Transmit APRS telemetry encoding definition (conversion formulae) in AFSK
