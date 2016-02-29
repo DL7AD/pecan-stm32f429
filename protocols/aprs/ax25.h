@@ -33,9 +33,10 @@ extern uint16_t modem_packet_size;              // in bits
 
 void ax25_send_header(const s_address_t addresses[], int num_addresses);
 
-void ax25_send_byte(unsigned char byte);
+void ax25_send_byte(char byte);
 void ax25_send_string(const char *string);
 void ax25_send_footer(void);
+//void bit_scramble(void);
 
 #endif
 

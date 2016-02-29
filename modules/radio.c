@@ -37,7 +37,7 @@ const uint8_t sine_table[512] = {
 };
 
 #define TABLE_SIZE			sizeof(sine_table)
-#define PLAYBACK_RATE		120000
+#define PLAYBACK_RATE		450000
 #define BAUD_RATE			1200
 #define SAMPLES_PER_BAUD	(PLAYBACK_RATE / BAUD_RATE) // 52.083333333 / 26.041666667
 #define PHASE_DELTA_1200	(((TABLE_SIZE * 1200) << 7) / PLAYBACK_RATE) // Fixed point 9.7 // 1258 / 2516
@@ -90,13 +90,14 @@ static void afsk_callback(GPTDriver *gptp) {
 	MOD_GPIO_SET(afsk_radio, sine_table[(phase >> 7) & (TABLE_SIZE - 1)] > 127);
 
 	if(++current_sample_in_baud == SAMPLES_PER_BAUD) {
+		palTogglePad(PORT(LED_YELLOW), PIN(LED_YELLOW));
 		current_sample_in_baud = 0;
 		packet_pos++;
 	}
 }
 
 static GPTConfig gptcfg_afsk = {
-	240000,
+	180000000,
 	afsk_callback,
 	0,
 	0
@@ -119,18 +120,17 @@ void sendAFSK(radio_t radio, radioMSG_t *msg) {
 
 	// Start timer
 	gptStart(&GPTD1, &gptcfg_afsk);
-	gptStartContinuous(&GPTD1, 2);
+	gptStartContinuous(&GPTD1, 250);
 
 	// Wait for routine to finish
 	while(timer_running)
 		chThdSleepMilliseconds(1);
 
-	// Stop timer
 	gptStopTimer(&GPTD1);
 }
 
 /**
-  * Transmits binary CW message. One bit = 20ms (1 TONE, 0, NO TONE)
+  * Transmits binary CW message. One bit = 20ms (1: TONE, 0: NO TONE)
   */
 void sendCW(radio_t radio, radioMSG_t *msg) {
 	// Initialize radio and tune
@@ -203,6 +203,37 @@ static void serial_callback(GPTDriver *gptp) {
 	}
 }
 
+static void gfsk_callback(GPTDriver *gptp) {
+	(void)gptp;
+
+	switch(txs)
+	{
+		case 6: // Transmit a single char
+			if(txj < fsk_msg->bin_len/8 && txi == 0) {
+				palSetPad(PORT(LED_YELLOW), PIN(LED_YELLOW));__NOP();__NOP();__NOP();__NOP();__NOP();
+				palClearPad(PORT(LED_YELLOW), PIN(LED_YELLOW));
+				txc = fsk_msg->msg[txj]; // Select char
+				txi = 8;
+				txj++;
+			}
+
+			palSetPad(PORT(LED_YELLOW), PIN(LED_YELLOW));__NOP();__NOP();__NOP();__NOP();__NOP();
+			palClearPad(PORT(LED_YELLOW), PIN(LED_YELLOW));
+			txi--;
+			MOD_GPIO_SET(fsk_radio, txc & 1);
+			txc = txc >> 1;
+
+			if(txj == fsk_msg->bin_len/8)
+				txs = 7;
+			break;
+		case 7:
+			txj = 0;
+			txs = 0;
+			MOD_GPIO_SET(fsk_radio, HIGH);
+			break;
+	}
+}
+
 static GPTConfig gptcfg_serial = {
 	19200,
 	serial_callback,
@@ -235,6 +266,13 @@ void send2FSK(radio_t radio, radioMSG_t *msg) {
 	gptStopTimer(&GPTD1);
 }
 
+static GPTConfig gptcfg_gfsk = {
+	360000,
+	gfsk_callback,
+	0,
+	0
+};
+
 void send2GFSK(radio_t radio, radioMSG_t *msg) {
 	// Initialize radio and tune
 	Si4464_Init(radio, MOD_2GFSK);
@@ -249,8 +287,18 @@ void send2GFSK(radio_t radio, radioMSG_t *msg) {
 	fsk_radio = radio;
 
 	// Start timer
-	gptStart(&GPTD1, &gptcfg_serial);
-	gptStartContinuous(&GPTD1, gptcfg_serial.frequency / 9600);
+	gptStart(&GPTD1, &gptcfg_gfsk);
+	gptStartContinuous(&GPTD1, 39);
+
+	uint8_t ctone = 0;
+	for(uint32_t i=0; i<msg->bin_len; i++) {
+		uint8_t a = i/8;
+		uint8_t s = i%8;
+		if(((msg->msg[a] >> s) & 0x1) == 0) // Change tone
+			ctone = !ctone;
+		msg->msg[a] = (msg->msg[a] & ~(0x1 << s)) | (ctone << s);
+	}
+	TRACE_BIN(msg->msg, msg->bin_len);
 
 	// Wait for routine to finish
 	while(txs)

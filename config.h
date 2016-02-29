@@ -10,7 +10,7 @@
 
 // APRS configuration
 #define APRS_CALLSIGN			"DL7AD"			/* APRS callsign */
-#define APRS_SSID				11				/* APRS SSID */
+#define APRS_SSID				12				/* APRS SSID */
 #define APRS_SYMBOL				SYM_BALLOON		/* APRS symbol (Options: SYM_BALLOON, SYM_SMALLAIRCRAFT, SYM_SATELLITE) */
 #define APRS_PATH				"WIDE1,WIDE2-1"	/* APRS path */
 #define APRS_PATH_SAT			"RS0ISS"		/* APRS path */
@@ -53,7 +53,7 @@
 /* ------------------------------------------------------------- Modulation ------------------------------------------------------------- */
 
 // AFSK configuration
-#define AFSK_TXDELAY			60				/* APRS preamble length in ms */
+#define AFSK_TXDELAY			30				/* APRS preamble length in ms */
 
 // 2FSK configuration
 #define FSK_PREDELAY			0				/* 2FSK pre-transmission delay */
@@ -147,9 +147,9 @@
 #define MODULES() { \
                   /* Cycle/Trigger (sec)      Sleep                       Frequency         Power Protocol       */ \
 /*	MODULE_IMAGE    (TX_CONTINUOSLY,          SLEEP_WHEN_BATT_BELOW_3V5,  CUSTOM_FREQ,      10,   PROT_SSDV_2FSK );*/ \
-	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_UKHAS_2FSK); \
+/*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_UKHAS_2FSK);*/ \
 /*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_RAW_CW    );*/ \
-/*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_APRS_AFSK );*/ \
+	MODULE_POSITION (10,                      SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_APRS_AFSK ); \
 /*	MODULE_LOG      (120,                     SLEEP_WHEN_BATT_BELOW_3V3,  APRS_REGION_FREQ, 10,   PROT_APRS_AFSK );*/ \
 }
 

@@ -55,7 +55,7 @@
 	module_params_t* parm = chHeapAlloc(NULL, sizeof(module_params_t)); \
 	parm->cycle = 30; /* only relevant for the watchdog monitor */ \
 	parm->name = "RAD"; \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), HIGHPRIO, moduleRADIO, parm); \
+	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(2048), HIGHPRIO, moduleRADIO, parm); \
 	modules[moduleCount++] = parm; \
 }
 

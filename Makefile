@@ -174,7 +174,7 @@ ASMSRC = $(STARTUPASM) $(PORTASM) $(OSALASM)
 
 INCDIR = $(STARTUPINC) $(KERNINC) $(PORTINC) $(OSALINC) \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) $(TESTINC) \
-         $(CHIBIOS)/os/hal/lib/streams $(CHIBIOS)/os/various
+         $(CHIBIOS)/os/hal/lib/streams $(CHIBIOS)/os/various \
 
 #
 # Project, sources and paths
@@ -231,7 +231,7 @@ UADEFS =
 
 # List all user directories here
 UINCDIR = modules/ drivers protocols/aprs protocols/ssdv \
-          protocols/cw math/
+          protocols/cw math/ STM32F4xx_StdPeriph_Driver/inc
 
 # List the user directory to look for the libraries here
 ULIBDIR =

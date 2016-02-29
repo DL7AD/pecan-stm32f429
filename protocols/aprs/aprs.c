@@ -34,8 +34,8 @@ s_address_t addresses[] =
 { 
 	{APRS_DEST_CALLSIGN, APRS_DEST_SSID},	// Destination callsign
 	{APRS_CALLSIGN, APRS_SSID},				// Source callsign (-11 = balloon, -9 = car)
-	{"", 0},								// Digi1 (first digi in the chain)
-	{"", 0},								// Digi2 (second digi in the chain)
+	//{"WIDE1", 1},							// Digi1 (first digi in the chain)
+	//{"", 0},								// Digi2 (second digi in the chain)
 };
 
 /**
@@ -105,7 +105,7 @@ uint32_t aprs_encode_position(uint8_t* message, trackPoint_t *trackPoint)
 		temp[13] = 0;
 
 		ax25_send_string(temp);
-	};
+	}
 
 	// GPS Loss counter
 	if(!trackPoint->gps_lock)
@@ -116,52 +116,50 @@ uint32_t aprs_encode_position(uint8_t* message, trackPoint_t *trackPoint)
 		loss_of_gps_counter = 0;
 	}
 
-	{
-		temp[2] = 0;
+	temp[2] = 0;
 
-		ax25_send_string("|");
+	ax25_send_byte('|');
 
-		// Sequence ID
-		uint32_t t = trackPoint->id & 0x1FFF;
-		temp[0] = t/91 + 33;
-		temp[1] = t%91 + 33;
-		ax25_send_string(temp);
+	// Sequence ID
+	uint32_t t = trackPoint->id & 0x1FFF;
+	temp[0] = t/91 + 33;
+	temp[1] = t%91 + 33;
+	ax25_send_string(temp);
 
-		// Battery voltage
-		t = 0; // TODO: trackPoint->vbat
-		temp[0] = t/91 + 33;
-		temp[1] = t%91 + 33;
-		ax25_send_string(temp);
+	// Battery voltage
+	t = 0; // TODO: trackPoint->vbat
+	temp[0] = t/91 + 33;
+	temp[1] = t%91 + 33;
+	ax25_send_string(temp);
 
-		// Solar voltage
-		t = 0; // TODO: trackPoint->vsol
-		temp[0] = t/91 + 33;
-		temp[1] = t%91 + 33;
-		ax25_send_string(temp);
+	// Solar voltage
+	t = 0; // TODO: trackPoint->vsol
+	temp[0] = t/91 + 33;
+	temp[1] = t%91 + 33;
+	ax25_send_string(temp);
 
-		// Temperature
-		t = 0; // TODO: trackPoint->temp + 128
-		temp[0] = t/91 + 33;
-		temp[1] = t%91 + 33;
-		ax25_send_string(temp);
+	// Temperature
+	t = 0; // TODO: trackPoint->temp + 128
+	temp[0] = t/91 + 33;
+	temp[1] = t%91 + 33;
+	ax25_send_string(temp);
 
-		// Sats
-		t = trackPoint->gps_sats;
-		temp[0] = t/91 + 33;
-		temp[1] = t%91 + 33;
-		ax25_send_string(temp);
+	// Sats
+	t = trackPoint->gps_sats;
+	temp[0] = t/91 + 33;
+	temp[1] = t%91 + 33;
+	ax25_send_string(temp);
 
-		t = trackPoint->gps_ttff;
-		temp[0] = t/91 + 33;
-		temp[1] = t%91 + 33;
-		ax25_send_string(temp);
+	t = trackPoint->gps_ttff;
+	temp[0] = t/91 + 33;
+	temp[1] = t%91 + 33;
+	ax25_send_string(temp);
 
-		ax25_send_byte('|');
-	};
+	ax25_send_byte('|');
 
 	ax25_send_footer();
 
-	memcpy(message, modem_packet, (modem_packet_size+1)/8);
+	memcpy(message, modem_packet, (modem_packet_size)/8+1);
 	return modem_packet_size;
 }
 
@@ -187,7 +185,7 @@ uint32_t aprs_encode_log(uint8_t** message)
 	// Send footer
 	ax25_send_footer();
 
-	*message = modem_packet;
+	memcpy(message, modem_packet, (modem_packet_size)/8+1);
 	return modem_packet_size;
 }
 
@@ -230,7 +228,7 @@ uint32_t aprs_encode_telemetry_configuration(uint8_t** message, config_t type)
 
 	ax25_send_footer(); // Footer
 	
-	*message = modem_packet;
+	memcpy(message, modem_packet, (modem_packet_size)/8+1);
 	return modem_packet_size;
 }
 
@@ -261,8 +259,9 @@ char* fitoa(uint32_t num, char *buffer, uint32_t min_len)
 		min_len = digits;
 
 	// Leading zeros
-	for(uint32_t i=0; i<min_len-digits; i++)
+	for(uint32_t i=0; i<min_len-digits; i++) {
 		buffer[i] = '0';
+	}
 
 	// Convert number
 	itoa(num, &buffer[min_len-digits], 10);

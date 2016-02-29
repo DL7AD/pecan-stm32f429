@@ -21,8 +21,8 @@
 #include "debug.h"
 
 // Module globals
-unsigned short int crc;
-int ones_in_a_row;
+uint16_t crc;
+uint8_t ones_in_a_row;
 
 // TODO: Move the 2 following variables to heap in order to make multiple access to all functions possible
 uint8_t modem_packet[MODEM_MAX_PACKET];  // Upper layer data
@@ -38,7 +38,67 @@ static void update_crc(unsigned char bit)
 		crc = crc >> 1;
 }
 
-static void send_byte(unsigned char byte)
+
+
+static uint8_t old_out[17];
+
+void *my_memmove(void *dest, const void *src, size_t n) {
+  int8_t operation;
+  size_t end;
+  size_t current;
+
+  if(dest != src) {
+    if(dest < src) {
+      operation = 1;
+      current = 0;
+      end = n;
+    } else {
+      operation = -1;
+      current = n - 1;
+      end = -1;
+    }
+
+    for( ; current != end; current += operation) {
+      *(((uint8_t*)dest) + current) = *(((uint8_t*)src) + current);
+    }
+  }
+  return dest;
+}
+
+// @see http://www.dtusat.dtu.dk/cgi-bin/viewcvs.cgi/dtusat/pro/physical/Attic/scramble.c?rev=1.6&content-type=text/vnd.viewcvs-markup
+
+// perform descrambling one bit at a time
+uint8_t scramble_bitwise(uint8_t bit) {
+	bit ^= 1 ^ old_out[12-1] ^ old_out[17-1];
+
+	// update old_out buffer
+	my_memmove(&old_out[1], old_out, 16);
+	old_out[0] = bit;
+
+	return bit;
+}
+
+// naive bitwise G3RUH scrambling
+void bit_scramble(void) {
+	uint8_t bit;
+	uint32_t i, shift, idx;
+
+	for(i = (AFSK_TXDELAY+3)*8; i < modem_packet_size; ++i) {
+		// fetch input bit
+		idx = i / 8;
+		shift = i % 8;
+		bit = 1 & (modem_packet[idx] >> shift);
+
+		// calculate output bit
+		bit = scramble_bitwise(bit);
+
+		// save output in memory
+		modem_packet[idx] &= ~(1 << shift); // clear bit
+		modem_packet[idx] |= bit << shift;  // correct bit
+	}
+}
+
+static void send_byte(char byte)
 {
 	int i;
 	for(i = 0; i < 8; i++) {
@@ -49,7 +109,8 @@ static void send_byte(unsigned char byte)
 				return;
 			modem_packet[modem_packet_size >> 3] |= (1 << (modem_packet_size & 7));
 			modem_packet_size++;
-			if(++ones_in_a_row < 5)
+			ones_in_a_row++;
+			if(ones_in_a_row < 5)
 				continue;
 		}
 		// Next bit is a '0' or a zero padding after 5 ones in a row
@@ -62,7 +123,7 @@ static void send_byte(unsigned char byte)
 }
 
 // Exported functions
-void ax25_send_byte(unsigned char byte)
+void ax25_send_byte(char byte)
 {
   // Wrap around send_byte, but prints debug info
   send_byte(byte);
@@ -125,8 +186,9 @@ void ax25_send_header(const s_address_t addresses[], int num_addresses)
 
 	for (i = 0; i < num_addresses; i++) {
 		// Transmit callsign
-		for (j = 0; addresses[i].callsign[j]; j++)
+		for (j = 0; addresses[i].callsign[j]; j++) {
 			send_byte(addresses[i].callsign[j] << 1);
+		}
 		// Transmit pad
 		for ( ; j < 6; j++)
 			send_byte(' ' << 1);
@@ -153,6 +215,8 @@ void ax25_send_footer(void)
 	send_byte(~(final_crc & 0xff));
 	final_crc >>= 8;
 	send_byte(~(final_crc & 0xff));
+
+	//bit_scramble();
 
 	// Signal the end of frame
 	ax25_send_flag();

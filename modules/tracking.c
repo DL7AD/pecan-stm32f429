@@ -107,7 +107,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 		tp->gps_ttff = ST2S(chVTGetSystemTimeX() - time); // Time to first fix
 
 		// Power management
-		tp->adc_solar = 0; // TODO: Implement ADC
+		tp->adc_solar = 0; // getSolarVoltageMV(); // TODO: Implement ADC
 		tp->adc_battery = pac1720_getBatteryVoltage();
 		tp->adc_charge = pac1720_getAveragePower();
 
