@@ -1,9 +1,35 @@
 # Software for Pecan Balloon Trackers
 
-This is the software, which runs the [Pecan Pico 7 balloon trackers](https://github.com/DL7AD/pecanpico7). Currently this software if unfinished but basic features can be used:
+This is the software, which runs the [Pecan Pico 7 balloon trackers](https://github.com/DL7AD/pecanpico7). Since the new trackers can be used in many ways, this software is designed to be multiple purpose. It can be used for:
+- Image transmissions
+   - [SSDV](https://ukhas.org.uk/guides:ssdv) as 2FSK modulation (RTTY)
+   - [APRS](http://aprs.org)-encoded [SSDV](https://ukhas.org.uk/guides:ssdv) as AFSK or 2GFSK modulation
+- Position/Telemetry transmission (GPS)
+   - by [APRS](http://aprs.org) AFSK or 2GFSK
+   - 2FSK (RTTY)
+   - CW (morse)
+
+This software may also provide in feature
+- Amateur satellite communication links
+- Full duplex relay for digital modulations (up 70cm, down 2m)
+- Ground control access by radio link
+
+##### Transmitted Test Images
+These are some images which were transmitted by [SSDV](https://ukhas.org.uk/guides:ssdv). These QVGA-images were shot by an [Omnivision OV9655](http://www.waveshare.com/wiki/OV9655_Camera_Board).
+
+![Test image 1](https://raw.githubusercontent.com/DL7AD/pecan-stm32f429/master/doc/sample_pictures/test2.jpg)
+![Test image 2](https://raw.githubusercontent.com/DL7AD/pecan-stm32f429/master/doc/sample_pictures/test3.jpg)<br>
+
+##### Targets
+Currently there is only one target which is supported by the Software. Pecan Pico 7a will be replaced by Pecan Pico 7b due to some mayor errors ([See known PCB errors](https://github.com/DL7AD/pecanpico7/tree/7a)).
+
+<img src="https://raw.githubusercontent.com/DL7AD/pecan-stm32f429/master/doc/targets/pecanpico7a.jpg" width="320" alt="Pecan Pico 7a"><br>[Pecan Pico 7a](https://github.com/DL7AD/pecanpico7/tree/7a)
+
+##### Features
+All features can be combined as it's needed for the user. Currently this software if unfinished but basic features can be used:
 
 - Image capturing (just QVGA at the moment) and transmission by SSDV
-- Receiving positions (by ublox MAX8 module)
+- Receiving positions (by ublox MAX8 GNSS module)
 - Measuring Temperature/Airpressure/Temperature (by onboard BME280)
 - Measuring external Temperature/Airpressure/Temperature (by external BME280)
 - Measuring power consumption (battery charging and discharging)
@@ -13,25 +39,20 @@ This is the software, which runs the [Pecan Pico 7 balloon trackers](https://git
 - APRS encoding (AFSK)
 
 What currently doesn't work at the moment (but planned):
-
 - APRS encoding (2GFSK)
 - High resolution image capturing (just QVGA at the moment)
-- High resolution image transmissions by 9k6 APRS
+- High resolution image transmissions by 2GFSK 9k6 APRS
 - Logging and Log transmissions
 - Amateur satellite orbit calculations and transmissions
 - Power save modes
 - Store data on the microSD card
 - 9-axsis sensor driver (MPU9250)
 
-Not planned:
-
-- Video capturing (because the hardware doesn't have that much calculation power for compression encoding)
-
-The following part describes in which function parts the software is divided and how they interact which each other.
+It is currently not planned to implement video capturing. The STM32F4 doesn't have enough calculation power for compression encoding. However the new pin-compabile [STM32F7x7](http://www.st.com/web/en/catalog/mmc/FM141/SC1169/SS1858) supports JPEG encoding. So video capturing may be possible in future.
 
 Modules
 =======
-The software provides multiple modules, which supply the main functionality of the tracker like transmitting positions or images. Modules are basically threads in the ChibiOS RTOS. Modules can be:
+This section describes the different function blocks in the software and how they interact which each other. The software provides multiple modules, which supply the main functionality of the tracker like transmitting positions or images. Modules are basically [threads in the ChibiOS RTOS](http://www.chibios.org/dokuwiki/doku.php?id=chibios:howtos:createthread). Modules can be:
 
 - POSITION - for transmining position and telemetry
 - IMAGE - for transmitting images
@@ -47,14 +68,14 @@ The following diagram shows how the modules interact with each other.
    DRIVER   |                  DATA PROCESSING MODULES                     |     DRIVER
 ------------+--------------------------------------------------------------+------------------
 
-MPU9250 --+                           +---> SATELLITE ---+
-          |                           |                  |
-BME280 ---+---> TRACKING Manager -----+---> POSITION ----+------> RADIO ---+---> RADIO1 (2m)
-          |                           |                  |                 |
-MAX ------+                           +-----> LOG -------+                 +---> RADIO2 (70cm)
-                                                         |
-OV9655 or ---------------------------------> IMAGE ------+
-OV2640
+ MPU9250 ---+                           +---> SATELLITE ---+
+            |                           |                  |
+ BME280 ----+---> TRACKING Manager -----+---> POSITION ----+----> RADIO ---+---> RADIO1 (2m)
+            |                           |                  |               |
+ MAX -------+                           +-----> LOG -------+               +---> RADIO2 (70cm)
+                                                           |
+ OV9655 or ----------------------------------> IMAGE ------+
+ OV2640
 ```
 
 Module configuration
