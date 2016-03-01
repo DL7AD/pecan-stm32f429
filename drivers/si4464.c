@@ -136,7 +136,6 @@ void Si4464_write(radio_t radio, uint8_t* txData, uint32_t len) {
 		if(rxData[1] != 0xFF) // Si not finished, wait for it
 			chThdSleepMilliseconds(1);
 	}
-	chThdSleepMilliseconds(100); // FIXME
 }
 
 /**
