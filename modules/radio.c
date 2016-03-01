@@ -13,7 +13,7 @@
 #define PHASE_DELTA_1200	(((2 * 1200) << 16) / PLAYBACK_RATE) // Fixed point 9.7 // 1258 / 2516
 #define PHASE_DELTA_2200	(((2 * 2200) << 16) / PLAYBACK_RATE) // 2306 / 4613
 
-#define MB_SIZE 1
+#define MB_SIZE 2
 
 mailbox_t radioMB;
 msg_t mb_pbuffer[MB_SIZE];
