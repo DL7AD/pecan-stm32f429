@@ -7,12 +7,7 @@
 #include "si4464.h"
 #include <string.h>
 
-// Sine table
-//const uint8_t sine_table[2] = {
-//	255,0
-//};
-
-#define PLAYBACK_RATE		460000
+#define PLAYBACK_RATE		465000
 #define BAUD_RATE			1200
 #define SAMPLES_PER_BAUD	(PLAYBACK_RATE / BAUD_RATE) // 52.083333333 / 26.041666667
 #define PHASE_DELTA_1200	(((2 * 1200) << 16) / PLAYBACK_RATE) // Fixed point 9.7 // 1258 / 2516
@@ -95,7 +90,7 @@ void sendAFSK(radio_t radio, radioMSG_t *msg) {
 
 	// Start timer
 	gptStart(&GPTD1, &gptcfg_afsk);
-	gptStartContinuous(&GPTD1, 300);
+	gptStartContinuous(&GPTD1, 280);
 
 	// Wait for routine to finish
 	while(timer_running)
