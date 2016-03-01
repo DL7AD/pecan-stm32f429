@@ -90,7 +90,7 @@ void sendAFSK(radio_t radio, radioMSG_t *msg) {
 
 	// Start timer
 	gptStart(&GPTD1, &gptcfg_afsk);
-	gptStartContinuous(&GPTD1, 280);
+	gptStartContinuous(&GPTD1, 270);
 
 	// Wait for routine to finish
 	while(timer_running)
@@ -315,8 +315,9 @@ THD_FUNCTION(moduleRADIO, arg) {
 							"%s Radio %d\r\n"
 							"%s Frequency %d.%03d MHz\r\n"
 							"%s Power %d dBm (%d)\r\n"
-							"%s Modulation %s\r\n",
-							TRACE_TAB, radio, msg->bin_len,
+							"%s Modulation %s",
+							msg->bin_len,
+							TRACE_TAB, radio,
 							TRACE_TAB, msg->freq/1000000, (msg->freq%1000000)/1000,
 							TRACE_TAB, msg->power, dBm2powerLvl(msg->power),
 							TRACE_TAB, VAL2MOULATION(msg->mod)
