@@ -104,7 +104,13 @@ THD_FUNCTION(moduleIMG, arg) {
 		parm->lastCycle = chVTGetSystemTimeX(); // Watchdog timer
 		TRACE_INFO("IMG  > Do module IMAGE cycle");
 
-		//chThdSleepMilliseconds(60000);
+		// Lock RADIO from producing interferences
+		TRACE_INFO("IMG  > Lock radio");
+		chMtxLock(&interference_mtx);
+
+		// Shutdown radios (to avoid interference)
+		radioShutdown(RADIO_2M);
+		radioShutdown(RADIO_70CM);
 
 		// Init I2C
 		TRACE_INFO("IMG  > Init camera I2C");
@@ -128,6 +134,10 @@ THD_FUNCTION(moduleIMG, arg) {
 
 		// Switch off camera
 		OV9655_deinit();
+
+		// Unlock radio
+		TRACE_INFO("IMG  > Unlock radio");
+		chMtxUnlock(&interference_mtx);
 
 		if(tries) { // Capture successful
 			TRACE_INFO("IMG  > Encode/Transmit SSDV");

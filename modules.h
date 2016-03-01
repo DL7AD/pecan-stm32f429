@@ -61,6 +61,7 @@
 
 #define initModules() MODULES()
 #define initEssentialModules() { \
+	chMtxObjectInit(&interference_mtx); \
 	MODULE_TRACKING(CYCLE_TIME); /* Tracker data input */ \
 	MODULE_RADIO(); /* Tracker data output */ \
 }
@@ -101,5 +102,6 @@ typedef struct {
 
 extern module_params_t *modules[16];
 extern uint8_t moduleCount;
+extern mutex_t interference_mtx;
 
 #endif

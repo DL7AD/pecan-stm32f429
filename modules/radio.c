@@ -13,7 +13,7 @@
 #define PHASE_DELTA_1200	(((2 * 1200) << 16) / PLAYBACK_RATE) // Fixed point 9.7 // 1258 / 2516
 #define PHASE_DELTA_2200	(((2 * 2200) << 16) / PLAYBACK_RATE) // 2306 / 4613
 
-#define MB_SIZE 4
+#define MB_SIZE 1
 
 mailbox_t radioMB;
 msg_t mb_pbuffer[MB_SIZE];
@@ -296,6 +296,9 @@ THD_FUNCTION(moduleRADIO, arg) {
 	{
 		parm->lastCycle = chVTGetSystemTimeX(); // Watchdog timer
 
+		// Lock interference mutex
+		chMtxLock(&interference_mtx);
+
 		// Receive message
 		radioMSG_t *msg;
 		msg_t status = chMBFetch(&radioMB, (msg_t*)&msg, 0);
@@ -372,6 +375,8 @@ THD_FUNCTION(moduleRADIO, arg) {
 					radioShutdown(i); // Shutdown radio
 			}
 		}
+		chMtxUnlock(&interference_mtx); // Heavy interference finished (HF)
+
 		chThdSleepMilliseconds(1);
 	}
 }

@@ -16,5 +16,6 @@ char *MOULATION_STRING[] = {
 	"CW", "2FSK", "2GFSK", "DOMINOEX16", "AFSK"
 };
 
+mutex_t interference_mtx; // Needed to avoid HF interference
 module_params_t *modules[16];
 uint8_t moduleCount;
