@@ -311,17 +311,16 @@ THD_FUNCTION(moduleRADIO, arg) {
 			}
 
 			if(radio) { // Radio found
-				TRACE_INFO(	"RAD  > Transmit on radio\r\n"
+				TRACE_INFO(	"RAD  > Transmit on radio (%d bits)\r\n"
 							"%s Radio %d\r\n"
 							"%s Frequency %d.%03d MHz\r\n"
 							"%s Power %d dBm (%d)\r\n"
-							"%s Modulation %s",
-							TRACE_TAB, radio,
+							"%s Modulation %s\r\n",
+							TRACE_TAB, radio, msg->bin_len,
 							TRACE_TAB, msg->freq/1000000, (msg->freq%1000000)/1000,
 							TRACE_TAB, msg->power, dBm2powerLvl(msg->power),
 							TRACE_TAB, VAL2MOULATION(msg->mod)
 				);
-				TRACE_BIN(msg->msg, msg->bin_len);
 
 				if(msg->mod != lastModulation[radio]) // Modulation of last msg was different
 					radioShutdown(radio); // Shutdown radio for reinitialization
