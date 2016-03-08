@@ -157,6 +157,9 @@ uint32_t aprs_encode_position(uint8_t* message, trackPoint_t *trackPoint)
 	ax25_send_byte(&packet, '|');
 
 	ax25_send_footer(&packet);
+	TRACE_BIN(packet.data, packet.size);
+	nrzi_encode(&packet);
+	scramble(&packet);
 
 	//memcpy(message, modem_packet, modem_packet_size/8+1);
 	return packet.size;
@@ -187,6 +190,7 @@ uint32_t aprs_encode_log(uint8_t* message)
 
 	// Send footer
 	ax25_send_footer(&packet);
+	nrzi_encode(&packet);
 
 	//memcpy(message, modem_packet, modem_packet_size/8+1);
 	return packet.size;
@@ -234,6 +238,7 @@ uint32_t aprs_encode_telemetry_configuration(uint8_t* message, telemetryConfig_t
 	}
 
 	ax25_send_footer(&packet); // Footer
+	nrzi_encode(&packet);
 	
 	//memcpy(message, modem_packet, modem_packet_size/8+1);
 	return packet.size;
@@ -255,6 +260,7 @@ uint32_t aprs_encode_image(uint8_t* message, uint8_t *image, size_t size)
 
 	// Send footer
 	ax25_send_footer(&packet);
+	nrzi_encode(&packet);
 
 	//memcpy(message, modem_packet, modem_packet_size/8+1);
 	return packet.size;

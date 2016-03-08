@@ -38,6 +38,8 @@ void ax25_send_header(ax25_t *packet, const s_address_t addresses[], int num_add
 void ax25_send_byte(ax25_t *packet, char byte);
 void ax25_send_string(ax25_t *packet, const char *string);
 void ax25_send_footer(ax25_t *packet);
+void scramble(ax25_t *packet);
+void nrzi_encode(ax25_t *packet);
 
 #endif
 

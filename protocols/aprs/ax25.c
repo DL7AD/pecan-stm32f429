@@ -20,7 +20,14 @@
 #include "config.h"
 #include "debug.h"
 
-// Module functions
+#define AX25_WRITE_BIT(data, size) { \
+	data[size >> 3] |= (1 << (size & 7)); \
+}
+#define AX25_CLEAR_BIT(data, size) { \
+	data[size >> 3] &= ~(1 << (size & 7)); \
+}
+
+
 static void update_crc(ax25_t *packet, char bit)
 {
 	packet->crc ^= bit;
@@ -30,64 +37,11 @@ static void update_crc(ax25_t *packet, char bit)
 		packet->crc = packet->crc >> 1;
 }
 
-
-
-static uint8_t old_out[17];
-
-void *my_memmove(void *dest, const void *src, size_t n) {
-  int8_t operation;
-  size_t end;
-  size_t current;
-
-  if(dest != src) {
-    if(dest < src) {
-      operation = 1;
-      current = 0;
-      end = n;
-    } else {
-      operation = -1;
-      current = n - 1;
-      end = -1;
-    }
-
-    for( ; current != end; current += operation) {
-      *(((uint8_t*)dest) + current) = *(((uint8_t*)src) + current);
-    }
-  }
-  return dest;
-}
-
-// @see http://www.dtusat.dtu.dk/cgi-bin/viewcvs.cgi/dtusat/pro/physical/Attic/scramble.c?rev=1.6&content-type=text/vnd.viewcvs-markup
-
-// perform descrambling one bit at a time
-uint8_t scramble_bitwise(uint8_t bit) {
-	bit ^= 1 ^ old_out[12-1] ^ old_out[17-1];
-
-	// update old_out buffer
-	my_memmove(&old_out[1], old_out, 16);
-	old_out[0] = bit;
-
-	return bit;
-}
-
-// naive bitwise G3RUH scrambling
-void bit_scramble(ax25_t *packet) {
-	uint8_t bit;
-	uint32_t i, shift, idx;
-
-	for(i = (AFSK_TXDELAY+3)*8; i < packet->size; ++i) {
-		// fetch input bit
-		idx = i / 8;
-		shift = i % 8;
-		bit = 1 & (packet->data[idx] >> shift);
-
-		// calculate output bit
-		bit = scramble_bitwise(bit);
-
-		// save output in memory
-		packet->data[idx] &= ~(1 << shift); // clear bit
-		packet->data[idx] |= bit << shift;  // correct bit
-	}
+uint32_t state;
+uint8_t scramble_bit(uint8_t _in) {
+	uint8_t _out = (_in ^ (state >> 16) ^ (state >> 11)) & 0x1;
+	state = ((state << 0x1) | (_in & 0x1));
+	return _out;
 }
 
 static void send_byte(ax25_t *packet, char byte)
@@ -99,7 +53,9 @@ static void send_byte(ax25_t *packet, char byte)
 			// Next bit is a '1'
 			if (packet->size >= packet->max_size * 8)  // Prevent buffer overrun
 				return;
-			packet->data[packet->size >> 3] |= (1 << (packet->size & 7));
+
+			AX25_WRITE_BIT(packet->data, packet->size);
+
 			packet->size++;
 			packet->ones_in_a_row++;
 			if(packet->ones_in_a_row < 5)
@@ -108,7 +64,9 @@ static void send_byte(ax25_t *packet, char byte)
 		// Next bit is a '0' or a zero padding after 5 ones in a row
 		if(packet->size >= packet->max_size * 8)    // Prevent buffer overrun
 			return;
-		packet->data[packet->size >> 3] &= ~(1 << (packet->size & 7));
+
+		AX25_CLEAR_BIT(packet->data, packet->size);
+
 		packet->size++;
 		packet->ones_in_a_row = 0;
 	}
@@ -164,6 +122,9 @@ void ax25_send_header(ax25_t *packet, const s_address_t addresses[], int num_add
 	packet->ones_in_a_row = 0;
 	packet->crc = 0xffff;
 
+	for(uint16_t t=0; t<512; t++) // TMP blanking
+		packet->data[t] = 0;
+
 	// Send sync ("a bunch of 0s")
 	for (i = 0; i < AFSK_TXDELAY; i++)
 	{
@@ -171,7 +132,13 @@ void ax25_send_header(ax25_t *packet, const s_address_t addresses[], int num_add
 	}
 
 	//start the actual frame. Send 3 of them (one empty frame and the real start)
-	for (i = 0; i < 3; i++)
+	for (i = 0; i < 4; i++)
+	{
+		ax25_send_flag(packet);
+	}
+
+	//start the actual frame. Send 3 of them (one empty frame and the real start)
+	for (i = 0; i < 4; i++)
 	{
 		ax25_send_flag(packet);
 	}
@@ -210,9 +177,55 @@ void ax25_send_footer(ax25_t *packet)
 
 	packet->crc = final_crc;
 
-	//bit_scramble();
-
 	// Signal the end of frame
-	ax25_send_flag(packet);
+	for (uint8_t i = 0; i < 4; i++)
+	{
+		ax25_send_flag(packet);
+	}
 }
+
+/**
+  * Scrambling for 2GFSK
+  */
+void scramble(ax25_t *packet) {
+	// Scramble
+	state = 0x0;
+	for(uint32_t i=AFSK_TXDELAY*8+32; i<packet->size; i++) {
+		uint8_t bit = scramble_bit((packet->data[i >> 3] >> (i & 0x7)) & 0x1);
+		if(bit) {
+			AX25_WRITE_BIT(packet->data, i);
+		} else {
+			AX25_CLEAR_BIT(packet->data, i);
+		}
+	}
+}
+
+/**
+  * NRZ-I tone encoding (0: bit change, 1: no bit change)
+  */
+void nrzi_encode(ax25_t *packet) {
+	uint8_t ctone = 0;
+	for(uint32_t i=0; i<packet->size; i++) {
+		if(((packet->data[i >> 3] >> (i & 0x7)) & 0x1) == 0)
+			ctone = !ctone;
+		if(ctone) {
+			AX25_WRITE_BIT(packet->data, i);
+		} else {
+			AX25_CLEAR_BIT(packet->data, i);
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 

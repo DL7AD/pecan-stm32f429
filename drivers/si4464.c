@@ -278,10 +278,30 @@ void setModem2FSK(radio_t radio) {
 }
 
 void setModem2GFSK(radio_t radio) {
+	// Disable preamble
+	uint8_t disable_preamble[] = {0x11, 0x10, 0x01, 0x00, 0x00};
+	Si4464_write(radio, disable_preamble, 5);
+
+	// Do not transmit sync word
+	uint8_t no_sync_word[] = {0x11, 0x11, 0x01, 0x11, (0x01 << 7)};
+	Si4464_write(radio, no_sync_word, 5);
+
+	// Setup the NCO modulo and oversampling mode
+	uint32_t s = OSC_FREQ / 10;
+	uint8_t f3 = (s >> 24) & 0xFF;
+	uint8_t f2 = (s >> 16) & 0xFF;
+	uint8_t f1 = (s >>  8) & 0xFF;
+	uint8_t f0 = (s >>  0) & 0xFF;
+	uint8_t setup_oversampling[] = {0x11, 0x20, 0x04, 0x06, f3, f2, f1, f0};
+	Si4464_write(radio, setup_oversampling, 8);
+
+	// setup the NCO data rate for 2GFSK
+	uint8_t setup_data_rate[] = {0x11, 0x20, 0x03, 0x03, 0x00, 0x4B, 0x00};
+	Si4464_write(radio, setup_data_rate, 7);
+
 	// use 2GFSK from async GPIO0
 	uint8_t use_2gfsk[] = {0x11, 0x20, 0x01, 0x00, 0x0B};
 	Si4464_write(radio, use_2gfsk, 5);
-
 }
 
 void setPowerLevel(radio_t radio, int8_t level) {

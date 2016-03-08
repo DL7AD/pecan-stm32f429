@@ -7,7 +7,7 @@
 #include "si4464.h"
 #include <string.h>
 
-#define PLAYBACK_RATE		465000
+#define PLAYBACK_RATE		475000
 #define BAUD_RATE			1200
 #define SAMPLES_PER_BAUD	(PLAYBACK_RATE / BAUD_RATE) // 52.083333333 / 26.041666667
 #define PHASE_DELTA_1200	(((2 * 1200) << 16) / PLAYBACK_RATE) // Fixed point 9.7 // 1258 / 2516
@@ -49,10 +49,8 @@ static void afsk_callback(GPTDriver *gptp) {
 			current_byte = current_byte / 2;  // ">>1" forces int conversion
 		}
 
-		if ((current_byte & 1) == 0) {
-			// Toggle tone (1200 <> 2200)
-			phase_delta ^= (PHASE_DELTA_1200 ^ PHASE_DELTA_2200);
-		}
+		// Toggle tone (1200 <> 2200)
+		phase_delta = (current_byte & 1) ? PHASE_DELTA_1200 : PHASE_DELTA_2200;
 	}
 
 	phase += phase_delta;
@@ -74,6 +72,8 @@ static GPTConfig gptcfg_afsk = {
 };
 
 void sendAFSK(radio_t radio, radioMSG_t *msg) {
+	TRACE_BIN(msg->msg, msg->bin_len);
+
 	// Initialize radio and tune
 	Si4464_Init(radio, MOD_AFSK);
 	radioTune(radio, msg->freq, 0, msg->power);
@@ -174,37 +174,6 @@ static void serial_callback(GPTDriver *gptp) {
 	}
 }
 
-static void gfsk_callback(GPTDriver *gptp) {
-	(void)gptp;
-
-	switch(txs)
-	{
-		case 6: // Transmit a single char
-			if(txj < fsk_msg->bin_len/8 && txi == 0) {
-				palSetPad(PORT(LED_YELLOW), PIN(LED_YELLOW));__NOP();__NOP();__NOP();__NOP();__NOP();
-				palClearPad(PORT(LED_YELLOW), PIN(LED_YELLOW));
-				txc = fsk_msg->msg[txj]; // Select char
-				txi = 8;
-				txj++;
-			}
-
-			palSetPad(PORT(LED_YELLOW), PIN(LED_YELLOW));__NOP();__NOP();__NOP();__NOP();__NOP();
-			palClearPad(PORT(LED_YELLOW), PIN(LED_YELLOW));
-			txi--;
-			MOD_GPIO_SET(fsk_radio, txc & 1);
-			txc = txc >> 1;
-
-			if(txj == fsk_msg->bin_len/8)
-				txs = 7;
-			break;
-		case 7:
-			txj = 0;
-			txs = 0;
-			MOD_GPIO_SET(fsk_radio, HIGH);
-			break;
-	}
-}
-
 static GPTConfig gptcfg_serial = {
 	19200,
 	serial_callback,
@@ -237,46 +206,34 @@ void send2FSK(radio_t radio, radioMSG_t *msg) {
 	gptStopTimer(&GPTD1);
 }
 
-static GPTConfig gptcfg_gfsk = {
-	360000,
-	gfsk_callback,
-	0,
-	0
-};
-
 void send2GFSK(radio_t radio, radioMSG_t *msg) {
 	// Initialize radio and tune
 	Si4464_Init(radio, MOD_2GFSK);
-	MOD_GPIO_SET(radio, HIGH);
-	radioTune(radio, msg->freq, 9600, msg->power);
+	radioTune(radio, msg->freq, 0, msg->power);
 
-	txs = 6;
-	txc = 0;
-	txi = 0;
-	txj = 0;
-	fsk_msg = msg;
-	fsk_radio = radio;
-
-	// Start timer
-	gptStart(&GPTD1, &gptcfg_gfsk);
-	gptStartContinuous(&GPTD1, 39);
-
+	// Transmit data
+	uint32_t bit = 0;
 	uint8_t ctone = 0;
-	for(uint32_t i=0; i<msg->bin_len; i++) {
-		uint8_t a = i/8;
-		uint8_t s = i%8;
-		if(((msg->msg[a] >> s) & 0x1) == 0) // Change tone
-			ctone = !ctone;
-		msg->msg[a] = (msg->msg[a] & ~(0x1 << s)) | (ctone << s);
+	uint8_t current_byte = 0;
+	systime_t time = chVTGetSystemTimeX();
+	while(bit < msg->bin_len) {
+
+		if((bit & 7) == 0) { // Load up next byte
+			current_byte = msg->msg[bit >> 3];
+		} else {
+			current_byte = current_byte / 2; // Load next bit
+		}
+
+		chprintf((BaseSequentialStream*)&SD4, "%d", (current_byte & 1));
+
+		if((current_byte & 1) == 0)
+			ctone = !ctone; // Switch shifting
+		MOD_GPIO_SET(radio, ctone);
+		bit++;
+
+		time = chThdSleepUntilWindowed(time, time + 107);
+		palTogglePad(PORT(LED_YELLOW), PIN(LED_YELLOW));
 	}
-	TRACE_BIN(msg->msg, msg->bin_len);
-
-	// Wait for routine to finish
-	while(txs)
-		chThdSleepMilliseconds(1);
-
-	// Stop timer
-	gptStopTimer(&GPTD1);
 }
 
 THD_FUNCTION(moduleRADIO, arg) {

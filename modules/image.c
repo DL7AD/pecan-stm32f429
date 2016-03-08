@@ -121,13 +121,11 @@ THD_FUNCTION(moduleIMG, arg) {
 
 		// Sample data from DCMI through DMA into RAM
 		TRACE_INFO("IMG  > Capture image");
-		palClearPad(PORT(LED_YELLOW), PIN(LED_YELLOW)); // Yellow LED shows when image is captured
 		uint8_t tries = 5; // Try 5 times at maximum
 		bool status;
 		do { // Try capturing image until capture successful
 			status = OV9655_Snapshot2RAM();
 		} while(!status && --tries);
-		palSetPad(PORT(LED_YELLOW), PIN(LED_YELLOW));
 
 		uint8_t *image;
 		uint32_t image_len = OV9655_getBuffer(&image);
