@@ -126,7 +126,7 @@ void ax25_send_header(ax25_t *packet, const s_address_t addresses[], int num_add
 		packet->data[t] = 0;
 
 	// Send sync ("a bunch of 0s")
-	for (i = 0; i < AFSK_TXDELAY; i++)
+	for (i = 0; i < AFSK_PREAMBLE; i++)
 	{
 		ax25_send_sync(packet);
 	}
@@ -190,7 +190,7 @@ void ax25_send_footer(ax25_t *packet)
 void scramble(ax25_t *packet) {
 	// Scramble
 	state = 0x0;
-	for(uint32_t i=AFSK_TXDELAY*8+32; i<packet->size; i++) {
+	for(uint32_t i=AFSK_PREAMBLE*8+32; i<packet->size; i++) {
 		uint8_t bit = scramble_bit((packet->data[i >> 3] >> (i & 0x7)) & 0x1);
 		if(bit) {
 			AX25_WRITE_BIT(packet->data, i);

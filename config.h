@@ -53,7 +53,10 @@
 /* ------------------------------------------------------------- Modulation ------------------------------------------------------------- */
 
 // AFSK configuration
-#define AFSK_TXDELAY			60				/* APRS preamble length in ms TODO: value currently bytes not ms */
+#define AFSK_PREAMBLE			60				/* APRS AFSK preamble length in ms TODO: value currently bytes not ms */
+
+// 2GFSK configuration
+#define GFSK_PREAMBLE			0				/* APRS 2GFSK preamble length in ms TODO: Not implemented yet */
 
 // 2FSK configuration
 #define FSK_PREDELAY			0				/* 2FSK pre-transmission delay */
@@ -62,14 +65,6 @@
 #define FSK_SHIFT				1000			/* 2FSK baudrate */
 #define FSK_STOPBITS			2				/* 2FSK stopbits */
 #define FSK_ASCII				8				/* 2FSK bits */
-
-// 2GFSK configuration
-#define GFSK_PREDELAY			0				/* 2FSK pre-transmission delay */
-#define GFSK_POSTDELAY			0				/* 2FSK post-transmission delay */
-#define GFSK_BAUD				600				/* 2FSK baudrate */
-#define GFSK_SHIFT				1000			/* 2FSK baudrate */
-#define GFSK_STOPBITS			2				/* 2FSK stopbits */
-#define GFSK_ASCII				8				/* 2FSK bits */
 
 // CW configuration
 #define CW_SPEED				20				/* CW Speed in WpM TODO: Not supported yet */
