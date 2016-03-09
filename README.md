@@ -50,6 +50,30 @@ What currently doesn't work at the moment (but planned):
 
 It is currently not planned to implement video capturing. The STM32F4 doesn't have enough calculation power for compression encoding. However the new pin-compabile [STM32F7x7](http://www.st.com/web/en/catalog/mmc/FM141/SC1169/SS1858) supports JPEG encoding. So video capturing may be possible in future.
 
+###### Dependency installations/ Compiling/ Flashing
+In order to make the hardware working, you are going to need a programmer. There are several devices on the market but I personally use the [STM32F429I-DISCOVERY](http://www.st.com/st-web-ui/static/active/en/resource/technical/document/user_manual/DM00093903.pdf) demo board. The discovery board is basically a programmer with a demo target (microcontroller) attached to it. It's designed in a way so you can either flash the demo target or the Pecan Pico 7 by switching specific jumpers on the board. You may get the programmer on [Mouser](http://www2.mouser.com/search/ProductDetail.aspx?R=0virtualkey0virtualkeySTM32F429I-DISC1), [Farnell](http://www.newark.com/stmicroelectronics/stm32f429i-disc1/dev-board-stm32f429zi-advanced/dp/72Y1169), [Digikey](http://www.digikey.de/product-detail/de/stmicroelectronics/STM32F429I-DISCO/497-13898-ND/4310131) or on Ebay for roughly $30. You need to connect the programmer following way. Don't forget to remove the jumpers which connect the programmer with the demo target. ![Programmer connected to Pecan Pico 7](https://raw.githubusercontent.com/DL7AD/pecan-stm32f429/master/doc/programmer.jpg)<br>
+
+You will also need some software dependencies.
+- GCC to build binary files
+- ST-Flash to flash the binaries to your target
+There's a [great guide](http://www.wolinlabs.com/blog/linux.stm32.discovery.gcc.html) on the Web which I've taken myself to set up everything. They are using a different demo board but it works the same.
+
+Then you are going to need the sources for the tracker:
+```
+git clone --recursive https://github.com/DL7AD/pecan-stm32f429.git
+cd pecan-stm32f429
+make
+make flash
+```
+A _build_ folder will be created automatically. The software can be additionally configured in the [config.h](config.h).
+
+
+
+
+
+# Technical Description
+Technical description below...
+
 # Modules
 This section describes the different function blocks in the software and how they interact which each other. The software provides multiple modules, which supply the main functionality of the tracker like transmitting positions or images. Modules are basically [threads in the ChibiOS RTOS](http://www.chibios.org/dokuwiki/doku.php?id=chibios:howtos:createthread). Modules can be:
 
