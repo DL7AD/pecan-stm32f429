@@ -4,7 +4,9 @@
 #include "ch.h"
 #include "hal.h"
 
-#define  OV9655_I2C_ADR        0x30  /* Slave-address vom OV9655 */
+#define OV9655_I2C_ADR        0x30	/* Slave-address of OV9655 */
+
+#define QVGA
 
 bool OV9655_Snapshot2RAM(void);
 void OV9655_InitDMA(void);

@@ -45,19 +45,15 @@
 
 #include <string.h>
 
-#define QVGA
-//#define BW
-
 #ifdef QVGA
-#define OV9655_MAXX			320
-#define OV9655_MAXY			240
+#define OV9655_MAXX					320
+#define OV9655_MAXY					240
 #else
-#define OV9655_MAXX			640
-#define OV9655_MAXY			480
+#define OV9655_MAXX					640
+#define OV9655_MAXY					480
 #endif
 
-#define OV9655_BUFFER_SIZE	OV9655_MAXX*OV9655_MAXY
-
+#define OV9655_BUFFER_SIZE			OV9655_MAXX*OV9655_MAXY
 #define OV9655_DCMI_BASE_ADR		((uint32_t)0x50050000)
 #define OV9655_DCMI_REG_DR_OFFSET	0x28
 #define OV9655_DCMI_REG_DR_ADDRESS	(OV9655_DCMI_BASE_ADR | OV9655_DCMI_REG_DR_OFFSET)
@@ -165,7 +161,6 @@ void subsample2(BGR rgb[16][16], conv Y[2][2][8][8], conv cb[8][8], conv cr[8][8
 		sB += B = rgb[r+1][c+1].Blue;
 		Y[i][j][k+1][l+1] = RGB2Y(R, G, B)-128;
 
-		#ifndef BW
 		// calculating an average values
 		R = sR >> 2,
 		G = sG >> 2,
@@ -173,7 +168,6 @@ void subsample2(BGR rgb[16][16], conv Y[2][2][8][8], conv cb[8][8], conv cr[8][8
 
 		cb[r>>1][c>>1] = (conv)RGB2Cb(R, G, B)-128;
 		cr[r>>1][c>>1] = (conv)RGB2Cr(R, G, B)-128;
-		#endif
 	}
 }
 
