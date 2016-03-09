@@ -7,7 +7,7 @@
 #include "si4464.h"
 #include <string.h>
 
-#define PLAYBACK_RATE		475000
+#define PLAYBACK_RATE		232000
 #define BAUD_RATE			1200
 #define SAMPLES_PER_BAUD	(PLAYBACK_RATE / BAUD_RATE) // 52.083333333 / 26.041666667
 #define PHASE_DELTA_1200	(((2 * 1200) << 16) / PLAYBACK_RATE) // Fixed point 9.7 // 1258 / 2516
@@ -65,15 +65,13 @@ static void afsk_callback(GPTDriver *gptp) {
 }
 
 static GPTConfig gptcfg_afsk = {
-	180000000,
+	45000000,
 	afsk_callback,
 	0,
 	0
 };
 
 void sendAFSK(radio_t radio, radioMSG_t *msg) {
-	TRACE_BIN(msg->msg, msg->bin_len);
-
 	// Initialize radio and tune
 	Si4464_Init(radio, MOD_AFSK);
 	radioTune(radio, msg->freq, 0, msg->power);
@@ -90,7 +88,7 @@ void sendAFSK(radio_t radio, radioMSG_t *msg) {
 
 	// Start timer
 	gptStart(&GPTD1, &gptcfg_afsk);
-	gptStartContinuous(&GPTD1, 270);
+	gptStartContinuous(&GPTD1, 150);
 
 	// Wait for routine to finish
 	while(timer_running)
@@ -175,7 +173,7 @@ static void serial_callback(GPTDriver *gptp) {
 }
 
 static GPTConfig gptcfg_serial = {
-	19200,
+	4800,
 	serial_callback,
 	0,
 	0
