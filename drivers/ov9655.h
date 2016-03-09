@@ -6,7 +6,8 @@
 
 #define OV9655_I2C_ADR        0x30	/* Slave-address of OV9655 */
 
-#define QVGA
+#define QVGA	/* else VGA (not working) */
+#define SEC1_80	/* else shutter 1/20 sec */
 
 bool OV9655_Snapshot2RAM(void);
 void OV9655_InitDMA(void);
