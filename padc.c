@@ -11,7 +11,9 @@
 static adcsample_t samples[ADC_GRP1_NUM_CHANNELS*2]; // ADC sample buffer
 
 void adccb(ADCDriver *adcp, adcsample_t *buffer, size_t n) {
-
+	(void)adcp;
+	(void)buffer;
+	(void)n;
 }
 
 /*

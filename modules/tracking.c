@@ -154,7 +154,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 					"%s Time %04d-%02d-%02d %02d:%02d:%02d\r\n"
 					"%s Pos  %d.%07d %d.%07d Alt %dm\r\n"
 					"%s Sats %d  TTFF %dsec\r\n"
-					"%s ADC Vbat=%d.%03dV  Vsol=%03d.%dV  P=%dmW\r\n"
+					"%s ADC Vbat=%d.%03dV  Vsol=%d.%03dV  P=%dmW\r\n"
 					"%s Air  p=%6d.%01dPa T=%2d.%02ddegC phi=%2d.%01d%%\r\n"
 					"%s Ball p=%6d.%01dPa T=%2d.%02ddegC phi=%2d.%01d%%\r\n"
 					"%s Acc %05d %05d %05d\r\n"

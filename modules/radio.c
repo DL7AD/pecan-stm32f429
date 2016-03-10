@@ -7,95 +7,58 @@
 #include "si4464.h"
 #include <string.h>
 
-#define PLAYBACK_RATE		232000
-#define BAUD_RATE			1200
-#define SAMPLES_PER_BAUD	(PLAYBACK_RATE / BAUD_RATE) // 52.083333333 / 26.041666667
-#define PHASE_DELTA_1200	(((2 * 1200) << 16) / PLAYBACK_RATE) // Fixed point 9.7 // 1258 / 2516
-#define PHASE_DELTA_2200	(((2 * 2200) << 16) / PLAYBACK_RATE) // 2306 / 4613
-
-#define MB_SIZE 2
+#define PLAYBACK_RATE		1620000									/* Samples per second (SYSCLK = 45MHz) */
+#define BAUD_RATE			1200									/* APRS AFSK baudrate */
+#define SAMPLES_PER_BAUD	(PLAYBACK_RATE / BAUD_RATE)				/* Samples per baud */
+#define PHASE_DELTA_1200	(((2 * 1200) << 16) / PLAYBACK_RATE)	/* Delta-phase per sample for 1200Hz tone */
+#define PHASE_DELTA_2200	(((2 * 2200) << 16) / PLAYBACK_RATE)	/* Delta-phase per sample for 2200Hz tone */
+#define MB_SIZE 2													/* Radio mailbox size */
 
 mailbox_t radioMB;
-msg_t mb_pbuffer[MB_SIZE];
-radioMSG_t mb_buffer[MB_SIZE];
+msg_t mb_pbuffer[MB_SIZE];		// Mailbox pointer buffer (contains radioMSG_t pointer)
+radioMSG_t mb_buffer[MB_SIZE];	// Mailbox data buffer
 uint32_t mb_buffer_index;
 static uint8_t mb_free = MB_SIZE;
 mutex_t radio_mtx;
 
-static uint16_t current_byte;
-static uint16_t current_sample_in_baud;		// 1 bit = SAMPLES_PER_BAUD samples
-static uint32_t phase_delta;				// 1200/2200 for standard AX.25
-static uint32_t phase;						// Fixed point 9.7 (2PI = TABLE_SIZE)
-static uint32_t packet_pos;					// Next bit to be sent out
-static volatile bool modem_busy = false;	// Is timer running
-static radio_t afsk_radio;					// Current radio
-static radioMSG_t *afsk_msg;				// Current message
-static bool timer_running;					// Is timer running
-
-static void afsk_callback(GPTDriver *gptp) {
-	(void)gptp;
-
-	// If done sending packet
-	if(packet_pos == afsk_msg->bin_len) {
-		timer_running = false;
-		return;
-	}
-
-	// If sent SAMPLES_PER_BAUD already, go to the next bit
-	if (current_sample_in_baud == 0) {    // Load up next bit
-		if ((packet_pos & 7) == 0) {          // Load up next byte
-			current_byte = afsk_msg->msg[packet_pos >> 3];
-		} else {
-			current_byte = current_byte / 2;  // ">>1" forces int conversion
-		}
-
-		// Toggle tone (1200 <> 2200)
-		phase_delta = (current_byte & 1) ? PHASE_DELTA_1200 : PHASE_DELTA_2200;
-	}
-
-	phase += phase_delta;
-
-	MOD_GPIO_SET(afsk_radio, (phase >> 16) & 1);
-
-	if(++current_sample_in_baud == SAMPLES_PER_BAUD) {
-		palTogglePad(PORT(LED_YELLOW), PIN(LED_YELLOW));
-		current_sample_in_baud = 0;
-		packet_pos++;
-	}
-}
-
-static GPTConfig gptcfg_afsk = {
-	45000000,
-	afsk_callback,
-	0,
-	0
-};
-
 void sendAFSK(radio_t radio, radioMSG_t *msg) {
+	// Initialize variables for AFSK
+	uint32_t phase_delta = PHASE_DELTA_1200;	// 1200/2200 for standard AX.25
+	uint32_t phase = 0;							// Fixed point 9.7 (2PI = TABLE_SIZE)
+	uint32_t packet_pos = 0;					// Next bit to be sent out
+	uint32_t current_sample_in_baud = 0;		// 1 bit = SAMPLES_PER_BAUD samples
+	uint8_t current_byte = 0;
+
 	// Initialize radio and tune
 	Si4464_Init(radio, MOD_AFSK);
 	radioTune(radio, msg->freq, 0, msg->power);
 
-	// Initialize variables for AFSK
-	phase_delta = PHASE_DELTA_1200;
-	phase = 0;
-	packet_pos = 0;
-	current_sample_in_baud = 0;
-	modem_busy = true;
-	afsk_msg = msg;
-	afsk_radio = radio;
-	timer_running = true;
+	// Modulate
+	while(true)
+	{
+		if(packet_pos == msg->bin_len) // Packet transmission finished
+			return;
 
-	// Start timer
-	gptStart(&GPTD1, &gptcfg_afsk);
-	gptStartContinuous(&GPTD1, 150);
+		if (current_sample_in_baud == 0) {
+			if ((packet_pos & 7) == 0) {					// Load up next byte
+				current_byte = msg->msg[packet_pos >> 3];
+			} else {
+				current_byte = current_byte / 2;			// Load up next bit
+			}
 
-	// Wait for routine to finish
-	while(timer_running)
-		chThdSleepMilliseconds(1);
+			phase_delta = (current_byte & 1) ? PHASE_DELTA_1200 : PHASE_DELTA_2200; // Toggle tone (1200 <> 2200)
+		}
 
-	// Stop timer
-	gptStopTimer(&GPTD1);
+		phase += phase_delta;								// Add delta-phase (delta-phase tone dependent)
+		MOD_GPIO_SET(radio, (phase >> 16) & 1);				// Set modulaton pin (connected to Si4464)
+
+		if(++current_sample_in_baud == SAMPLES_PER_BAUD) {	// Old bit consumed, load next bit
+			palTogglePad(PORT(LED_YELLOW), PIN(LED_YELLOW));
+			current_sample_in_baud = 0;
+			packet_pos++;
+		}
+		__NOP();__NOP();__NOP();__NOP();__NOP();
+	}
 }
 
 /**
@@ -117,17 +80,17 @@ void sendCW(radio_t radio, radioMSG_t *msg) {
 	}
 }
 
-
 // Transmit data (Software UART)
-static uint8_t txs;			// TX state
-static uint8_t txc;			// Current char
-static uint32_t txi;
-static uint32_t txj;
+static uint8_t txs;			// Serial maschine state
+static uint8_t txc;			// Current byte
+static uint32_t txi;		// Bitcounter of current byte
+static uint32_t txj;		// Bytecounter
 static radio_t fsk_radio;	// Current radio
 static radioMSG_t *fsk_msg;	// Current message
+static virtual_timer_t vt;
 
-static void serial_callback(GPTDriver *gptp) {
-	(void)gptp;
+static void serial_cb(void *arg) {
+	(void)arg;
 
 	switch(txs)
 	{
@@ -170,21 +133,17 @@ static void serial_callback(GPTDriver *gptp) {
 				MOD_GPIO_SET(fsk_radio, HIGH); // Stop Bit
 			txs = 7;
 	}
+
+	// Reload timer
+	if(txs) {
+		chSysLockFromISR();
+		chVTSetI(&vt, US2ST(1000000/FSK_BAUD), serial_cb, NULL);
+		chSysUnlockFromISR();
+	}
 }
 
-static GPTConfig gptcfg_serial = {
-	4800,
-	serial_callback,
-	0,
-	0
-};
-
 void send2FSK(radio_t radio, radioMSG_t *msg) {
-	// Initialize radio and tune
-	Si4464_Init(radio, MOD_2FSK);
-	MOD_GPIO_SET(radio, HIGH);
-	radioTune(radio, msg->freq, FSK_SHIFT, msg->power);
-
+	// Prepare serial machine states
 	txs = 6;
 	txc = 0;
 	txi = 0;
@@ -192,16 +151,15 @@ void send2FSK(radio_t radio, radioMSG_t *msg) {
 	fsk_msg = msg;
 	fsk_radio = radio;
 
-	// Start timer
-	gptStart(&GPTD1, &gptcfg_serial);
-	gptStartContinuous(&GPTD1, gptcfg_serial.frequency / FSK_BAUD);
+	// Initialize radio and tune
+	Si4464_Init(radio, MOD_2FSK);
+	MOD_GPIO_SET(radio, HIGH);
+	radioTune(radio, msg->freq, FSK_SHIFT, msg->power);
 
-	// Wait for routine to finish
+	// Modulate
+	chVTSet(&vt, 1, serial_cb, NULL);	// Start timer
 	while(txs)
-		chThdSleepMilliseconds(1);
-
-	// Stop timer
-	gptStopTimer(&GPTD1);
+		chThdSleepMilliseconds(1);		// Wait for routine to finish
 }
 
 void send2GFSK(radio_t radio, radioMSG_t *msg) {
@@ -246,6 +204,9 @@ THD_FUNCTION(moduleRADIO, arg) {
 	TRACE_INFO("RAD  > Setup radio mailbox");
 	chMBObjectInit(&radioMB, mb_pbuffer, MB_SIZE);
 	chMtxObjectInit(&radio_mtx);
+
+	// Setup timer
+	chVTObjectInit(&vt);
 
 	while(true)
 	{

@@ -28,7 +28,7 @@ static void led_cb(void *led_sw) {
 		palSetPad(PORT(LED_RED), PIN(LED_RED));	// Shut off error
 	}
 
-	led_sw = !led_sw; // Set next state
+	led_sw = (void*)!led_sw; // Set next state
 
 	chSysLockFromISR();
 	chVTSetI(&vt, MS2ST(500), led_cb, led_sw);
