@@ -3,8 +3,6 @@
 #include "cw.h"
 #include "debug.h"
 
-// CW use 20ms ticks
-
 static uint8_t *buffer;
 static uint32_t c;
 #define ADDB(bit) { \
@@ -14,17 +12,15 @@ static uint32_t c;
 
 void dah(void)
 {
-	for(uint32_t i=0; i<9; i++)
-		ADDB(1);
-	for(uint32_t i=0; i<3; i++)
-		ADDB(0);
+	ADDB(1);
+	ADDB(1);
+	ADDB(1);
+	ADDB(0);
 }
 void dit(void)
 {
-	for(uint32_t i=0; i<3; i++)
-		ADDB(1);
-	for(uint32_t i=0; i<3; i++)
-		ADDB(0);
+	ADDB(1);
+	ADDB(0);
 }
 void blank(uint32_t ticks) {
 	for(uint32_t i=0; i<ticks; i++)
@@ -239,7 +235,7 @@ void CW_encode_char(char letter)
 			dah();
 		break;
 		case ' ':
-			blank(8);
+			blank(3);
 		break;
 		case '.':
 			dit();
@@ -250,12 +246,12 @@ void CW_encode_char(char letter)
 			dah();
 		break;
 	}
-	blank(12);
+	blank(4);
 }
 
 uint32_t CW_encode(uint8_t* data, const char* letter)
 {
-	// Blanking bits
+	// Blanking bits TODO: Replace this
 	for(uint32_t i=0; i<256; i++)
 		data[i] = 0;
 

@@ -12,7 +12,8 @@
 #define APRS_CALLSIGN			"DL7AD"			/* APRS callsign */
 #define APRS_SSID				12				/* APRS SSID */
 #define APRS_SYMBOL				SYM_BALLOON		/* APRS symbol (Options: SYM_BALLOON, SYM_SMALLAIRCRAFT, SYM_SATELLITE) */
-#define APRS_PATH				"WIDE1-1,WIDE2-1"	/* APRS path */
+#define APRS_PATH				"WIDE1-1"		/* APRS path (does not apply for APRS images)
+												 * Multiple path's can be separated with comma e.g. WIDE1-1,WIDE2-2 */
 #define APRS_PATH_SAT			"RS0ISS"		/* APRS path */
 
 // SSDV configuration
@@ -67,7 +68,7 @@
 #define FSK_ASCII				8				/* 2FSK bits */
 
 // CW configuration
-#define CW_SPEED				20				/* CW Speed in WpM TODO: Not supported yet */
+#define CW_SPEED				20				/* CW Speed in WpM */
 
 /* --------------------------------------------------------------- Modules -------------------------------------------------------------- */
 
@@ -143,12 +144,12 @@
 
 #define MODULES() { \
                   /* Cycle (sec) or Trigger   Sleep                       Frequency         Power Protocol       */ \
-	MODULE_IMAGE    (TX_CONTINUOSLY,          SLEEP_WHEN_BATT_BELOW_3V5,  CUSTOM_FREQ,      10,   PROT_SSDV_2FSK      ); \
+/*	MODULE_IMAGE    (TX_CONTINUOSLY,          SLEEP_WHEN_BATT_BELOW_3V5,  CUSTOM_FREQ,      10,   PROT_SSDV_2FSK      );*/ \
 /*	MODULE_IMAGE    (TX_CONTINUOSLY,          SLEEP_WHEN_BATT_BELOW_3V5,  CUSTOM_FREQ,      10,   PROT_SSDV_APRS_AFSK );*/ \
 /*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_UKHAS_2FSK     );*/ \
 /*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_RAW_CW         );*/ \
 /*	MODULE_POSITION (3600,                    SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_APRSCONFIG_AFSK);*/ \
-/*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_APRS_AFSK      );*/ \
+	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_APRS_AFSK      ); \
 /*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_APRS_2GFSK     );*/ /* TODO: Not working yet */ \
 /*	MODULE_LOG      (120,                     SLEEP_WHEN_BATT_BELOW_3V3,  APRS_REGION_FREQ, 10,   PROT_APRS_AFSK      );*/ /* TODO: Not working yet */ \
 }

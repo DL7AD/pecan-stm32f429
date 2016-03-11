@@ -21,10 +21,10 @@
 #include "ch.h"
 #include "hal.h"
 
-typedef struct s_address {
+typedef struct {
 	char callsign[7];
 	unsigned char ssid;
-} s_address_t;
+} address_t;
 
 typedef struct {
 	uint8_t ones_in_a_row;	// Ones in a row (for bitstuffing)
@@ -34,7 +34,8 @@ typedef struct {
 	uint16_t crc;			// CRC
 } ax25_t;
 
-void ax25_send_header(ax25_t *packet, const s_address_t addresses[], int num_addresses);
+void ax25_send_header(ax25_t *packet, const char *callsign, uint8_t ssid, const char *path);
+void ax25_send_path(ax25_t *packet, const char *callsign, uint8_t ssid, bool last);
 void ax25_send_byte(ax25_t *packet, char byte);
 void ax25_send_string(ax25_t *packet, const char *string);
 void ax25_send_footer(ax25_t *packet);

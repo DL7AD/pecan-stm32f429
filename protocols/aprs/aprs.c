@@ -29,14 +29,6 @@
 static uint16_t loss_of_gps_counter = 0;
 static char temp[22];
 
-s_address_t addresses[] =
-{ 
-	{APRS_DEST_CALLSIGN, APRS_DEST_SSID},	// Destination callsign
-	{APRS_CALLSIGN, APRS_SSID},				// Source callsign (-11 = balloon, -9 = car)
-	//{"WIDE1", 1},							// Digi1 (first digi in the chain)
-	//{"", 0},								// Digi2 (second digi in the chain)
-};
-
 /**
  * Transmit APRS position packet. The comments are filled with:
  * - Static comment (can be set in config.h)
@@ -54,7 +46,7 @@ uint32_t aprs_encode_position(uint8_t* message, trackPoint_t *trackPoint)
 	packet.data = message;
 	packet.max_size = 512; // TODO: replace 512 with real size
 
-	ax25_send_header(&packet, addresses, sizeof(addresses)/sizeof(s_address_t));
+	ax25_send_header(&packet, APRS_CALLSIGN, APRS_SSID, APRS_PATH);
 	ax25_send_byte(&packet, '/');                // Report w/ timestamp, no APRS messaging. $ = NMEA raw data
 
 	// 170915 = 17h:09m:15s zulu (not allowed in Status Reports)
@@ -174,7 +166,7 @@ uint32_t aprs_encode_log(uint8_t* message)
 	packet.max_size = 512; // TODO: replace 512 with real size
 
 	// Encode APRS header
-	ax25_send_header(&packet, addresses, sizeof(addresses)/sizeof(s_address_t));
+	ax25_send_header(&packet, APRS_CALLSIGN, APRS_SSID, APRS_PATH);
 	ax25_send_string(&packet, "{{L");
 
 	// Encode log message
@@ -203,7 +195,7 @@ uint32_t aprs_encode_telemetry_configuration(uint8_t* message, telemetryConfig_t
 	packet.data = message;
 	packet.max_size = 512; // TODO: replace 512 with real size
 
-	ax25_send_header(&packet, addresses, sizeof(addresses)/sizeof(s_address_t)); // Header
+	ax25_send_header(&packet, APRS_CALLSIGN, APRS_SSID, APRS_PATH); // Header
 	ax25_send_byte(&packet, ':'); // Message flag
 
 	// Callsign
@@ -248,7 +240,7 @@ uint32_t aprs_encode_image(uint8_t* message, uint8_t *image, size_t size)
 	packet.max_size = 512; // TODO: replace 512 with real size
 
 	// Encode APRS header
-	ax25_send_header(&packet, addresses, sizeof(addresses)/sizeof(s_address_t));
+	ax25_send_header(&packet, APRS_CALLSIGN, APRS_SSID, NULL);
 	ax25_send_string(&packet, "{{I");
 
 	// Encode image message
