@@ -42,6 +42,7 @@ extern const SerialConfig uart_config;
 #define TRACE_MODULE_INFO(parm, thd, name) { \
 	uint32_t (*fptr)(void); \
 	fptr = (parm)->frequencyMethod; \
+	uint32_t freq = (*fptr)(); \
 	if((parm)->cycle == WAIT_FOR_TRACKING_POINT) { \
 		TRACE_INFO("%-4s > Module %s info\r\n" \
 			"%s Cycle: wait for new tracking point\r\n" \
@@ -51,7 +52,7 @@ extern const SerialConfig uart_config;
 			thd, name, \
 			TRACE_TAB, \
 			TRACE_TAB, (parm)->power, \
-			TRACE_TAB, (*fptr)()/1000000, ((*fptr)()%1000000)/1000, \
+			TRACE_TAB, freq/1000000, (freq%1000000)/1000, \
 			TRACE_TAB, VAL2PROTOCOL((parm)->protocol) \
 		); \
 	} else { \
@@ -63,7 +64,7 @@ extern const SerialConfig uart_config;
 			thd, name, \
 			TRACE_TAB, (parm)->cycle, \
 			TRACE_TAB, (parm)->power, \
-			TRACE_TAB, (*fptr)()/1000000, ((*fptr)()%1000000)/1000, \
+			TRACE_TAB, freq/1000000, (freq%1000000)/1000, \
 			TRACE_TAB, VAL2PROTOCOL((parm)->protocol) \
 		); \
 	} \

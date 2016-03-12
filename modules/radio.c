@@ -5,6 +5,7 @@
 #include "modules.h"
 #include "radio.h"
 #include "si4464.h"
+#include "geofence.h"
 #include <string.h>
 
 #define PLAYBACK_RATE		1620000									/* Samples per second (SYSCLK = 45MHz) */
@@ -287,7 +288,7 @@ THD_FUNCTION(moduleRADIO, arg) {
 
 		} else {
 			for(uint8_t i=0; i<2; i++) {
-				if(ST2MS(chVTGetSystemTimeX() - lastMessage[i]) >= RADIO_TIMEOUT)
+				if(ST2MS(chVTGetSystemTimeX() - lastMessage[i]) >= RADIO_TIMEOUT) // Timeout reached
 					radioShutdown(i); // Shutdown radio
 			}
 		}
@@ -297,9 +298,32 @@ THD_FUNCTION(moduleRADIO, arg) {
 	}
 }
 
-
+/**
+  * Returns APRS region specific frequency determined by GPS location. It will
+  * use the APRS default frequency set in the config file if no GPS fix has
+  * been received.
+  * TODO: Countries missing: Japan, Indonesia, Thailand, Brasil, Chile,
+  * Argentinia/Bolivia/Uruguay, Venezuela/Panama, Costa Rica, Australia, New Zealand
+  */
 uint32_t getAPRSRegionFrequency(void) {
-	return 144800000; // TODO: Implement Geofencing
+	trackPoint_t *point = getLastTrackPoint();
+
+	// Use this frequency for the rest of the world (unset regions)
+	uint32_t freq = APRS_FREQ_OTHER;
+
+	// Use default frequency set in config file
+	if(!point->gps_lat && !point->gps_lon)
+		freq = APRS_DEFAULT_FREQ;
+	
+	// America
+	if(isPointInAmerica(point->gps_lat, point->gps_lon))
+		freq = APRS_FREQ_AMERICA;
+
+	// China
+	if(isPointInChina(point->gps_lat, point->gps_lon))
+		freq = APRS_FREQ_CHINA;
+
+	return freq;
 }
 uint32_t getAPRSISSFrequency(void) {
 	return 145825000;

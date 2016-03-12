@@ -15,6 +15,7 @@
 #define APRS_PATH				"WIDE1-1"		/* APRS path (does not apply for APRS images)
 												 * Multiple path's can be separated with comma e.g. WIDE1-1,WIDE2-2 */
 #define APRS_PATH_SAT			"RS0ISS"		/* APRS path */
+#define APRS_DEFAULT_FREQ		144800000		/* APRS default frequency (for region method if no GPS location unknown) */
 
 // SSDV configuration
 #define SSDV_CALLSIGN			"D-9"			/* SSDV callsign */
@@ -149,9 +150,9 @@
 /*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_UKHAS_2FSK     );*/ \
 /*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_RAW_CW         );*/ \
 /*	MODULE_POSITION (3600,                    SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_APRSCONFIG_AFSK);*/ \
-	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_APRS_AFSK      ); \
+	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  APRS_REGION_FREQ, 10,   PROT_APRS_AFSK      ); \
 /*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_APRS_2GFSK     );*/ /* TODO: Not working yet */ \
-/*	MODULE_LOG      (120,                     SLEEP_WHEN_BATT_BELOW_3V3,  APRS_REGION_FREQ, 10,   PROT_APRS_AFSK      );*/ /* TODO: Not working yet */ \
+/*	MODULE_LOG      (120,                     SLEEP_WHEN_BATT_BELOW_3V3,  APRS_REGION_FREQ, 10,   PROT_APRS_AFSK      );*/ /* TODO: Not implemented yet */ \
 }
 
 /* ------------------------------------------------------------ Miscellaneous ----------------------------------------------------------- */

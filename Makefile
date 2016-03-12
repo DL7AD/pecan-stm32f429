@@ -142,6 +142,7 @@ CSRC = $(STARTUPSRC) \
        radio.c \
        padc.c \
        math/sgp4.c \
+       math/geofence.c \
        main.c
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global

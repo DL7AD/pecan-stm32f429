@@ -13,6 +13,10 @@
 #define APRS_ISS_FREQ				getAPRSISSFrequency
 #define CUSTOM_FREQ					getCustomFrequency
 
+#define APRS_FREQ_OTHER		144800000
+#define APRS_FREQ_AMERICA	144390000
+#define APRS_FREQ_CHINA		144640000
+
 typedef struct { // Radio message type
 	uint8_t msg[512];	// Message (data)
 	uint32_t bin_len;	// Binary length
