@@ -11,7 +11,7 @@
 // APRS configuration
 #define APRS_CALLSIGN			"DL7AD"			/* APRS callsign */
 #define APRS_SSID				12				/* APRS SSID */
-#define APRS_SYMBOL				SYM_BALLOON		/* APRS symbol (Options: SYM_BALLOON, SYM_SMALLAIRCRAFT, SYM_SATELLITE) */
+#define APRS_SYMBOL				SYM_BALLOON		/* APRS symbol (options: SYM_BALLOON, SYM_SMALLAIRCRAFT, SYM_SATELLITE) */
 #define APRS_PATH				"WIDE1-1"		/* APRS path (does not apply for APRS images)
 												 * Multiple path's can be separated with comma e.g. WIDE1-1,WIDE2-2 */
 #define APRS_PATH_SAT			"RS0ISS"		/* APRS path */
@@ -49,7 +49,7 @@
 // Log configuration
 #define LOG_SIZE				14				/* Log size in days */
 #define LOG_CYCLE				120				/* Log cycle in minutes */
-#define LOG_TRX_NUM				6				/* Log message that are transmitted in one packet */
+#define LOG_TRX_NUM				6				/* Amount of log messages which are transmitted in one packet */
 
 /* ------------------------------------------------------------- Modulation ------------------------------------------------------------- */
 

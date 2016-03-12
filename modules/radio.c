@@ -53,7 +53,7 @@ void sendAFSK(radio_t radio, radioMSG_t *msg) {
 		MOD_GPIO_SET(radio, (phase >> 16) & 1);				// Set modulaton pin (connected to Si4464)
 
 		if(++current_sample_in_baud == SAMPLES_PER_BAUD) {	// Old bit consumed, load next bit
-			palTogglePad(PORT(LED_YELLOW), PIN(LED_YELLOW));
+			palTogglePad(GPIOC, 3); // Pad for measuring clock
 			current_sample_in_baud = 0;
 			packet_pos++;
 		}
