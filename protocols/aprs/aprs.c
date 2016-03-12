@@ -39,12 +39,13 @@ static char temp[22];
  * - Number of satellites being used
  * - Number of cycles where GPS has been lost (if applicable in cycle)
  */
-uint32_t aprs_encode_position(uint8_t* message, trackPoint_t *trackPoint)
+uint32_t aprs_encode_position(uint8_t* message, mod_t mod, trackPoint_t *trackPoint)
 {
 	ptime_t date = trackPoint->time;
 	ax25_t packet;
 	packet.data = message;
 	packet.max_size = 512; // TODO: replace 512 with real size
+	packet.mod = mod;
 
 	ax25_send_header(&packet, APRS_CALLSIGN, APRS_SSID, APRS_PATH);
 	ax25_send_byte(&packet, '/');                // Report w/ timestamp, no APRS messaging. $ = NMEA raw data
@@ -149,9 +150,8 @@ uint32_t aprs_encode_position(uint8_t* message, trackPoint_t *trackPoint)
 	ax25_send_byte(&packet, '|');
 
 	ax25_send_footer(&packet);
-	//TRACE_BIN(packet.data, packet.size);
 	nrzi_encode(&packet);
-	//scramble(&packet);
+	scramble(&packet);
 
 	return packet.size;
 }
@@ -159,11 +159,12 @@ uint32_t aprs_encode_position(uint8_t* message, trackPoint_t *trackPoint)
 /**
  * Transmit APRS log packet
  */
-uint32_t aprs_encode_log(uint8_t* message)
+uint32_t aprs_encode_log(uint8_t* message, mod_t mod)
 {
 	ax25_t packet;
 	packet.data = message;
 	packet.max_size = 512; // TODO: replace 512 with real size
+	packet.mod = mod;
 
 	// Encode APRS header
 	ax25_send_header(&packet, APRS_CALLSIGN, APRS_SSID, APRS_PATH);
@@ -182,6 +183,7 @@ uint32_t aprs_encode_log(uint8_t* message)
 	// Send footer
 	ax25_send_footer(&packet);
 	nrzi_encode(&packet);
+	scramble(&packet);
 
 	return packet.size;
 }
@@ -189,11 +191,12 @@ uint32_t aprs_encode_log(uint8_t* message)
 /**
  * Transmit APRS telemetry configuration
  */
-uint32_t aprs_encode_telemetry_configuration(uint8_t* message, telemetryConfig_t type)
+uint32_t aprs_encode_telemetry_configuration(uint8_t* message, mod_t mod, telemetryConfig_t type)
 {
 	ax25_t packet;
 	packet.data = message;
 	packet.max_size = 512; // TODO: replace 512 with real size
+	packet.mod = mod;
 
 	ax25_send_header(&packet, APRS_CALLSIGN, APRS_SSID, APRS_PATH); // Header
 	ax25_send_byte(&packet, ':'); // Message flag
@@ -229,15 +232,17 @@ uint32_t aprs_encode_telemetry_configuration(uint8_t* message, telemetryConfig_t
 
 	ax25_send_footer(&packet); // Footer
 	nrzi_encode(&packet);
+	scramble(&packet);
 	
 	return packet.size;
 }
 
-uint32_t aprs_encode_image(uint8_t* message, uint8_t *image, size_t size)
+uint32_t aprs_encode_image(uint8_t* message, mod_t mod, uint8_t *image, size_t size)
 {
 	ax25_t packet;
 	packet.data = message;
 	packet.max_size = 512; // TODO: replace 512 with real size
+	packet.mod = mod;
 
 	// Encode APRS header
 	ax25_send_header(&packet, APRS_CALLSIGN, APRS_SSID, NULL);
@@ -250,6 +255,7 @@ uint32_t aprs_encode_image(uint8_t* message, uint8_t *image, size_t size)
 	// Send footer
 	ax25_send_footer(&packet);
 	nrzi_encode(&packet);
+	scramble(&packet);
 
 	return packet.size;
 }

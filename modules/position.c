@@ -134,7 +134,7 @@ THD_FUNCTION(modulePOS, arg) {
 			case PROT_APRS_2GFSK: // Encode APRS
 			case PROT_APRS_AFSK:
 				msg.mod = parm->protocol == PROT_APRS_AFSK ? MOD_AFSK : MOD_2GFSK;
-				msg.bin_len = aprs_encode_position(msg.msg, trackPoint);
+				msg.bin_len = aprs_encode_position(msg.msg, msg.mod, trackPoint);
 				while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively (transmission)
 					chThdSleepMilliseconds(20);
 				break;
@@ -145,7 +145,7 @@ THD_FUNCTION(modulePOS, arg) {
 
 				telemetryConfig_t config[] = {CONFIG_PARM, CONFIG_UNIT, CONFIG_EQNS, CONFIG_BITS};
 				for(uint8_t i=0; i<sizeof(config); i++) {
-					msg.bin_len = aprs_encode_telemetry_configuration(msg.msg, config[i]); // Encode packet
+					msg.bin_len = aprs_encode_telemetry_configuration(msg.msg, msg.mod, config[i]); // Encode packet
 					while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively (transmission)
 						chThdSleepMilliseconds(20);
 					chThdSleepMilliseconds(5000); // Take a litte break between the package transmissions

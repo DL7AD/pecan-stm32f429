@@ -67,7 +67,7 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 				msg.freq = (*fptr)();
 				msg.power = parm->power;
 				base64_encode(pkt, pkt_base64, sizeof(pkt));
-				msg.bin_len = aprs_encode_image(msg.msg, pkt_base64, sizeof(pkt_base64));
+				msg.bin_len = aprs_encode_image(msg.msg, msg.mod, pkt_base64, sizeof(pkt_base64));
 				while(!transmitOnRadio(&msg)) // Try to insert message into message box less aggressively
 					chThdSleepMilliseconds(2000);
 				break;

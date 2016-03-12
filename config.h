@@ -54,10 +54,10 @@
 /* ------------------------------------------------------------- Modulation ------------------------------------------------------------- */
 
 // AFSK configuration
-#define AFSK_PREAMBLE			60				/* APRS AFSK preamble length in ms TODO: value currently bytes not ms */
+#define AFSK_PREAMBLE			100				/* APRS AFSK preamble length in ms */
 
 // 2GFSK configuration
-#define GFSK_PREAMBLE			0				/* APRS 2GFSK preamble length in ms TODO: Not implemented yet */
+#define GFSK_PREAMBLE			50				/* APRS 2GFSK preamble length in ms */
 
 // 2FSK configuration
 #define FSK_PREDELAY			0				/* 2FSK pre-transmission delay */

@@ -20,6 +20,7 @@
 
 #include "ch.h"
 #include "hal.h"
+#include "si4464.h"
 
 typedef struct {
 	char callsign[7];
@@ -32,6 +33,7 @@ typedef struct {
 	uint16_t size;			// Packet size in bits
 	uint16_t max_size;		// Max. Packet size in bits (size of modem packet)
 	uint16_t crc;			// CRC
+	mod_t mod;				// Modulation type (MOD_AFSK or MOD_2GFSK)
 } ax25_t;
 
 void ax25_send_header(ax25_t *packet, const char *callsign, uint8_t ssid, const char *path);

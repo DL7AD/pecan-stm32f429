@@ -123,18 +123,14 @@ void ax25_send_header(ax25_t *packet, const char *callsign, uint8_t ssid, const 
 	packet->ones_in_a_row = 0;
 	packet->crc = 0xffff;
 
-	/*s_address_t addresses[] = {
-		{APRS_DEST_CALLSIGN, APRS_DEST_SSID},	
-		{, APRS_SSID},				
-		//{"WIDE1", 1},							// Digi1 (first digi in the chain)
-		//{"", 0},								// Digi2 (second digi in the chain)
-	};*/
-
-	//for(uint16_t t=0; t<512; t++) // TMP blanking
-	//	packet->data[t] = 0;
-
-	// Send sync ("a bunch of 0s")
-	for(i=0; i<AFSK_PREAMBLE; i++)
+	// Send preamble ("a bunch of 0s")
+	uint16_t preamble;
+	if(packet->mod == MOD_2GFSK) {
+		preamble = GFSK_PREAMBLE * 6 / 5;
+	} else {
+		preamble = AFSK_PREAMBLE * 3 / 20;
+	}
+	for(i=0; i<preamble; i++)
 	{
 		ax25_send_sync(packet);
 	}
@@ -227,9 +223,12 @@ void ax25_send_footer(ax25_t *packet)
   * Scrambling for 2GFSK
   */
 void scramble(ax25_t *packet) {
+	if(packet->mod != MOD_2GFSK)
+		return; // Scrambling not necessary
+
 	// Scramble
 	state = 0x0;
-	for(uint32_t i=AFSK_PREAMBLE*8+32; i<packet->size; i++) {
+	for(uint32_t i=GFSK_PREAMBLE*6/5; i<packet->size; i++) {
 		uint8_t bit = scramble_bit((packet->data[i >> 3] >> (i & 0x7)) & 0x1);
 		if(bit) {
 			AX25_WRITE_BIT(packet->data, i);
@@ -254,17 +253,4 @@ void nrzi_encode(ax25_t *packet) {
 		}
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
