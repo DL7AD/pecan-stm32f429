@@ -302,26 +302,54 @@ THD_FUNCTION(moduleRADIO, arg) {
   * Returns APRS region specific frequency determined by GPS location. It will
   * use the APRS default frequency set in the config file if no GPS fix has
   * been received.
-  * TODO: Countries missing: Japan, Indonesia, Thailand, Brasil, Chile,
+  * TODO: Countries missing: Brasil, Chile,
   * Argentinia/Bolivia/Uruguay, Venezuela/Panama, Costa Rica, Australia, New Zealand
   */
 uint32_t getAPRSRegionFrequency(void) {
 	trackPoint_t *point = getLastTrackPoint();
 
-	// Use this frequency for the rest of the world (unset regions)
+	// Use this frequency for the rest of the world (unset regions, 144.800 MHz)
 	uint32_t freq = APRS_FREQ_OTHER;
 
 	// Use default frequency set in config file
 	if(!point->gps_lat && !point->gps_lon)
 		freq = APRS_DEFAULT_FREQ;
 	
-	// America
+	// America 144.390 MHz
 	if(isPointInAmerica(point->gps_lat, point->gps_lon))
 		freq = APRS_FREQ_AMERICA;
 
-	// China
+	// China 144.640 MHz
 	if(isPointInChina(point->gps_lat, point->gps_lon))
 		freq = APRS_FREQ_CHINA;
+
+	// Japan 144.660 MHz
+	if(isPointInJapan(point->gps_lat, point->gps_lon))
+		freq = APRS_FREQ_JAPAN;
+
+	// Southkorea 144.620 MHz
+	if(isPointInSouthkorea(point->gps_lat, point->gps_lon))
+		freq = APRS_FREQ_SOUTHKOREA;
+
+	// Southkorea 144.620 MHz
+	if(isPointInSoutheastAsia(point->gps_lat, point->gps_lon))
+		freq = APRS_FREQ_SOUTHEASTASIA;
+
+	// Australia 145.175 MHz
+	if(isPointInAustralia(point->gps_lat, point->gps_lon))
+		freq = APRS_FREQ_AUSTRALIA;
+
+	// Australia 144.525 MHz
+	if(isPointInNewZealand(point->gps_lat, point->gps_lon))
+		freq = APRS_FREQ_NEWZEALAND;
+
+	// Argentina/Paraguay/Uruguay 144.930 MHz
+	if(isPointInArgentina(point->gps_lat, point->gps_lon))
+		freq = APRS_FREQ_ARGENTINA;
+
+	// Brazil 145.575 MHz
+	if(isPointInBrazil(point->gps_lat, point->gps_lon))
+		freq = APRS_FREQ_BRAZIL;
 
 	return freq;
 }
