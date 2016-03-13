@@ -123,14 +123,14 @@ THD_FUNCTION(modulePOS, arg) {
 		parm->lastCycle = chVTGetSystemTimeX(); // Watchdog timer
 		TRACE_INFO("POS  > Do module POSITION cycle");
 
+		TRACE_INFO("POS  > Get last track point");
+		trackPoint = getLastTrackPoint();
+
 		if(sleep() == SMOD_SLEEP) { // Sleep
 
 			TRACE_INFO("POS  > Cycle sleep");
 
 		} else { // Active
-
-			TRACE_INFO("POS  > Get last track point");
-			trackPoint = getLastTrackPoint();
 
 			TRACE_INFO("POS  > Transmit GPS position");
 
