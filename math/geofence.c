@@ -37,7 +37,6 @@ const coord_t america[] = {
 	{ 655163500,-1697060800},
 	{ 641285100,-1733928400}
 };
-
 const coord_t china[] = {
 	// Latitude  Longitude (in deg*10000000)
 	{451738100, 825642300},
