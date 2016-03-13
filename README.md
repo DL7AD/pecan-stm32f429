@@ -232,4 +232,5 @@ Transmitted CW message contains [Maidenhead Locator](https://en.wikipedia.org/wi
 This software includes some other packages which I have used to make this project possible:
 
 [JPEG Ant - JPEG compression for microcontrollers](https://sourceforge.net/projects/jpegant.berlios/)<br>
-[ChibiOS - Real time operating system](http://chibios.org) ([Source](https://github.com/ChibiOS/ChibiOS))
+[ChibiOS - Real time operating system](http://chibios.org) ([Source](https://github.com/ChibiOS/ChibiOS))<br>
+[SSDV - Slow Scan Digital Video](https://ukhas.org.uk/guides:ssdv) ([Source](https://github.com/fsphil/ssdv))
