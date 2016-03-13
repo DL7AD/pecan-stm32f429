@@ -52,6 +52,8 @@ int main(void) {
 	pac1720_init();				// Startup current measurement
 	initADC();					// Init ADCs
 
+	chThdSleepMilliseconds(100);
+
 	// Initialize LED timer
 	chVTObjectInit(&vt);
 	chVTSet(&vt, MS2ST(500), led_cb, 0);
