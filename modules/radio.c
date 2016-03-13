@@ -6,6 +6,7 @@
 #include "radio.h"
 #include "si4464.h"
 #include "geofence.h"
+#include "pi2c.h"
 #include <string.h>
 
 #define PLAYBACK_RATE		1620000									/* Samples per second (SYSCLK = 45MHz) */

@@ -46,8 +46,14 @@ void initADC(void)
 	palSetPadMode(PORT(ADC_VBAT_DIFF), PIN(ADC_VBAT_DIFF), PAL_MODE_INPUT_ANALOG);		// Battery voltage divider
 }
 
+void deinitADC(void)
+{
+	adcStop(&ADCD1);
+}
+
 void doConversion(void)
 {
+	initADC();
 	TRACE_DEBUG("B");
 	chThdSleepMilliseconds(100);
 	chSysLockFromISR();
@@ -59,6 +65,7 @@ void doConversion(void)
 		chThdSleepMilliseconds(1);
 	TRACE_DEBUG("D");
 	chThdSleepMilliseconds(100);
+	deinitADC();
 }
 
 uint16_t getBatteryVoltageMV(void)

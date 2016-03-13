@@ -56,7 +56,7 @@
 /* ------------------------------------------------------------- Modulation ------------------------------------------------------------- */
 
 // AFSK configuration
-#define AFSK_PREAMBLE			100				/* APRS AFSK preamble length in ms */
+#define AFSK_PREAMBLE			300				/* APRS AFSK preamble length in ms */
 
 // 2GFSK configuration
 #define GFSK_PREAMBLE			50				/* APRS 2GFSK preamble length in ms */
