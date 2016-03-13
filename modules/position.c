@@ -128,7 +128,8 @@ THD_FUNCTION(modulePOS, arg) {
 
 		if(sleep() == SMOD_SLEEP) { // Sleep
 
-			TRACE_INFO("POS  > Cycle sleep");
+			TRACE_INFO("POS  > Sleep (60sec+Cycle)");
+			chThdSleepMilliseconds(60000);
 
 		} else { // Active
 

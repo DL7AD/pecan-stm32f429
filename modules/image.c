@@ -21,12 +21,18 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 	uint16_t bi = 0;
 	uint8_t c = SSDV_OK;
 
+	uint32_t (*sleep)(void);
+	sleep = parm->sleepMethod;
+
 	// Init SSDV (FEC at 2FSK, non FEC at APRS)
 	ssdv_enc_init(&ssdv, parm->protocol == PROT_SSDV_2FSK ? SSDV_TYPE_NORMAL : SSDV_TYPE_NOFEC, SSDV_CALLSIGN, ++image_id);
 	ssdv_enc_set_buffer(&ssdv, pkt);
 
 	while(true)
 	{
+		if(sleep() == SMOD_SLEEP)
+			return;
+
 		parm->lastCycle = chVTGetSystemTimeX(); // Update Watchdog timer
 
 		while((c = ssdv_enc_get_packet(&ssdv)) == SSDV_FEED_ME)
@@ -98,50 +104,62 @@ THD_FUNCTION(moduleIMG, arg) {
 	TRACE_INFO("IMG  > Startup module IMAGE");
 	TRACE_MODULE_INFO(parm, "IMG", "IMAGE");
 
+	uint32_t (*sleep)(void);
+	sleep = parm->sleepMethod;
+
 	systime_t time = chVTGetSystemTimeX();
 	while(true)
 	{
 		parm->lastCycle = chVTGetSystemTimeX(); // Watchdog timer
 		TRACE_INFO("IMG  > Do module IMAGE cycle");
 
-		// Lock RADIO from producing interferences
-		TRACE_INFO("IMG  > Lock radio");
-		chMtxLock(&interference_mtx);
+		if(sleep() == SMOD_SLEEP) { // Sleep
 
-		// Shutdown radios (to avoid interference)
-		radioShutdown(RADIO_2M);
-		radioShutdown(RADIO_70CM);
+			TRACE_INFO("IMG  > Sleep (60sec+Cycle)");
+			chThdSleepMilliseconds(60000);
 
-		// Init I2C
-		TRACE_INFO("IMG  > Init camera I2C");
-		i2cCamInit();
+		} else { // Active
 
-		// Init camera
-		OV9655_init();
+			// Lock RADIO from producing interferences
+			TRACE_INFO("IMG  > Lock radio");
+			chMtxLock(&interference_mtx);
 
-		// Sample data from DCMI through DMA into RAM
-		TRACE_INFO("IMG  > Capture image");
-		uint8_t tries = 5; // Try 5 times at maximum
-		bool status;
-		do { // Try capturing image until capture successful
-			status = OV9655_Snapshot2RAM();
-		} while(!status && --tries);
+			// Shutdown radios (to avoid interference)
+			radioShutdown(RADIO_2M);
+			radioShutdown(RADIO_70CM);
 
-		uint8_t *image;
-		uint32_t image_len = OV9655_getBuffer(&image);
+			// Init I2C
+			TRACE_INFO("IMG  > Init camera I2C");
+			i2cCamInit();
 
-		// Switch off camera
-		OV9655_deinit();
+			// Init camera
+			OV9655_init();
 
-		// Unlock radio
-		TRACE_INFO("IMG  > Unlock radio");
-		chMtxUnlock(&interference_mtx);
+			// Sample data from DCMI through DMA into RAM
+			TRACE_INFO("IMG  > Capture image");
+			uint8_t tries = 5; // Try 5 times at maximum
+			bool status;
+			do { // Try capturing image until capture successful
+				status = OV9655_Snapshot2RAM();
+			} while(!status && --tries);
 
-		if(tries) { // Capture successful
-			TRACE_INFO("IMG  > Encode/Transmit SSDV");
-			encode_ssdv(image, image_len, parm);
-		} else {
-			TRACE_ERROR("IMG  > Image capturing failed");
+			uint8_t *image;
+			uint32_t image_len = OV9655_getBuffer(&image);
+
+			// Switch off camera
+			OV9655_deinit();
+
+			// Unlock radio
+			TRACE_INFO("IMG  > Unlock radio");
+			chMtxUnlock(&interference_mtx);
+
+			if(tries) { // Capture successful
+				TRACE_INFO("IMG  > Encode/Transmit SSDV");
+				encode_ssdv(image, image_len, parm);
+			} else {
+				TRACE_ERROR("IMG  > Image capturing failed");
+			}
+
 		}
 
 		time = chThdSleepUntilWindowed(time, time + S2ST(parm->cycle)); // Wait until time + cycletime
