@@ -6,6 +6,7 @@
 #include "radio.h"
 #include "aprs.h"
 #include "cw.h"
+#include "sleep.h"
 #include "chprintf.h"
 #include <string.h>
 #include <math.h>
@@ -112,79 +113,90 @@ THD_FUNCTION(modulePOS, arg) {
 	TRACE_INFO("POS  > Startup module POSITION");
 	TRACE_MODULE_INFO(parm, "POS", "POSITION");
 
+	uint32_t (*sleep)(void);
+	sleep = parm->sleepMethod;
+	trackPoint_t *trackPoint = getLastTrackPoint();
+
 	systime_t time = chVTGetSystemTimeX();
 	while(true)
 	{
 		parm->lastCycle = chVTGetSystemTimeX(); // Watchdog timer
 		TRACE_INFO("POS  > Do module POSITION cycle");
 
-		TRACE_INFO("POS  > Get last track point");
-		trackPoint_t *trackPoint = getLastTrackPoint();
+		if(sleep() == SMOD_SLEEP) { // Sleep
 
-		TRACE_INFO("POS  > Transmit GPS position");
+			TRACE_INFO("POS  > Cycle sleep");
 
-		radioMSG_t msg;
-		uint32_t (*fptr)(void);
-		fptr = parm->frequencyMethod;
-		msg.freq = (*fptr)();
-		msg.power = parm->power;
+		} else { // Active
 
-		switch(parm->protocol) {
+			TRACE_INFO("POS  > Get last track point");
+			trackPoint = getLastTrackPoint();
 
-			case PROT_APRS_2GFSK: // Encode APRS
-			case PROT_APRS_AFSK:
-				msg.mod = parm->protocol == PROT_APRS_AFSK ? MOD_AFSK : MOD_2GFSK;
-				msg.bin_len = aprs_encode_position(msg.msg, msg.mod, trackPoint);
-				while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively (transmission)
-					chThdSleepMilliseconds(20);
-				break;
+			TRACE_INFO("POS  > Transmit GPS position");
 
-			case PROT_APRSCONFIG_2GFSK: // Encode APRS telemetry encoding definition (conversion formulae)
-			case PROT_APRSCONFIG_AFSK:
-				msg.mod = parm->protocol == PROT_APRSCONFIG_AFSK ? MOD_AFSK : MOD_2GFSK;
+			radioMSG_t msg;
+			uint32_t (*fptr)(void);
+			fptr = parm->frequencyMethod;
+			msg.freq = (*fptr)();
+			msg.power = parm->power;
 
-				telemetryConfig_t config[] = {CONFIG_PARM, CONFIG_UNIT, CONFIG_EQNS, CONFIG_BITS};
-				for(uint8_t i=0; i<sizeof(config); i++) {
-					msg.bin_len = aprs_encode_telemetry_configuration(msg.msg, msg.mod, config[i]); // Encode packet
+			switch(parm->protocol) {
+
+				case PROT_APRS_2GFSK: // Encode APRS
+				case PROT_APRS_AFSK:
+					msg.mod = parm->protocol == PROT_APRS_AFSK ? MOD_AFSK : MOD_2GFSK;
+					msg.bin_len = aprs_encode_position(msg.msg, msg.mod, trackPoint);
 					while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively (transmission)
 						chThdSleepMilliseconds(20);
-					chThdSleepMilliseconds(5000); // Take a litte break between the package transmissions
-				}
+					break;
 
-				break;
+				case PROT_APRSCONFIG_2GFSK: // Encode APRS telemetry encoding definition (conversion formulae)
+				case PROT_APRSCONFIG_AFSK:
+					msg.mod = parm->protocol == PROT_APRSCONFIG_AFSK ? MOD_AFSK : MOD_2GFSK;
 
-			case PROT_UKHAS_2FSK: // Encode UKHAS
-				msg.mod = MOD_2FSK;
+					telemetryConfig_t config[] = {CONFIG_PARM, CONFIG_UNIT, CONFIG_EQNS, CONFIG_BITS};
+					for(uint8_t i=0; i<sizeof(config); i++) {
+						msg.bin_len = aprs_encode_telemetry_configuration(msg.msg, msg.mod, config[i]); // Encode packet
+						while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively (transmission)
+							chThdSleepMilliseconds(20);
+						chThdSleepMilliseconds(5000); // Take a litte break between the package transmissions
+					}
 
-				// Encode packet
-				char fskmsg[256];
-				memcpy(fskmsg, UKHAS_FORMAT, sizeof(UKHAS_FORMAT));
-				replace_placeholders(fskmsg, sizeof(fskmsg), trackPoint);
-				str_replace(fskmsg, sizeof(fskmsg), "<CALL>", UKHAS_CALLSIGN);
-				msg.bin_len = 8*chsnprintf((char*)msg.msg, sizeof(fskmsg), "$$$$$%s*%04X\n", fskmsg, crc16(fskmsg));
+					break;
 
-				// Transmit message
-				while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively (transmission)
-					chThdSleepMilliseconds(20);
-				break;
+				case PROT_UKHAS_2FSK: // Encode UKHAS
+					msg.mod = MOD_2FSK;
 
-			case PROT_RAW_CW: // Encode CW
-				msg.mod = MOD_CW;
+					// Encode packet
+					char fskmsg[256];
+					memcpy(fskmsg, UKHAS_FORMAT, sizeof(UKHAS_FORMAT));
+					replace_placeholders(fskmsg, sizeof(fskmsg), trackPoint);
+					str_replace(fskmsg, sizeof(fskmsg), "<CALL>", UKHAS_CALLSIGN);
+					msg.bin_len = 8*chsnprintf((char*)msg.msg, sizeof(fskmsg), "$$$$$%s*%04X\n", fskmsg, crc16(fskmsg));
 
-				// Encode CW message
-				char cwmsg[256];
-				memcpy(cwmsg, CW_FORMAT, sizeof(CW_FORMAT));
-				replace_placeholders(cwmsg, sizeof(cwmsg), trackPoint);
-				str_replace(cwmsg, sizeof(cwmsg), "<CALL>", CW_CALLSIGN);
+					// Transmit message
+					while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively (transmission)
+						chThdSleepMilliseconds(20);
+					break;
 
-				// Transmit message
-				msg.bin_len = CW_encode(msg.msg, cwmsg); // Convert message to binary stream
-				while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively (transmission)
-					chThdSleepMilliseconds(20);
-				break;
+				case PROT_RAW_CW: // Encode CW
+					msg.mod = MOD_CW;
 
-			default:
-				TRACE_ERROR("POS  > Unsupported modulation/protocol selected for module POSITION");
+					// Encode CW message
+					char cwmsg[256];
+					memcpy(cwmsg, CW_FORMAT, sizeof(CW_FORMAT));
+					replace_placeholders(cwmsg, sizeof(cwmsg), trackPoint);
+					str_replace(cwmsg, sizeof(cwmsg), "<CALL>", CW_CALLSIGN);
+
+					// Transmit message
+					msg.bin_len = CW_encode(msg.msg, cwmsg); // Convert message to binary stream
+					while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively (transmission)
+						chThdSleepMilliseconds(20);
+					break;
+
+				default:
+					TRACE_ERROR("POS  > Unsupported modulation/protocol selected for module POSITION");
+			}
 		}
 
 		if(parm->cycle == WAIT_FOR_TRACKING_POINT) { // Wait for new tracking point

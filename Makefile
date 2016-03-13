@@ -133,14 +133,15 @@ CSRC = $(STARTUPSRC) \
        drivers/pac1720.c \
        drivers/pi2c.c \
        drivers/ov9655.c \
+       drivers/padc.c \
+       drivers/ptime.c \
        jpegant/dct.c \
        jpegant/jpegenc.c \
        debug.c \
+       sleep.c \
        modules.c \
        math/base64.c \
-       ptime.c \
        radio.c \
-       padc.c \
        math/sgp4.c \
        math/geofence.c \
        main.c

@@ -3,7 +3,7 @@
 
 #include "defines.h"
 #include "modules.h"
-#include "padc.h"
+#include "sleep.h"
 #include "board_pecanpico7a/board.h"
 
 /* -------------------------------------------------------------- Protocols ------------------------------------------------------------- */
@@ -151,7 +151,7 @@
 /*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_UKHAS_2FSK     );*/ \
 /*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_RAW_CW         );*/ \
 /*	MODULE_POSITION (3600,                    SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_APRSCONFIG_AFSK);*/ \
-	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  APRS_REGION_FREQ, 10,   PROT_APRS_AFSK      ); \
+	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V3,  CUSTOM_FREQ,      10,   PROT_APRS_AFSK      ); \
 /*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_APRS_2GFSK     );*/ /* TODO: Not working yet */ \
 /*	MODULE_LOG      (120,                     SLEEP_WHEN_BATT_BELOW_3V3,  APRS_REGION_FREQ, 10,   PROT_APRS_AFSK      );*/ /* TODO: Not implemented yet */ \
 }

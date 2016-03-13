@@ -6,6 +6,7 @@
 #include "config.h"
 #include "debug.h"
 #include "modules.h"
+#include "padc.h"
 #include "drivers/pi2c.h"
 #include "drivers/pac1720.h"
 

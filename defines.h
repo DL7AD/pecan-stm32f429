@@ -16,19 +16,8 @@
 #define PORT(A)				ARGN(0, A)
 #define PIN(A)				ARGN(1, A)
 
-// Sleep definitions
-#define SLEEP_BELOW_BATTVOLT(v)				(getBatteryVoltage() < (v) ? MOD_SLEEP : MOD_ACTIVE)
-#define SLEEP_BELOW_SOLVOLT(v)				(getSolarVoltage() < (v) ? MOD_SLEEP : MOD_ACTIVE)
-#define SLEEP_BELOW_SOLBATTVOLT(sol, batt)	(getSolarVoltage() < (sol) || getBatteryVoltage() < (batt) ? MOD_SLEEP : MOD_ACTIVE)
-
 #define HIGH	true
 #define LOW		false
-
-// Sleep mode type
-typedef enum {
-	MOD_ACTIVE,
-	MOD_SLEEP
-} smode_t;
 
 #endif
 
