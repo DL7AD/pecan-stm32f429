@@ -43,6 +43,7 @@
                                                  * <EHUM> External humidity (From BME280 attached to I2C pinheader)
                                                  * <LOC> Maidenhead Locator (6 char)
                                                  */
+
 // CW configuration
 #define CW_CALLSIGN				"D-9"			/* CW callsign */
 #define CW_FORMAT				"<CALL> <LOC> <ALT>M PSE QSL" /* CW format, the same params can be used as it's the case for the UKHAS protocol */
@@ -96,7 +97,7 @@
  *                  SLEEP_WHEN_BATT_BELOW_4V1    Module hibernates when battery voltage below 4.1V
  *                  SLEEP_WHEN_ISS_NOT_VISIBLE   Module hibernates when ISS not visible (requires TLE) TODO: Not implemented yet
  * PARAM frequency: CUSTOM_FREQ                  Transmit on 434.500 MHz
- *                  APRS_REGION_FREQ             Transmit on regional APRS frequency (TODO: Geofencing not implemented yet)
+ *                  APRS_REGION_FREQ             Transmit on regional APRS frequency
  *                  APRS_ISS_FREQ                Transmit on 145.825 MHz (Doppler not considered)
  * PARAM power:     <integer>                    Transmission power in dBm (e.g. 7 for 7dBm = 5mW)
  * PARAM protocol:  PROT_SSDV_2FSK               Transmission by 2FSK (See 2FSK modulation configuration)
@@ -114,7 +115,7 @@
  *                  SLEEP_WHEN_BATT_BELOW_4V1    Module hibernates when battery voltage below 4.1V
  *                  SLEEP_WHEN_ISS_NOT_VISIBLE   Module hibernates when ISS not visible (requires TLE) TODO: Not implemented yet
  * PARAM frequency: CUSTOM_FREQ                  Transmit on 434.500 MHz
- *                  APRS_REGION_FREQ             Transmit on regional APRS frequency (TODO: Geofencing not implemented yet)
+ *                  APRS_REGION_FREQ             Transmit on regional APRS frequency
  *                  APRS_ISS_FREQ                Transmit on 145.825 MHz (Doppler not considered)
  * PARAM power:     <integer>                    Transmission power in dBm (e.g. 7 for 7dBm = 5mW)
  * PARAM protocol:  PROT_APRS_2GFSK              Transmission by APRS 2GFSK 9k6 (FIXME: 2GFSK not decodeable yet)
@@ -136,7 +137,7 @@
  *                  SLEEP_WHEN_BATT_BELOW_4V1    Module hibernates when battery voltage below 4.1V
  *                  SLEEP_WHEN_ISS_NOT_VISIBLE   Module hibernates when ISS not visible (requires TLE) TODO: Not implemented yet
  * PARAM frequency: CUSTOM_FREQ                  Transmit on 434.500 MHz
- *                  APRS_REGION_FREQ             Transmit on regional APRS frequency (TODO: Geofencing not implemented yet)
+ *                  APRS_REGION_FREQ             Transmit on regional APRS frequency
  *                  APRS_ISS_FREQ                Transmit on 145.825 MHz (Doppler not considered)
  * PARAM power:     <integer>                    Transmission power in dBm (e.g. 7 for 7dBm = 5mW)
  * PARAM protocol:  TODO: not specified yet
