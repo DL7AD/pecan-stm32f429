@@ -27,13 +27,6 @@ typedef struct {
 	uint32_t bal_press;		// Airpressure in Pa in balloon (in 0.1Pa)
 	uint8_t bal_hum;		// Rel. humidity in % in balloon (in 0.1%)
 	int16_t bal_temp;		// Temperature in K*100 in balloon (in 0.01°C)
-
-	int16_t acc_x;			// Acceleration on x-axis in 5min average
-	int16_t acc_y;			// Acceleration on y-axis in 5min average
-	int16_t acc_z;			// Acceleration on z-axis in 5min average
-	int16_t gyr_x;			// Turn rate on x-axis in 5min average
-	int16_t gyr_y;			// Turn rate on y-axis in 5min average
-	int16_t gyr_z;			// Turn rate on z-axis in 5min average
 } trackPoint_t;
 
 trackPoint_t* getLastTrackPoint(void);

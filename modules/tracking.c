@@ -140,15 +140,6 @@ THD_FUNCTION(moduleTRACKING, arg) {
 			tp->bal_temp = 0;
 		}
 
-		// Movement TODO: Implement this!
-		tp->acc_x = 0;
-		tp->acc_y = 0;
-		tp->acc_z = 0;
-		tp->gyr_x = 0;
-		tp->gyr_y = 0;
-		tp->gyr_z = 0;
-
-
 		// Trace data
 		TRACE_INFO(	"TRAC > New tracking point available (ID=%d)\r\n"
 					"%s Time %04d-%02d-%02d %02d:%02d:%02d\r\n"
@@ -156,18 +147,14 @@ THD_FUNCTION(moduleTRACKING, arg) {
 					"%s Sats %d  TTFF %dsec\r\n"
 					"%s ADC Vbat=%d.%03dV  Vsol=%d.%03dV  P=%dmW\r\n"
 					"%s Air  p=%6d.%01dPa T=%2d.%02ddegC phi=%2d.%01d%%\r\n"
-					"%s Ball p=%6d.%01dPa T=%2d.%02ddegC phi=%2d.%01d%%\r\n"
-					"%s Acc %05d %05d %05d\r\n"
-					"%s Gyr %05d %05d %05d\r\n",
+					"%s Ball p=%6d.%01dPa T=%2d.%02ddegC phi=%2d.%01d%%\r\n",
 					tp->id,
 					TRACE_TAB, tp->time.year, tp->time.month, tp->time.day, tp->time.hour, tp->time.minute, tp->time.day,
 					TRACE_TAB, tp->gps_lat/10000000, tp->gps_lat%10000000, tp->gps_lon/10000000, tp->gps_lon%10000000, tp->gps_alt,
 					TRACE_TAB, tp->gps_sats, tp->gps_ttff,
 					TRACE_TAB, tp->adc_battery/1000, (tp->adc_battery%1000), tp->adc_solar/1000, (tp->adc_solar%1000), tp->adc_charge,
 					TRACE_TAB, tp->air_press/10, tp->air_press%10, tp->air_temp/100, tp->air_temp%100, tp->air_hum/10, tp->air_hum%10,
-					TRACE_TAB, tp->bal_press/10, tp->bal_press%10, tp->bal_temp/100, tp->bal_temp%100, tp->bal_hum/10, tp->bal_hum%10,
-					TRACE_TAB, tp->acc_x, tp->acc_y, tp->acc_z,
-					TRACE_TAB, tp->gyr_x, tp->gyr_y, tp->gyr_z
+					TRACE_TAB, tp->bal_press/10, tp->bal_press%10, tp->bal_temp/100, tp->bal_temp%100, tp->bal_hum/10, tp->bal_hum%10
 		);
 
 
