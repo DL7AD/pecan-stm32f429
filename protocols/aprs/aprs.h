@@ -55,7 +55,6 @@ uint32_t aprs_encode_position(uint8_t* message, mod_t mod, trackPoint_t *trackPo
 uint32_t aprs_encode_telemetry_configuration(uint8_t* message, mod_t mod, telemetryConfig_t type);
 uint32_t aprs_encode_log(uint8_t* message, mod_t mod);
 uint32_t aprs_encode_image(uint8_t* message, mod_t mod, uint8_t *image, size_t size);
-char *itoa(int32_t num, char *buffer, uint32_t min_len);
 
 #endif
 

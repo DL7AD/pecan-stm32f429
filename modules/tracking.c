@@ -147,7 +147,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 					"%s Sats %d  TTFF %dsec\r\n"
 					"%s ADC Vbat=%d.%03dV  Vsol=%d.%03dV  P=%dmW\r\n"
 					"%s Air  p=%6d.%01dPa T=%2d.%02ddegC phi=%2d.%01d%%\r\n"
-					"%s Ball p=%6d.%01dPa T=%2d.%02ddegC phi=%2d.%01d%%\r\n",
+					"%s Ball p=%6d.%01dPa T=%2d.%02ddegC phi=%2d.%01d%%",
 					tp->id,
 					TRACE_TAB, tp->time.year, tp->time.month, tp->time.day, tp->time.hour, tp->time.minute, tp->time.day,
 					TRACE_TAB, tp->gps_lat/10000000, tp->gps_lat%10000000, tp->gps_lon/10000000, tp->gps_lon%10000000, tp->gps_alt,

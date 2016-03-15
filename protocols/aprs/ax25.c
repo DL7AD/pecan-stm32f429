@@ -72,11 +72,9 @@ static void send_byte(ax25_t *packet, char byte)
 	}
 }
 
-// Exported functions
 void ax25_send_byte(ax25_t *packet, char byte)
 {
-  // Wrap around send_byte, but prints debug info
-  send_byte(packet, byte);
+	send_byte(packet, byte);
 }
 
 void ax25_send_sync(ax25_t *packet)

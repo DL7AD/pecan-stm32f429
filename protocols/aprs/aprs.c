@@ -27,7 +27,6 @@
 #define METER_TO_FEET(m) (((m)*26876) / 8192)
 
 static uint16_t loss_of_gps_counter = 0;
-static char temp[22];
 
 /**
  * Transmit APRS position packet. The comments are filled with:
@@ -41,6 +40,7 @@ static char temp[22];
  */
 uint32_t aprs_encode_position(uint8_t* message, mod_t mod, trackPoint_t *trackPoint)
 {
+	char temp[22];
 	ptime_t date = trackPoint->time;
 	ax25_t packet;
 	packet.data = message;
@@ -102,7 +102,8 @@ uint32_t aprs_encode_position(uint8_t* message, mod_t mod, trackPoint_t *trackPo
 	if(!trackPoint->gps_lock)
 	{
 		ax25_send_string(&packet, "GPS LOSS ");
-		ax25_send_string(&packet, itoa(++loss_of_gps_counter, temp, 10));
+		chsnprintf(temp, sizeof(temp), "%d", ++loss_of_gps_counter);
+		ax25_send_string(&packet, temp);
 	} else {
 		loss_of_gps_counter = 0;
 	}
@@ -193,6 +194,7 @@ uint32_t aprs_encode_log(uint8_t* message, mod_t mod)
  */
 uint32_t aprs_encode_telemetry_configuration(uint8_t* message, mod_t mod, telemetryConfig_t type)
 {
+	char temp[4];
 	ax25_t packet;
 	packet.data = message;
 	packet.max_size = 512; // TODO: replace 512 with real size
@@ -204,7 +206,8 @@ uint32_t aprs_encode_telemetry_configuration(uint8_t* message, mod_t mod, teleme
 	// Callsign
 	ax25_send_string(&packet, APRS_CALLSIGN);
 	ax25_send_byte(&packet, '-');
-	ax25_send_string(&packet, itoa(APRS_SSID, temp, 10));
+	chsnprintf(temp, sizeof(temp), "%d", APRS_SSID);
+	ax25_send_string(&packet, temp);
 
 	ax25_send_string(&packet, " :"); // Message separator
 
@@ -259,25 +262,4 @@ uint32_t aprs_encode_image(uint8_t* message, mod_t mod, uint8_t *image, size_t s
 
 	return packet.size;
 }
-
-char *itoa(int32_t num, char *buffer, uint32_t min_len)
-{
-	char *p = buffer + min_len - 1;
-	if(num >= 0) {
-		do {
-			*--p = '0' + (num % 10);
-			num /= 10;
-		} while (num != 0);
-		return p;
-	} else {			/* i < 0 */
-		do {
-			*--p = '0' - (num % 10);
-			num /= 10;
-		} while (num != 0);
-		*--p = '-';
-	}
-	return p;
-}
-
-
 
