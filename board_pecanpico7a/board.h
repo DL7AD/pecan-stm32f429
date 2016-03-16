@@ -137,10 +137,10 @@
 #define MPU9250_AVAIL			FALSE			/* MPU9250 9 axis sensor available */
 #define PAC1720_AVAIL			TRUE			/* PAC1720 current sensor available */
 
-#define RADIO1_MIN_FREQ			144000000		/* Min. Frequency range of Radio 1 */
-#define RADIO1_MAX_FREQ			148000000		/* Min. Frequency range of Radio 1 */
+#define RADIO1_MIN_FREQ			1				/* Min. Frequency range of Radio 1 */
+#define RADIO1_MAX_FREQ			2				/* Min. Frequency range of Radio 1 */
 #define RADIO1_MAX_PWR			13				/* Max. power of Radio 1 in dBm */
-#define RADIO2_MIN_FREQ			420000000		/* Min. Frequency range of Radio 2 */
+#define RADIO2_MIN_FREQ			144000000		/* Min. Frequency range of Radio 2 */
 #define RADIO2_MAX_FREQ			450000000		/* Min. Frequency range of Radio 2 */
 #define RADIO2_MAX_PWR			13				/* Max. power of Radio 2 in dBm */
 

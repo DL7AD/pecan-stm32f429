@@ -52,7 +52,8 @@
 void pac1720_init(void);
 int16_t pac1720_getPowerCharge(void);
 int16_t pac1720_getPowerDischarge(void);
-int16_t pac1720_getAveragePower(void);
+int16_t pac1720_getAverageChargePower(void);
+int16_t pac1720_getAverageDischargePower(void);
 uint16_t pac1720_getBatteryVoltage(void);
 bool pac1720_isAvailable(void);
 

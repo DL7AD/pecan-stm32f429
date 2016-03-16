@@ -17,7 +17,9 @@
 #define FSC ((FSR) / (PAC1720_RSENSE))
 
 static int32_t pac1720_charge;
-static int32_t pac1720_counter;
+static int32_t pac1720_discharge;
+static int32_t pac1720_charge_counter;
+static int32_t pac1720_discharge_counter;
 
 int16_t pac1720_getPowerDischarge(void) {
 	int32_t fsp = FSV * FSC;
@@ -29,13 +31,24 @@ int16_t pac1720_getPowerCharge(void) {
 	return read16(PAC1720_ADDRESS, PAC1720_CH1_PWR_RAT_HIGH) * fsp / 32768;
 }
 
-int16_t pac1720_getAveragePower(void) {
+int16_t pac1720_getAverageChargePower(void) {
 	// Calculate
-	int16_t ret = pac1720_charge / (pac1720_counter == 0 ? 1 : pac1720_counter);
+	int16_t ret = pac1720_charge / (pac1720_charge_counter == 0 ? 1 : pac1720_charge_counter);
 
 	// Reset current measurement
 	pac1720_charge = 0;
-	pac1720_counter = 0;
+	pac1720_charge_counter = 0;
+
+	return ret;
+}
+
+int16_t pac1720_getAverageDischargePower(void) {
+	// Calculate
+	int16_t ret = pac1720_discharge / (pac1720_discharge_counter == 0 ? 1 : pac1720_discharge_counter);
+
+	// Reset current measurement
+	pac1720_discharge = 0;
+	pac1720_discharge_counter = 0;
 
 	return ret;
 }
@@ -59,10 +72,10 @@ THD_FUNCTION(pac1720_thd, arg)
 
 	while(true)
 	{
-		int16_t charge = pac1720_getPowerCharge();
-		int16_t discharge = pac1720_getPowerDischarge();
-		pac1720_charge += charge - discharge;
-		pac1720_counter++;
+		pac1720_charge += pac1720_getPowerCharge();
+		pac1720_discharge += pac1720_getPowerDischarge();
+		pac1720_charge_counter++;
+		pac1720_discharge_counter++;
 
 		chThdSleepMilliseconds(100);
 	}

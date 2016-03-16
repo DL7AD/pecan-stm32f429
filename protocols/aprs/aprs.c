@@ -98,10 +98,20 @@ uint32_t aprs_encode_position(uint8_t* message, mod_t mod, trackPoint_t *trackPo
 
 	ax25_send_string(&packet, temp);
 
+	// Comments
+	ax25_send_string(&packet, "SATS ");
+	chsnprintf(temp, sizeof(temp), "%d", trackPoint->gps_sats);
+	ax25_send_string(&packet, temp);
+
+	ax25_send_string(&packet, " TTFF ");
+	chsnprintf(temp, sizeof(temp), "%d", trackPoint->gps_ttff);
+	ax25_send_string(&packet, temp);
+	ax25_send_string(&packet, "sec");
+
 	// GPS Loss counter
 	if(!trackPoint->gps_lock)
 	{
-		ax25_send_string(&packet, "GPS LOSS ");
+		ax25_send_string(&packet, " GPS LOSS ");
 		chsnprintf(temp, sizeof(temp), "%d", ++loss_of_gps_counter);
 		ax25_send_string(&packet, temp);
 	} else {
@@ -136,14 +146,14 @@ uint32_t aprs_encode_position(uint8_t* message, mod_t mod, trackPoint_t *trackPo
 	temp[1] = t%91 + 33;
 	ax25_send_string(&packet, temp);
 
-	// Sats
-	t = trackPoint->gps_sats;
+	// Battery charge
+	t = trackPoint->adc_charge;
 	temp[0] = t/91 + 33;
 	temp[1] = t%91 + 33;
 	ax25_send_string(&packet, temp);
 
-	// TTFF (Time to first fix)
-	t = trackPoint->gps_ttff;
+	// Battery discharge
+	t = trackPoint->adc_discharge;
 	temp[0] = t/91 + 33;
 	temp[1] = t%91 + 33;
 	ax25_send_string(&packet, temp);
@@ -213,10 +223,10 @@ uint32_t aprs_encode_telemetry_configuration(uint8_t* message, mod_t mod, teleme
 
 	switch(type) {
 		case CONFIG_PARM:
-			ax25_send_string(&packet, "PARM.Battery,Solar,Temp,Sats,TTFF");
+			ax25_send_string(&packet, "PARM.Battery,Solar,Temp,Charge,Discharge");
 			break;
 		case CONFIG_UNIT:
-			ax25_send_string(&packet, "UNIT.Volt,Volt,degC,,sec");
+			ax25_send_string(&packet, "UNIT.Volt,Volt,degC,mW,mW");
 			break;
 		case CONFIG_EQNS:
 			ax25_send_string(&packet,

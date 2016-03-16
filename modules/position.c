@@ -91,6 +91,8 @@ void replace_placeholders(char* fskmsg, uint16_t size, trackPoint_t *trackPoint)
 	str_replace(fskmsg, size, "<VSOL>", buf);
 	chsnprintf(buf, sizeof(buf), "%d.%03d", trackPoint->adc_charge/1000, (trackPoint->adc_charge >= 0 ? 1 : -1) * (trackPoint->adc_charge%1000));
 	str_replace(fskmsg, size, "<CHARGE>", buf);
+	chsnprintf(buf, sizeof(buf), "%d.%03d", trackPoint->adc_discharge/1000, (trackPoint->adc_discharge >= 0 ? 1 : -1) * (trackPoint->adc_discharge%1000));
+	str_replace(fskmsg, size, "<DISCHARGE>", buf);
 	chsnprintf(buf, sizeof(buf), "%d", trackPoint->air_press/10);
 	str_replace(fskmsg, size, "<IPRESS>", buf);
 	chsnprintf(buf, sizeof(buf), "%d.%d", trackPoint->air_temp/100, (trackPoint->air_temp%100)/10);

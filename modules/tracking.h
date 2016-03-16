@@ -18,7 +18,8 @@ typedef struct {
 
 	uint16_t adc_solar;		// Current solar voltage in mV
 	uint16_t adc_battery;	// Current battery voltage in mV
-	int16_t adc_charge;		// Average power charge into battery in mW in last cycle
+	int16_t adc_charge;		// Average charge power into battery in mW in last cycle
+	int16_t adc_discharge;	// Average discharge power from battery in mW in last cycle
 
 	uint32_t air_press;		// Airpressure in Pa*10 (in 0.1Pa)
 	uint8_t air_hum;		// Rel. humidity in %*10 (in 0.1%)

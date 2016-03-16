@@ -109,7 +109,8 @@ THD_FUNCTION(moduleTRACKING, arg) {
 		// Power management
 		tp->adc_solar = 0; // getSolarVoltageMV(); // TODO: Implement ADC
 		tp->adc_battery = pac1720_getBatteryVoltage();
-		tp->adc_charge = pac1720_getAveragePower();
+		tp->adc_charge = pac1720_getAverageChargePower();
+		tp->adc_discharge = pac1720_getAverageDischargePower();
 
 		bme280_t bmeInt;
 		bme280_t bmeExt;
@@ -145,14 +146,14 @@ THD_FUNCTION(moduleTRACKING, arg) {
 					"%s Time %04d-%02d-%02d %02d:%02d:%02d\r\n"
 					"%s Pos  %d.%07d %d.%07d Alt %dm\r\n"
 					"%s Sats %d  TTFF %dsec\r\n"
-					"%s ADC Vbat=%d.%03dV  Vsol=%d.%03dV  P=%dmW\r\n"
+					"%s ADC Vbat=%d.%03dV  Vsol=%d.%03dV Pin=%dmW Pout=%dmW\r\n"
 					"%s Air  p=%6d.%01dPa T=%2d.%02ddegC phi=%2d.%01d%%\r\n"
 					"%s Ball p=%6d.%01dPa T=%2d.%02ddegC phi=%2d.%01d%%",
 					tp->id,
 					TRACE_TAB, tp->time.year, tp->time.month, tp->time.day, tp->time.hour, tp->time.minute, tp->time.day,
 					TRACE_TAB, tp->gps_lat/10000000, tp->gps_lat%10000000, tp->gps_lon/10000000, tp->gps_lon%10000000, tp->gps_alt,
 					TRACE_TAB, tp->gps_sats, tp->gps_ttff,
-					TRACE_TAB, tp->adc_battery/1000, (tp->adc_battery%1000), tp->adc_solar/1000, (tp->adc_solar%1000), tp->adc_charge,
+					TRACE_TAB, tp->adc_battery/1000, (tp->adc_battery%1000), tp->adc_solar/1000, (tp->adc_solar%1000), tp->adc_charge, tp->adc_discharge,
 					TRACE_TAB, tp->air_press/10, tp->air_press%10, tp->air_temp/100, tp->air_temp%100, tp->air_hum/10, tp->air_hum%10,
 					TRACE_TAB, tp->bal_press/10, tp->bal_press%10, tp->bal_temp/100, tp->bal_temp%100, tp->bal_hum/10, tp->bal_hum%10
 		);

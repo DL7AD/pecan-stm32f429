@@ -12,7 +12,7 @@
 #define APRS_CALLSIGN			"DL7AD"			/* APRS callsign */
 #define APRS_SSID				12				/* APRS SSID */
 #define APRS_SYMBOL				SYM_BALLOON		/* APRS symbol (options: SYM_BALLOON, SYM_SMALLAIRCRAFT, SYM_SATELLITE) */
-#define APRS_PATH				"WIDE1-1"		/* APRS path (does not apply for APRS images)
+#define APRS_PATH				"WIDE1,WIDE1"	/* APRS path (does not apply for APRS images)
 												 * Multiple path's can be separated with comma e.g. WIDE1-1,WIDE2-2 */
 #define APRS_PATH_SAT			"RS0ISS"		/* APRS path */
 #define APRS_DEFAULT_FREQ		144800000		/* APRS default frequency (for region method if no GPS location unknown) */
@@ -22,7 +22,7 @@
 
 // UKHAS configuration
 #define UKHAS_CALLSIGN			"D-9"			/* UKHAS callsign */
-#define UKHAS_FORMAT			"<CALL>,<ID>,<TIME>,<LAT>,<LON>,<ALT>,<SATS>,<TTFF>,<VBAT>,<VSOL>,<CHARGE>,<IPRESS>,<ITEMP>,<IHUM>,<EPRESS>,<ETEMP>,<EHUM>"
+#define UKHAS_FORMAT			"<CALL>,<ID>,<TIME>,<LAT>,<LON>,<ALT>,<SATS>,<TTFF>,<VBAT>,<VSOL>,<CHARGE>,<DISCHARGE>,<IPRESS>,<ITEMP>,<IHUM>,<EPRESS>,<ETEMP>,<EHUM>"
                                                 /* UKHAS format, possible params:
                                                  * <ID> Tracking manager serial ID
                                                  * <DATE> GPS date (Format YYYY-MM-DD)
@@ -78,7 +78,7 @@
 #define RADIO_TIMEOUT			300				/* Radio transmission timeout in ms (radio switched off after x ms in idling) */
 
 // Tracking manager
-#define CYCLE_TIME				60				/* Tracking cycle (all peripheral data [airpressure, GPS, temperature, ...] is collected each x seconds */
+#define CYCLE_TIME				180				/* Tracking cycle (all peripheral data [airpressure, GPS, temperature, ...] is collected each x seconds */
 
 
 /*
@@ -146,12 +146,12 @@
 
 #define MODULES() { \
                   /* Cycle (sec) or Trigger   Sleep                       Frequency         Power Protocol              */ \
-	MODULE_IMAGE    (TX_CONTINUOSLY,          SLEEP_WHEN_BATT_BELOW_4V0,  CUSTOM_FREQ,      10,   PROT_SSDV_2FSK      ); \
+	MODULE_IMAGE    (TX_CONTINUOSLY,          SLEEP_WHEN_BATT_BELOW_4V0,  CUSTOM_FREQ,      13,   PROT_SSDV_2FSK      ); \
 /*	MODULE_IMAGE    (TX_CONTINUOSLY,          SLEEP_WHEN_BATT_BELOW_3V5,  CUSTOM_FREQ,      10,   PROT_SSDV_APRS_AFSK );*/ \
-/*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_UKHAS_2FSK     );*/ \
+	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_4V0,  CUSTOM_FREQ,      10,   PROT_UKHAS_2FSK     ); \
 /*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_RAW_CW         );*/ \
 	MODULE_POSITION (3600,                    SLEEP_WHEN_BATT_BELOW_3V0,  APRS_REGION_FREQ, 10,   PROT_APRSCONFIG_AFSK); \
-	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_4V0,  APRS_REGION_FREQ, 10,   PROT_APRS_AFSK      ); \
+	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  APRS_REGION_FREQ, 10,   PROT_APRS_AFSK      ); \
 /*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_APRS_2GFSK     );*/ /* TODO: Not working yet */ \
 /*	MODULE_LOG      (120,                     SLEEP_WHEN_BATT_BELOW_3V3,  APRS_REGION_FREQ, 10,   PROT_APRS_AFSK      );*/ /* TODO: Not implemented yet */ \
 }
