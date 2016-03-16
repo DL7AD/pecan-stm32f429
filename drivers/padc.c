@@ -6,7 +6,8 @@
 #include "pac1720.h"
 #include "debug.h"
 
-#define ADC_GRP1_NUM_CHANNELS	3	// Amount of channels (solar, battery, temperature)
+#define ADC_GRP1_NUM_CHANNELS	3		/* Amount of channels (solar, battery, temperature) */
+#define VCC_REF					2920	/* mV */
 
 static adcsample_t samples[ADC_GRP1_NUM_CHANNELS*2]; // ADC sample buffer
 
@@ -35,7 +36,7 @@ static const ADCConversionGroup adcgrpcfg = {
 	0,
 	ADC_SQR1_NUM_CH(ADC_GRP1_NUM_CHANNELS),
 	0,
-	ADC_SQR2_SQ12_N(ADC_CHANNEL_IN14) | ADC_SQR2_SQ12_N(ADC_CHANNEL_IN15) | ADC_SQR3_SQ1_N(ADC_CHANNEL_SENSOR)
+	ADC_SQR3_SQ2_N(ADC_CHANNEL_IN14) | ADC_SQR3_SQ1_N(ADC_CHANNEL_IN15) | ADC_SQR3_SQ3_N(ADC_CHANNEL_SENSOR)
 };
  
 void initADC(void)
@@ -54,17 +55,13 @@ void deinitADC(void)
 void doConversion(void)
 {
 	initADC();
-	TRACE_DEBUG("B");
-	chThdSleepMilliseconds(100);
-	chSysLockFromISR();
-	adcStartConversionI(&ADCD1, &adcgrpcfg, samples, 2);
-	chSysUnlockFromISR();
-	TRACE_DEBUG("C");
-	chThdSleepMilliseconds(100);
-	while(ADCD1.state != ADC_COMPLETE) // Wait for conversion to be completed
-		chThdSleepMilliseconds(1);
-	TRACE_DEBUG("D");
-	chThdSleepMilliseconds(100);
+	samples[0] = 0;
+	samples[1] = 0;
+	samples[2] = 0;
+	adcStartConversion(&ADCD1, &adcgrpcfg, samples, 1);
+	chThdSleepMilliseconds(50);
+	//while(ADCD1.state != ADC_COMPLETE) // Wait for conversion to be completed TODO: Fix this (wait until finished)
+	//	chThdSleepMilliseconds(1);
 	deinitADC();
 }
 
@@ -74,12 +71,8 @@ uint16_t getBatteryVoltageMV(void)
 }
 uint16_t getSolarVoltageMV(void)
 {
-	TRACE_DEBUG("A");
-	chThdSleepMilliseconds(100);
 	doConversion();
-	TRACE_DEBUG("E");
-	chThdSleepMilliseconds(100);
-	return samples[1];
+	return samples[1] * VCC_REF / 4096;
 }
 uint16_t getSTM32Temperature(void)
 {

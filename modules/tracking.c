@@ -6,6 +6,7 @@
 #include "config.h"
 #include "max.h"
 #include "bme280.h"
+#include "padc.h"
 #include "pac1720.h"
 
 trackPoint_t trackPoints[2];
@@ -107,8 +108,8 @@ THD_FUNCTION(moduleTRACKING, arg) {
 		tp->gps_ttff = ST2S(chVTGetSystemTimeX() - time); // Time to first fix
 
 		// Power management
-		tp->adc_solar = 0; // getSolarVoltageMV(); // TODO: Implement ADC
-		tp->adc_battery = pac1720_getBatteryVoltage();
+		tp->adc_solar = getSolarVoltageMV();
+		tp->adc_battery = getBatteryVoltageMV();
 		tp->adc_charge = pac1720_getAverageChargePower();
 		tp->adc_discharge = pac1720_getAverageDischargePower();
 
