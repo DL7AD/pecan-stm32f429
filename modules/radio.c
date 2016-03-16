@@ -358,7 +358,7 @@ uint32_t getAPRSISSFrequency(void) {
 	return 145825000;
 }
 uint32_t getCustomFrequency(void) {
-	return 434500000;
+	return 145300000;
 }
 
 /**
