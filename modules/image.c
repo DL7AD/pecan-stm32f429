@@ -30,9 +30,6 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 
 	while(true)
 	{
-		if(sleep() == SMOD_SLEEP)
-			return;
-
 		parm->lastCycle = chVTGetSystemTimeX(); // Update Watchdog timer
 
 		while((c = ssdv_enc_get_packet(&ssdv)) == SSDV_FEED_ME)
