@@ -75,9 +75,9 @@ void replace_placeholders(char* fskmsg, uint16_t size, trackPoint_t *trackPoint)
 	str_replace(fskmsg, size, "<DATE>", buf);
 	chsnprintf(buf, sizeof(buf), "%02d:%02d:%02d", trackPoint->time.hour, trackPoint->time.minute, trackPoint->time.second);
 	str_replace(fskmsg, size, "<TIME>", buf);
-	chsnprintf(buf, sizeof(buf), "%d.%07d", trackPoint->gps_lat/10000000, (trackPoint->gps_lat < 0 ? 10000000 : 0) - trackPoint->gps_lat%10000000); // TODO: this calculation does not work in other hemispheres
+	chsnprintf(buf, sizeof(buf), "%d.%07d", trackPoint->gps_lat/10000000, (trackPoint->gps_lat < 0 ? 0 : 0) - trackPoint->gps_lat%10000000); // TODO: this calculation does not work in other hemispheres
 	str_replace(fskmsg, size, "<LAT>", buf);
-	chsnprintf(buf, sizeof(buf), "%d.%07d", trackPoint->gps_lon/10000000, (trackPoint->gps_lon < 0 ? 10000000 : 0) - trackPoint->gps_lon%10000000); // TODO: this calculation does not work in other hemispheres
+	chsnprintf(buf, sizeof(buf), "%d.%07d", trackPoint->gps_lon/10000000, (trackPoint->gps_lon < 0 ? 0 : 0) - trackPoint->gps_lon%10000000); // TODO: this calculation does not work in other hemispheres
 	str_replace(fskmsg, size, "<LON>", buf);
 	chsnprintf(buf, sizeof(buf), "%d", trackPoint->gps_alt);
 	str_replace(fskmsg, size, "<ALT>", buf);

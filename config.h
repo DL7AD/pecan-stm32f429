@@ -22,7 +22,7 @@
 
 // UKHAS configuration
 #define UKHAS_CALLSIGN			"DL7AD-12"		/* UKHAS callsign */
-#define UKHAS_FORMAT			"<CALL>,<ID>,<TIME>,<LAT>,<LON>,<ALT>,<SATS>,<TTFF>,<VBAT>,<VSOL>,<CHARGE>,<DISCHARGE>,<IPRESS>,<ITEMP>,<IHUM>,<EPRESS>,<ETEMP>,<EHUM>"
+#define UKHAS_FORMAT			"<CALL>,<ID>,<TIME>,<LAT>,<LON>,<ALT>,<SATS>,<TTFF>,<VBAT>,<VSOL>,<CHARGE>,<DISCHARGE>,<IPRESS>,<ITEMP>,<IHUM>"
                                                 /* UKHAS format, possible params:
                                                  * <ID> Tracking manager serial ID
                                                  * <DATE> GPS date (Format YYYY-MM-DD)
