@@ -12,16 +12,16 @@
 #define APRS_CALLSIGN			"DL7AD"			/* APRS callsign */
 #define APRS_SSID				12				/* APRS SSID */
 #define APRS_SYMBOL				SYM_BALLOON		/* APRS symbol (options: SYM_BALLOON, SYM_SMALLAIRCRAFT, SYM_SATELLITE) */
-#define APRS_PATH				"WIDE1,WIDE1"	/* APRS path (does not apply for APRS images)
+#define APRS_PATH				"WIDE1"			/* APRS path (does not apply for APRS images)
 												 * Multiple path's can be separated with comma e.g. WIDE1-1,WIDE2-2 */
 #define APRS_PATH_SAT			"RS0ISS"		/* APRS path */
 #define APRS_DEFAULT_FREQ		144800000		/* APRS default frequency (for region method if no GPS location unknown) */
 
 // SSDV configuration
-#define SSDV_CALLSIGN			"D-9"			/* SSDV callsign */
+#define SSDV_CALLSIGN			"DL7AD-12"		/* SSDV callsign */
 
 // UKHAS configuration
-#define UKHAS_CALLSIGN			"D-9"			/* UKHAS callsign */
+#define UKHAS_CALLSIGN			"DL7AD-12"		/* UKHAS callsign */
 #define UKHAS_FORMAT			"<CALL>,<ID>,<TIME>,<LAT>,<LON>,<ALT>,<SATS>,<TTFF>,<VBAT>,<VSOL>,<CHARGE>,<DISCHARGE>,<IPRESS>,<ITEMP>,<IHUM>,<EPRESS>,<ETEMP>,<EHUM>"
                                                 /* UKHAS format, possible params:
                                                  * <ID> Tracking manager serial ID
