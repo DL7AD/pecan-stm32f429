@@ -22,7 +22,7 @@ smode_t SLEEP_WHEN_ISS_NOT_VISIBLE(void) { // TODO: Not implemented yet
 }
 
 smode_t SLEEP_WHEN_BATTERY_LOW(void) {
-	if(getBatteryVoltageMV() < 3600 || getSolarVoltageMV() < 500) {
+	if(getBatteryVoltageMV() < 3600 || getSolarVoltageMV() < 1000) {
 		return SMOD_SLEEP;
 	} else {
 		return SMOD_ACTIVE;
