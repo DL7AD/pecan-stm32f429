@@ -35,9 +35,9 @@
 #define STM32_LSECLK                0U
 #endif
 
-#if !defined(STM32_HSECLK)
-#define STM32_HSECLK                25999500U
-#endif
+//#if !defined(STM32_HSECLK)
+#define STM32_HSECLK                20000000U
+//#endif
 
 /*
  * Board voltages.
@@ -127,7 +127,7 @@
 
 
 // Hardware definitions (which cant be changed easily)
-#define OSC_FREQ				STM32_HSECLK	/* Oscillator frequency */
+#define OSC_FREQ				25999500U	/* Oscillator frequency */
 #define CAM_AVAIL				TRUE			/* Camera available */
 #define GPS_AVAIL				TRUE			/* uBlox MAX7/8 GNSS receiver available */
 #define SD_AVAIL				FALSE			/* microSD card available */
