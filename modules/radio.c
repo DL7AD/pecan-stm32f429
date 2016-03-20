@@ -9,8 +9,7 @@
 #include "pi2c.h"
 #include <string.h>
 
-uint32_t playback = 475000;
-#define PLAYBACK_RATE		playback								/* Samples per second (SYSCLK = 45MHz) */
+#define PLAYBACK_RATE		535000									/* Samples per second (SYSCLK = 45MHz) */
 #define BAUD_RATE			1200									/* APRS AFSK baudrate */
 #define SAMPLES_PER_BAUD	(PLAYBACK_RATE / BAUD_RATE)				/* Samples per baud */
 #define PHASE_DELTA_1200	(((2 * 1200) << 16) / PLAYBACK_RATE)	/* Delta-phase per sample for 1200Hz tone */

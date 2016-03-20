@@ -385,11 +385,6 @@ void OV9655_init(void) {
 	TRACE_INFO("CAM  > Transmit config to camera");
 	OV9655_TransmitConfig();
 
-	#ifndef QVGA
-	// Switch back to slow clock
-	OV9655_InitSlowClockout();
-	#endif
-
 	// DCMI DMA
 	TRACE_INFO("CAM  > Init DMA");
 	OV9655_InitDMA();
@@ -400,8 +395,27 @@ void OV9655_init(void) {
 }
 
 void OV9655_deinit(void) {
+	// DCMI Init
+	TRACE_INFO("CAM  > Deinit DCMI");
+	OV9655_DeinitDCMI();
+
+	// DCMI DMA
+	TRACE_INFO("CAM  > Deinit DMA");
+	OV9655_DeinitDMA();
+
 	// Power off OV9655
 	TRACE_INFO("CAM  > Switch off");
 	palSetPad(PORT(CAM_OFF), PIN(CAM_OFF));	// Switch off camera
 }
+
+
+
+
+
+
+
+
+
+
+
 

@@ -78,7 +78,7 @@
 #define RADIO_TIMEOUT			300				/* Radio transmission timeout in ms (radio switched off after x ms in idling) */
 
 // Tracking manager
-#define CYCLE_TIME				180				/* Tracking cycle (all peripheral data [airpressure, GPS, temperature, ...] is collected each x seconds */
+#define CYCLE_TIME				60				/* Tracking cycle (all peripheral data [airpressure, GPS, temperature, ...] is collected each x seconds */
 
 
 /*
@@ -149,8 +149,8 @@
 
 #define MODULES() { \
                   /* Cycle (sec) or Trigger   Sleep                       Frequency         Power Protocol              */ \
-/*	MODULE_IMAGE    (600,                     SLEEP_WHEN_BATTERY_LOW,     CUSTOM_FREQ,      13,   PROT_SSDV_2FSK      );*/ \
-/*	MODULE_IMAGE    (TX_CONTINUOSLY,          SLEEP_WHEN_BATT_BELOW_3V5,  CUSTOM_FREQ,      10,   PROT_SSDV_APRS_AFSK );*/ \
+	MODULE_IMAGE    (600,                     SLEEP_WHEN_BATTERY_LOW,     CUSTOM_FREQ,      13,   PROT_SSDV_2FSK      ); \
+/*	MODULE_IMAGE    (TX_CONTINUOSLY,          NO_SLEEP,                   CUSTOM_FREQ,      10,   PROT_SSDV_APRS_AFSK );*/ \
 /*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATTERY_LOW,     CUSTOM_FREQ,      10,   PROT_UKHAS_2FSK     );*/ \
 /*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_RAW_CW         );*/ \
 	MODULE_POSITION (3600,                    NO_SLEEP,                   APRS_REGION_FREQ, 10,   PROT_APRSCONFIG_AFSK); \

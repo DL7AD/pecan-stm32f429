@@ -55,7 +55,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 
 			// Get MCU frequency from GPS timepulse
 			tp->mcu_frequency = GPS_get_mcu_frequency();
-			playback = tp->mcu_frequency / 93; // Only necessary for Pecan Pico 7a (see radio.h)
+			// TODO TMP: Adjust PLL
 
 			// Switch off GPS
 			GPS_Deinit();
