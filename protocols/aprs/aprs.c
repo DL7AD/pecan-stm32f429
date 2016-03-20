@@ -112,10 +112,9 @@ uint32_t aprs_encode_position(uint8_t* message, mod_t mod, trackPoint_t *trackPo
 		ax25_send_string(&packet, "sec");
 
 		// MCUF (MCU frequency)
-		ax25_send_string(&packet, " MCUF ");
-		chsnprintf(temp, sizeof(temp), "%d", trackPoint->mcu_frequency);
+		ax25_send_string(&packet, " PLLN ");
+		chsnprintf(temp, sizeof(temp), "%d", trackPoint->plln);
 		ax25_send_string(&packet, temp);
-		ax25_send_string(&packet, "Hz");
 	}
 
 	// GPS Loss counter

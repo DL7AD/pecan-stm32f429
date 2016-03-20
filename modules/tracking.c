@@ -10,6 +10,18 @@
 #include "pac1720.h"
 #include "radio.h"
 
+#include "stm32f4xx_rcc.h"
+#define RCC_PLLM_MASK    ((uint32_t)0x0000003F)
+#define RCC_PLLM_POS     0
+#define RCC_PLLN_MASK    ((uint32_t)0x00007FC0)
+#define RCC_PLLN_POS     6
+#define RCC_PLLP_MASK    ((uint32_t)0x00030000)
+#define RCC_PLLP_POS     16
+#define RCC_PLLQ_MASK    ((uint32_t)0x0F000000)
+#define RCC_PLLQ_POS     24
+#define RCC_PLLR_MASK    ((uint32_t)0x70000000)
+#define RCC_PLLR_POS     28
+
 trackPoint_t trackPoints[2];
 trackPoint_t* lastTrackPoint;
 
@@ -35,6 +47,8 @@ THD_FUNCTION(moduleTRACKING, arg) {
 	uint32_t id = 1;
 	lastTrackPoint = &trackPoints[0];
 
+	uint32_t plln = 360;
+
 	systime_t time = chVTGetSystemTimeX();
 	while(true)
 	{
@@ -54,8 +68,32 @@ THD_FUNCTION(moduleTRACKING, arg) {
 		if(isGPSLocked(&gpsFix)) { // GPS locked
 
 			// Get MCU frequency from GPS timepulse
-			tp->mcu_frequency = GPS_get_mcu_frequency();
-			// TODO TMP: Adjust PLL
+			uint32_t mcu_frequency = GPS_get_mcu_frequency();
+			TRACE_INFO("Old MCU frequency: %d Hz", mcu_frequency);
+
+			// Adjust PLLN
+			plln = mcu_frequency != 0 ? (uint32_t)((44500000.0 / ((float)mcu_frequency)) * ((float)plln)) : 0;
+			if(plln > 250 && plln < 400) {
+				TRACE_INFO("Set PLLN to %d", plln);
+				chThdSleepMilliseconds(10);
+
+				chSysLock();
+				RCC->CFGR = (RCC->CFGR & ~(RCC_CFGR_SW)) | RCC_CFGR_SW_HSI; // Select HSI clock as main clock
+				RCC->CR &= ~RCC_CR_PLLON; // Disable PLL
+				RCC->PLLCFGR = (RCC->PLLCFGR & ~RCC_PLLN_MASK) | ((plln << RCC_PLLN_POS) & RCC_PLLN_MASK);
+				RCC->CR |= RCC_CR_PLLON; // Enable PLL
+				while(!(RCC->CR & RCC_CR_PLLRDY)); // Wait till PLL is ready
+				RCC->CFGR = (RCC->CFGR & ~(RCC_CFGR_SW)) | RCC_CFGR_SW_PLL; // Enable PLL as main clock
+				chSysUnlock();
+
+				tp->plln = plln;
+			} else {
+				TRACE_ERROR("Do set to invalid PLLN %d", plln);
+				tp->plln = 0; // Error mark
+			}
+
+			mcu_frequency = GPS_get_mcu_frequency();
+			TRACE_INFO("New MCU frequency: %d Hz", mcu_frequency);
 
 			// Switch off GPS
 			GPS_Deinit();

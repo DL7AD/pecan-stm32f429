@@ -29,7 +29,7 @@ typedef struct {
 	uint8_t bal_hum;		// Rel. humidity in % in balloon (in 0.1%)
 	int16_t bal_temp;		// Temperature in K*100 in balloon (in 0.01°C)
 
-	uint32_t mcu_frequency;	// MCU frequency in Hz
+	uint32_t plln;
 } trackPoint_t;
 
 trackPoint_t* getLastTrackPoint(void);

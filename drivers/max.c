@@ -443,7 +443,7 @@ uint32_t GPS_get_mcu_frequency(void)
 	while( palReadPad(PORT(GPS_TIMEPULSE), PIN(GPS_TIMEPULSE)) && timeout-- );
 	while( !palReadPad(PORT(GPS_TIMEPULSE), PIN(GPS_TIMEPULSE)) && timeout-- );
 
-	// Count clocks (11 clocks each cycle)
+	// Count clocks (9 clocks each cycle)
 	while( palReadPad(PORT(GPS_TIMEPULSE), PIN(GPS_TIMEPULSE)) && timeout-- ) // Loop takes 100ms
 		i++;
 	while( !palReadPad(PORT(GPS_TIMEPULSE), PIN(GPS_TIMEPULSE)) && timeout-- ) // Loop takes 900ms
@@ -452,6 +452,6 @@ uint32_t GPS_get_mcu_frequency(void)
 	// Unlock RTOS
 	chSysUnlock();
 
-	return i*11;
+	return i*9;
 }
 
