@@ -21,9 +21,6 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 	uint16_t bi = 0;
 	uint8_t c = SSDV_OK;
 
-	uint32_t (*sleep)(void);
-	sleep = parm->sleepMethod;
-
 	// Init SSDV (FEC at 2FSK, non FEC at APRS)
 	ssdv_enc_init(&ssdv, parm->protocol == PROT_SSDV_2FSK ? SSDV_TYPE_NORMAL : SSDV_TYPE_NOFEC, SSDV_CALLSIGN, ++image_id);
 	ssdv_enc_set_buffer(&ssdv, pkt);

@@ -162,27 +162,27 @@ THD_FUNCTION(moduleTRACKING, arg) {
 		// Atmosphere condition
 		if(BME280_isAvailable(BME280_ADDRESS_INT)) {
 			BME280_Init(&bmeInt, BME280_ADDRESS_INT);
-			tp->air_press = BME280_getPressure(&bmeInt, 256);
-			tp->air_hum = BME280_getHumidity(&bmeInt);
-			tp->air_temp = BME280_getTemperature(&bmeInt);
+			tp->int_press = BME280_getPressure(&bmeInt, 256);
+			tp->int_hum = BME280_getHumidity(&bmeInt);
+			tp->int_temp = BME280_getTemperature(&bmeInt);
 		} else { // No internal BME280 found
 			TRACE_ERROR("TRAC > Internal BME280 not available");
-			tp->air_press = 0;
-			tp->air_hum = 0;
-			tp->air_temp = 0;
+			tp->int_press = 0;
+			tp->int_hum = 0;
+			tp->int_temp = 0;
 		}
 
-		// Balloon condition
+		// External BME280
 		if(BME280_isAvailable(BME280_ADDRESS_EXT)) {
 			BME280_Init(&bmeExt, BME280_ADDRESS_EXT);
-			tp->bal_press = BME280_getPressure(&bmeExt, 256);
-			tp->bal_hum = BME280_getHumidity(&bmeExt);
-			tp->bal_temp = BME280_getTemperature(&bmeExt);
+			tp->ext_press = BME280_getPressure(&bmeExt, 256);
+			tp->ext_hum = BME280_getHumidity(&bmeExt);
+			tp->ext_temp = BME280_getTemperature(&bmeExt);
 		} else { // No external BME280 found
 			TRACE_WARN("TRAC > External BME280 not available");
-			tp->bal_press = 0;
-			tp->bal_hum = 0;
-			tp->bal_temp = 0;
+			tp->ext_press = 0;
+			tp->ext_hum = 0;
+			tp->ext_temp = 0;
 		}
 
 		// Trace data
@@ -191,15 +191,15 @@ THD_FUNCTION(moduleTRACKING, arg) {
 					"%s Pos  %d.%07d %d.%07d Alt %dm\r\n"
 					"%s Sats %d  TTFF %dsec\r\n"
 					"%s ADC Vbat=%d.%03dV  Vsol=%d.%03dV Pin=%dmW Pout=%dmW\r\n"
-					"%s Air  p=%6d.%01dPa T=%2d.%02ddegC phi=%2d.%01d%%\r\n"
-					"%s Ball p=%6d.%01dPa T=%2d.%02ddegC phi=%2d.%01d%%",
+					"%s INT  p=%6d.%01dPa T=%2d.%02ddegC phi=%2d.%01d%%\r\n"
+					"%s EXT p=%6d.%01dPa T=%2d.%02ddegC phi=%2d.%01d%%",
 					tp->id,
 					TRACE_TAB, tp->time.year, tp->time.month, tp->time.day, tp->time.hour, tp->time.minute, tp->time.day,
 					TRACE_TAB, tp->gps_lat/10000000, tp->gps_lat%10000000, tp->gps_lon/10000000, tp->gps_lon%10000000, tp->gps_alt,
 					TRACE_TAB, tp->gps_sats, tp->gps_ttff,
 					TRACE_TAB, tp->adc_battery/1000, (tp->adc_battery%1000), tp->adc_solar/1000, (tp->adc_solar%1000), tp->adc_charge, tp->adc_discharge,
-					TRACE_TAB, tp->air_press/10, tp->air_press%10, tp->air_temp/100, tp->air_temp%100, tp->air_hum/10, tp->air_hum%10,
-					TRACE_TAB, tp->bal_press/10, tp->bal_press%10, tp->bal_temp/100, tp->bal_temp%100, tp->bal_hum/10, tp->bal_hum%10
+					TRACE_TAB, tp->int_press/10, tp->int_press%10, tp->int_temp/100, tp->int_temp%100, tp->int_hum/10, tp->int_hum%10,
+					TRACE_TAB, tp->ext_press/10, tp->ext_press%10, tp->ext_temp/100, tp->ext_temp%100, tp->ext_hum/10, tp->ext_hum%10
 		);
 
 

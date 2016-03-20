@@ -150,7 +150,7 @@ uint32_t aprs_encode_position(uint8_t* message, mod_t mod, trackPoint_t *trackPo
 	ax25_send_string(&packet, temp);
 
 	// Temperature
-	t = trackPoint->air_temp/10 + 1000;
+	t = trackPoint->int_temp/10 + 1000;
 	temp[0] = t/91 + 33;
 	temp[1] = t%91 + 33;
 	ax25_send_string(&packet, temp);
