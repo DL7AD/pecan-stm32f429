@@ -103,10 +103,20 @@ uint32_t aprs_encode_position(uint8_t* message, mod_t mod, trackPoint_t *trackPo
 	chsnprintf(temp, sizeof(temp), "%d", trackPoint->gps_sats);
 	ax25_send_string(&packet, temp);
 
-	ax25_send_string(&packet, " TTFF ");
-	chsnprintf(temp, sizeof(temp), "%d", trackPoint->gps_ttff);
-	ax25_send_string(&packet, temp);
-	ax25_send_string(&packet, "sec");
+	if(trackPoint->gps_lock)
+	{
+		// TTFF (Time to first fix)
+		ax25_send_string(&packet, " TTFF ");
+		chsnprintf(temp, sizeof(temp), "%d", trackPoint->gps_ttff);
+		ax25_send_string(&packet, temp);
+		ax25_send_string(&packet, "sec");
+
+		// MCUF (MCU frequency)
+		ax25_send_string(&packet, " MCUF ");
+		chsnprintf(temp, sizeof(temp), "%d", trackPoint->mcu_frequency);
+		ax25_send_string(&packet, temp);
+		ax25_send_string(&packet, "Hz");
+	}
 
 	// GPS Loss counter
 	if(!trackPoint->gps_lock)

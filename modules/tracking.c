@@ -8,6 +8,7 @@
 #include "bme280.h"
 #include "padc.h"
 #include "pac1720.h"
+#include "radio.h"
 
 trackPoint_t trackPoints[2];
 trackPoint_t* lastTrackPoint;
@@ -48,9 +49,13 @@ THD_FUNCTION(moduleTRACKING, arg) {
 
 		do {
 			gps_get_fix(&gpsFix);
-		} while(!isGPSLocked(&gpsFix) && chVTGetSystemTimeX() <= time + S2ST(parm->cycle-3)); // Do as long no GPS lock and within timeout, timeout=cycle-1sec (-1sec in order to keep synchronization)
+		} while(!isGPSLocked(&gpsFix) && chVTGetSystemTimeX() <= time + S2ST(parm->cycle-5)); // Do as long no GPS lock and within timeout, timeout=cycle-1sec (-1sec in order to keep synchronization)
 
 		if(isGPSLocked(&gpsFix)) { // GPS locked
+
+			// Get MCU frequency from GPS timepulse
+			tp->mcu_frequency = GPS_get_mcu_frequency();
+			playback = tp->mcu_frequency / 93; // Only necessary for Pecan Pico 7a (see radio.h)
 
 			// Switch off GPS
 			GPS_Deinit();

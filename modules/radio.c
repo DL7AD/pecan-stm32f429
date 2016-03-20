@@ -9,7 +9,8 @@
 #include "pi2c.h"
 #include <string.h>
 
-#define PLAYBACK_RATE		1600000									/* Samples per second (SYSCLK = 45MHz) */
+uint32_t playback = 475000;
+#define PLAYBACK_RATE		playback								/* Samples per second (SYSCLK = 45MHz) */
 #define BAUD_RATE			1200									/* APRS AFSK baudrate */
 #define SAMPLES_PER_BAUD	(PLAYBACK_RATE / BAUD_RATE)				/* Samples per baud */
 #define PHASE_DELTA_1200	(((2 * 1200) << 16) / PLAYBACK_RATE)	/* Delta-phase per sample for 1200Hz tone */
@@ -23,7 +24,7 @@ uint32_t mb_buffer_index;
 static uint8_t mb_free = MB_SIZE;
 mutex_t radio_mtx;
 
-void sendAFSK(radio_t radio, radioMSG_t *msg) {
+void __attribute__((optimize("O0"))) sendAFSK(radio_t radio, radioMSG_t *msg) {
 	// Initialize variables for AFSK
 	uint32_t phase_delta = PHASE_DELTA_1200;	// 1200/2200 for standard AX.25
 	uint32_t phase = 0;							// Fixed point 9.7 (2PI = TABLE_SIZE)
@@ -41,25 +42,32 @@ void sendAFSK(radio_t radio, radioMSG_t *msg) {
 		if(packet_pos == msg->bin_len) // Packet transmission finished
 			return;
 
-		if (current_sample_in_baud == 0) {
-			if ((packet_pos & 7) == 0) {					// Load up next byte
-				current_byte = msg->msg[packet_pos >> 3];
-			} else {
-				current_byte = current_byte / 2;			// Load up next bit
+		if(current_sample_in_baud == 0) {
+			if((packet_pos & 7) == 0) { // Load up next byte
+				current_byte = msg->msg[packet_pos >> 3];	// lsrs	r1, r4, #3
+															// ldrb	r1, [r6, r1]
+			} else { // Load up next bit
+				current_byte = current_byte / 2;			// lsrs	r1, r1, #1
 			}
-
-			phase_delta = (current_byte & 1) ? PHASE_DELTA_1200 : PHASE_DELTA_2200; // Toggle tone (1200 <> 2200)
 		}
+
+		// Toggle tone (1200 <> 2200)
+		phase_delta =	(current_byte & 1)					// tst.w	r1, #1
+						?									// ite	eq
+						PHASE_DELTA_1200 :					// moveq	r7, #180	; 0xb4
+						PHASE_DELTA_2200;					// movne	r7, #98	; 0x62
 
 		phase += phase_delta;								// Add delta-phase (delta-phase tone dependent)
 		MOD_GPIO_SET(radio, (phase >> 16) & 1);				// Set modulaton pin (connected to Si4464)
 
-		if(++current_sample_in_baud == SAMPLES_PER_BAUD) {	// Old bit consumed, load next bit
-			palTogglePad(GPIOC, 3); // Pad for measuring clock
+		current_sample_in_baud++;
+
+		if(current_sample_in_baud == SAMPLES_PER_BAUD) {	// Old bit consumed, load next bit
 			current_sample_in_baud = 0;
 			packet_pos++;
 		}
-		__NOP();__NOP();__NOP();__NOP();
+		palClearPad(PORT(LED_YELLOW), PIN(LED_YELLOW));
+		palSetPad(PORT(LED_YELLOW), PIN(LED_YELLOW));
 	}
 }
 

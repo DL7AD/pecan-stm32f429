@@ -36,6 +36,8 @@ typedef struct { // Radio message type
 
 extern mutex_t radio_image_mtx;
 
+extern uint32_t playback;
+
 uint32_t getAPRSRegionFrequency(void);
 uint32_t getAPRSISSFrequency(void);
 uint32_t getCustomFrequency(void);

@@ -28,3 +28,7 @@ smode_t SLEEP_WHEN_BATTERY_LOW(void) {
 		return SMOD_ACTIVE;
 	}
 }
+
+smode_t NO_SLEEP(void) {
+	return SMOD_ACTIVE;
+}

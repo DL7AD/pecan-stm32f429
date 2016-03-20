@@ -96,6 +96,7 @@
  *                  ...
  *                  SLEEP_WHEN_BATT_BELOW_4V1    Module hibernates when battery voltage below 4.1V
  *                  SLEEP_WHEN_ISS_NOT_VISIBLE   Module hibernates when ISS not visible (requires TLE) TODO: Not implemented yet
+ *                  NO_SLEEP                     Sleep disabled
  * PARAM frequency: CUSTOM_FREQ                  Transmit on 434.500 MHz
  *                  APRS_REGION_FREQ             Transmit on regional APRS frequency
  *                  APRS_ISS_FREQ                Transmit on 145.825 MHz (Doppler not considered)
@@ -114,6 +115,7 @@
  *                  ...
  *                  SLEEP_WHEN_BATT_BELOW_4V1    Module hibernates when battery voltage below 4.1V
  *                  SLEEP_WHEN_ISS_NOT_VISIBLE   Module hibernates when ISS not visible (requires TLE) TODO: Not implemented yet
+ *                  NO_SLEEP                     Sleep disabled
  * PARAM frequency: CUSTOM_FREQ                  Transmit on 434.500 MHz
  *                  APRS_REGION_FREQ             Transmit on regional APRS frequency
  *                  APRS_ISS_FREQ                Transmit on 145.825 MHz (Doppler not considered)
@@ -136,6 +138,7 @@
  *                  ...
  *                  SLEEP_WHEN_BATT_BELOW_4V1    Module hibernates when battery voltage below 4.1V
  *                  SLEEP_WHEN_ISS_NOT_VISIBLE   Module hibernates when ISS not visible (requires TLE) TODO: Not implemented yet
+ *                  NO_SLEEP                     Sleep disabled
  * PARAM frequency: CUSTOM_FREQ                  Transmit on 434.500 MHz
  *                  APRS_REGION_FREQ             Transmit on regional APRS frequency
  *                  APRS_ISS_FREQ                Transmit on 145.825 MHz (Doppler not considered)
@@ -146,12 +149,12 @@
 
 #define MODULES() { \
                   /* Cycle (sec) or Trigger   Sleep                       Frequency         Power Protocol              */ \
-	MODULE_IMAGE    (600,                     SLEEP_WHEN_BATTERY_LOW,     CUSTOM_FREQ,      13,   PROT_SSDV_2FSK      ); \
+/*	MODULE_IMAGE    (600,                     SLEEP_WHEN_BATTERY_LOW,     CUSTOM_FREQ,      13,   PROT_SSDV_2FSK      );*/ \
 /*	MODULE_IMAGE    (TX_CONTINUOSLY,          SLEEP_WHEN_BATT_BELOW_3V5,  CUSTOM_FREQ,      10,   PROT_SSDV_APRS_AFSK );*/ \
-	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATTERY_LOW,     CUSTOM_FREQ,      10,   PROT_UKHAS_2FSK     ); \
+/*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATTERY_LOW,     CUSTOM_FREQ,      10,   PROT_UKHAS_2FSK     );*/ \
 /*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_RAW_CW         );*/ \
-	MODULE_POSITION (3600,                    SLEEP_WHEN_BATT_BELOW_3V0,  APRS_REGION_FREQ, 10,   PROT_APRSCONFIG_AFSK); \
-	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  APRS_REGION_FREQ, 10,   PROT_APRS_AFSK      ); \
+	MODULE_POSITION (3600,                    NO_SLEEP,                   APRS_REGION_FREQ, 10,   PROT_APRSCONFIG_AFSK); \
+	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, NO_SLEEP,                   APRS_REGION_FREQ, 10,   PROT_APRS_AFSK      ); \
 /*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_APRS_2GFSK     );*/ /* TODO: Not working yet */ \
 /*	MODULE_LOG      (120,                     SLEEP_WHEN_BATT_BELOW_3V3,  APRS_REGION_FREQ, 10,   PROT_APRS_AFSK      );*/ /* TODO: Not implemented yet */ \
 }

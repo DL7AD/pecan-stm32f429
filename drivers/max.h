@@ -32,6 +32,7 @@ bool gps_get_fix(gpsFix_t *fix);
 
 bool GPS_Init(void);
 void GPS_Deinit(void);
+uint32_t GPS_get_mcu_frequency(void);
 
 #endif
 

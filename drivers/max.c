@@ -368,12 +368,13 @@ bool GPS_Init(void) {
 
 	// Initialize pins
 	TRACE_INFO("GPS  > Init pins");
-	palSetPadMode(PORT(GPS_RESET), PIN(GPS_RESET), PAL_MODE_OUTPUT_PUSHPULL);	// GPS_RESET
-	palSetPadMode(PORT(GPS_OFF), PIN(GPS_OFF), PAL_MODE_OUTPUT_PUSHPULL);		// GPS_OFF
+	palSetPadMode(PORT(GPS_RESET), PIN(GPS_RESET), PAL_MODE_OUTPUT_PUSHPULL);	// GPS reset
+	palSetPadMode(PORT(GPS_OFF), PIN(GPS_OFF), PAL_MODE_OUTPUT_PUSHPULL);		// GPS off
+	palSetPadMode(PORT(GPS_TIMEPULSE), PIN(GPS_TIMEPULSE), PAL_MODE_INPUT);		// GPS timepulse
 
 	// Switch MOSFET
 	TRACE_INFO("GPS  > Switch on");
-	palSetPad(PORT(GPS_RESET), PIN(GPS_RESET));	// Pull up GPS_RESET
+	palSetPad(PORT(GPS_RESET), PIN(GPS_RESET));	// Pull up GPS reset
 	palClearPad(PORT(GPS_OFF), PIN(GPS_OFF));	// Switch on GPS
 	
 	// Wait for GPS startup
@@ -423,5 +424,34 @@ void GPS_Deinit(void)
 	TRACE_INFO("GPS  > Switch off");
 	palSetPad(PORT(GPS_OFF), PIN(GPS_OFF));
 
+}
+
+/**
+  * Returns accurate MCU frequency in 40Hz steps. The frequency is measured by
+  * the GPS timepulse. So it requires GPS lock. This function will timeout
+  * after 32000000 cycles if GPS is not locked or switched off.
+  */
+uint32_t GPS_get_mcu_frequency(void)
+{
+	uint32_t i = 0;
+	uint32_t timeout = 32000000;
+
+	// Lock RTOS
+	chSysLock();
+
+	// Sync
+	while( palReadPad(PORT(GPS_TIMEPULSE), PIN(GPS_TIMEPULSE)) && timeout-- );
+	while( !palReadPad(PORT(GPS_TIMEPULSE), PIN(GPS_TIMEPULSE)) && timeout-- );
+
+	// Count clocks (11 clocks each cycle)
+	while( palReadPad(PORT(GPS_TIMEPULSE), PIN(GPS_TIMEPULSE)) && timeout-- ) // Loop takes 100ms
+		i++;
+	while( !palReadPad(PORT(GPS_TIMEPULSE), PIN(GPS_TIMEPULSE)) && timeout-- ) // Loop takes 900ms
+		i++;
+
+	// Unlock RTOS
+	chSysUnlock();
+
+	return i*11;
 }
 

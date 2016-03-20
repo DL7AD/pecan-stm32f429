@@ -23,5 +23,6 @@ smode_t SLEEP_WHEN_BATT_BELOW_3V9(void);
 smode_t SLEEP_WHEN_BATT_BELOW_4V0(void);
 smode_t SLEEP_WHEN_BATT_BELOW_4V1(void);
 smode_t SLEEP_WHEN_BATTERY_LOW(void);
+smode_t NO_SLEEP(void);
 
 #endif
