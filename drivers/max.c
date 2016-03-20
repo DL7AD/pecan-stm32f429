@@ -21,14 +21,14 @@ void gps_transmit_string(uint8_t *cmd, uint8_t length) {
 uint8_t gps_receive_byte(void) {
 	uint8_t rxbuf[1];
 	uint8_t txbuf = {0xFF};
-	i2cSend(UBLOX_MAX_ADDRESS, (uint8_t*)&txbuf, 1, (uint8_t*)&rxbuf, 1, MS2ST(10));
+	i2cSend(UBLOX_MAX_ADDRESS, (uint8_t*)&txbuf, 1, (uint8_t*)&rxbuf, 1, MS2ST(100));
 	return rxbuf[0];
 }
 
 uint8_t gps_bytes_avail(void) {
 	uint8_t rxbuf[2];
 	uint8_t txbuf = {0xFD};
-	i2cSend(UBLOX_MAX_ADDRESS, (uint8_t*)&txbuf, 1, (uint8_t*)&rxbuf, 2, MS2ST(10));
+	i2cSend(UBLOX_MAX_ADDRESS, (uint8_t*)&txbuf, 1, (uint8_t*)&rxbuf, 2, MS2ST(100));
 	return (rxbuf[0] << 8) | rxbuf[1];
 }
 
@@ -162,18 +162,16 @@ bool gps_get_fix(gpsFix_t *fix) {
 	static uint8_t response[92];	/* PVT response length is 92 bytes */
 	uint8_t pvt[] = {0xB5, 0x62, 0x01, 0x07, 0x00, 0x00, 0x08, 0x19};
 	int32_t alt_tmp;
-	uint8_t try = 0;
-	bool resp;
 
 	// Read GPS data
-	do {
-		gps_transmit_string(pvt, sizeof(pvt));
-		resp = gps_receive_payload(0x01, 0x07, response, 1500);
-	} while(!resp && ++try < 3);
+	gps_transmit_string(pvt, sizeof(pvt));
+	bool resp = gps_receive_payload(0x01, 0x07, response, 5000);
 
 	if(!resp) { // Failed to aquire GPS data
-		TRACE_ERROR("GPS  > Polling FAILED");
+		TRACE_ERROR("GPS  > PVT Polling FAILED");
 		return false;
+	} else {
+		TRACE_INFO("GPS  > PVT Polling OK");
 	}
 
 	fix->num_svs = response[23];
@@ -443,7 +441,7 @@ uint32_t GPS_get_mcu_frequency(void)
 	while( palReadPad(PORT(GPS_TIMEPULSE), PIN(GPS_TIMEPULSE)) && timeout-- );
 	while( !palReadPad(PORT(GPS_TIMEPULSE), PIN(GPS_TIMEPULSE)) && timeout-- );
 
-	// Count clocks (9 clocks each cycle)
+	// Count clocks (11 clocks each cycle)
 	while( palReadPad(PORT(GPS_TIMEPULSE), PIN(GPS_TIMEPULSE)) && timeout-- ) // Loop takes 100ms
 		i++;
 	while( !palReadPad(PORT(GPS_TIMEPULSE), PIN(GPS_TIMEPULSE)) && timeout-- ) // Loop takes 900ms
@@ -452,6 +450,6 @@ uint32_t GPS_get_mcu_frequency(void)
 	// Unlock RTOS
 	chSysUnlock();
 
-	return i*9;
+	return i*11;
 }
 

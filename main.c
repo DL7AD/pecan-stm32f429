@@ -64,7 +64,7 @@ int main(void) {
 
 		// Software watchdog
 		for(uint8_t i=0; i<moduleCount; i++) {
-			if(ST2S(chVTGetSystemTimeX()-modules[i]->lastCycle) <= (uint32_t)modules[0]->cycle) {
+			if(ST2S(chVTGetSystemTimeX() - modules[i]->lastCycle) <= (uint32_t)modules[0]->cycle + CYCLE_TIME) {
 				TRACE_INFO("MAIN > Module %s OK", modules[i]->name);
 				error = 0;
 			} else {

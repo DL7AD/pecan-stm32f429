@@ -32,6 +32,8 @@
 		TRACE_ERROR("I2C  > TIMEOUT > RESTART"); \
 		i2cStop(driver); \
 		i2cStart(driver, &_i2cfg); \
+	} else if(i2c_status == MSG_RESET) { \
+		TRACE_ERROR("I2C  > RESET"); \
 	} \
 	i2cReleaseBus(driver); \
 }
@@ -43,6 +45,8 @@
 		TRACE_ERROR("I2C  > TIMEOUT > RESTART"); \
 		i2cStop(driver); \
 		i2cStart(driver, &_i2cfg); \
+	} else if(i2c_status == MSG_RESET) { \
+		TRACE_ERROR("I2C  > RESET"); \
 	} \
 	i2cReleaseBus(driver); \
 }
