@@ -73,7 +73,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 
 			// Adjust PLLN
 			plln = mcu_frequency != 0 ? (uint32_t)((44500000.0 / ((float)mcu_frequency)) * ((float)plln)) : 0;
-			if(plln > 250 && plln < 400) {
+			if(plln > 340 && plln < 380) {
 				TRACE_INFO("Set PLLN to %d", plln);
 				chThdSleepMilliseconds(10);
 
