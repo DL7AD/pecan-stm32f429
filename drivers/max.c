@@ -98,16 +98,21 @@ uint16_t gps_receive_payload(uint8_t class_id, uint8_t msg_id, unsigned char *pa
 	enum {UBX_A, UBX_B, CLASSID, MSGID, LEN_A, LEN_B, PAYLOAD} state = UBX_A;
 	uint16_t payload_cnt = 0;
 	uint16_t payload_len = 0;
+	uint16_t bytes_avail = 0;
 
 	systime_t sTimeout = chVTGetSystemTimeX() + MS2ST(timeout);
 	while(chVTGetSystemTimeX() <= sTimeout) {
 
 		// Receive one byte
-		if(!gps_bytes_avail()) { // No byte available
-			chThdSleepMilliseconds(100);
+		if(!bytes_avail)
+			bytes_avail = gps_bytes_avail();
+		if(!bytes_avail) {
+			chThdSleepMilliseconds(50);
 			continue;
 		}
+			
 		rx_byte = gps_receive_byte();
+		bytes_avail--;
 
 		// Process one byte
 		switch (state) {
