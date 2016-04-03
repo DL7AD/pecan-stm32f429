@@ -292,8 +292,6 @@ THD_FUNCTION(moduleRADIO, arg) {
   * Returns APRS region specific frequency determined by GPS location. It will
   * use the APRS default frequency set in the config file if no GPS fix has
   * been received.
-  * TODO: Countries missing: Brasil, Chile,
-  * Argentinia/Bolivia/Uruguay, Venezuela/Panama, Costa Rica, Australia, New Zealand
   */
 uint32_t getAPRSRegionFrequency(void) {
 	trackPoint_t *point = getLastTrackPoint();
