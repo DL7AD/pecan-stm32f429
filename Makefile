@@ -140,7 +140,7 @@ CSRC = $(STARTUPSRC) \
        debug.c \
        sleep.c \
        modules.c \
-       math/base64.c \
+       math/base.c \
        radio.c \
        math/sgp4.c \
        math/geofence.c \

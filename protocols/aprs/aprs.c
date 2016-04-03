@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include "base64.h"
+#include "base.h"
 #include "max.h"
 #include "debug.h"
 
@@ -195,9 +195,9 @@ uint32_t aprs_encode_log(uint8_t* message, mod_t mod)
 	for(i=0; i<LOG_TRX_NUM; i++) {
 		gpsFix_t dummy;
 		gpsFix_t *data = &dummy; // TODO: Implement getNextLogPoint() for this assignment
-		uint8_t base64[BASE64LEN(sizeof(gpsFix_t))+1];
-		base64_encode((uint8_t*)data, base64, sizeof(gpsFix_t));
-		ax25_send_string(&packet, (char*)base64);
+		uint8_t base91[BASE91LEN(sizeof(gpsFix_t))+1];
+		base91_encode((uint8_t*)data, base91, sizeof(gpsFix_t));
+		ax25_send_string(&packet, (char*)base91);
 	}
 
 	// Send footer

@@ -88,10 +88,10 @@ extern const SerialConfig uart_config;
 #define TRACE_BIN(data, len) { \
 	chMtxLock(&trace_mtx); \
 	chprintf((BaseSequentialStream*)&SD4, "[%8d.%03d][DEBUG] ", chVTGetSystemTimeX()/CH_CFG_ST_FREQUENCY, (chVTGetSystemTimeX()*1000/CH_CFG_ST_FREQUENCY)%1000); \
-	chprintf((BaseSequentialStream*)&SD4, "     > Binary data (%d bits)\r\n", len); \
-	for(uint32_t i=0; i<(len+7)/8; i+=8) \
+	chprintf((BaseSequentialStream*)&SD4, "     > Binary data (%d bits)\r\n", (len)); \
+	for(uint32_t i=0; i<((len)+7)/8; i+=8) \
 		chprintf((BaseSequentialStream*)&SD4, "%s 0x%03x ... 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\r\n", \
-		TRACE_TAB, i, data[i], data[i+1], data[i+2], data[i+3], data[i+4], data[i+5], data[i+6], data[i+7]); \
+		TRACE_TAB, i, (data)[i], (data)[i+1], (data)[i+2], (data)[i+3], (data)[i+4], (data)[i+5], (data)[i+6], (data)[i+7]); \
 	chMtxUnlock(&trace_mtx); \
 }
 

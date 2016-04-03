@@ -7,7 +7,7 @@
 #include "pi2c.h"
 #include "ssdv.h"
 #include "aprs.h"
-#include "base64.h"
+#include "base.h"
 #include <string.h>
 
 static uint32_t image_id;
@@ -15,14 +15,14 @@ static uint32_t image_id;
 void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 	ssdv_t ssdv;
 	uint8_t pkt[SSDV_PKT_SIZE];
-	uint8_t pkt_base64[BASE64LEN(SSDV_PKT_SIZE)];
+	uint8_t pkt_base91[BASE91LEN(SSDV_PKT_SIZE-37)];
 	uint16_t i = 0;
 	uint8_t *b;
 	uint16_t bi = 0;
 	uint8_t c = SSDV_OK;
 
 	// Init SSDV (FEC at 2FSK, non FEC at APRS)
-	ssdv_enc_init(&ssdv, parm->protocol == PROT_SSDV_2FSK ? SSDV_TYPE_NORMAL : SSDV_TYPE_NOFEC, SSDV_CALLSIGN, ++image_id);
+	ssdv_enc_init(&ssdv, parm->protocol == PROT_SSDV_2FSK ? SSDV_TYPE_NORMAL : SSDV_TYPE_NORMAL, SSDV_CALLSIGN, ++image_id);
 	ssdv_enc_set_buffer(&ssdv, pkt);
 
 	while(true)
@@ -66,8 +66,14 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 				msg.mod = MOD_AFSK;
 				msg.freq = (*fptr)();
 				msg.power = parm->power;
-				base64_encode(pkt, pkt_base64, sizeof(pkt));
-				msg.bin_len = aprs_encode_image(msg.msg, msg.mod, pkt_base64, sizeof(pkt_base64));
+
+				// Deleting buffer
+				for(int t=0; t<256; t++)
+					pkt_base91[t] = 0;
+
+				base91_encode(&pkt[1], pkt_base91, sizeof(pkt)-37); // Sync byte, CRC and FEC of SSDV not transmitted
+				msg.bin_len = aprs_encode_image(msg.msg, msg.mod, pkt_base91, strlen((char*)pkt_base91));
+
 				while(!transmitOnRadio(&msg)) // Try to insert message into message box less aggressively
 					chThdSleepMilliseconds(2000);
 				break;
@@ -76,8 +82,10 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 				msg.mod = MOD_2FSK;
 				msg.freq = (*fptr)();
 				msg.power = parm->power;
+
 				memcpy(msg.msg, pkt, sizeof(pkt));
 				msg.bin_len = 8*sizeof(pkt);
+
 				while(!transmitOnRadio(&msg)) // Try to insert message into message box less aggressively
 					chThdSleepMilliseconds(2000);
 				break;
