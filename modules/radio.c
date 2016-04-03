@@ -234,16 +234,9 @@ THD_FUNCTION(moduleRADIO, arg) {
 			}
 
 			if(radio) { // Radio found
-				TRACE_INFO(	"RAD  > Transmit on radio (%d bits)\r\n"
-							"%s Radio %d\r\n"
-							"%s Frequency %d.%03d MHz\r\n"
-							"%s Power %d dBm (%d)\r\n"
-							"%s Modulation %s",
-							msg->bin_len,
-							TRACE_TAB, radio,
-							TRACE_TAB, msg->freq/1000000, (msg->freq%1000000)/1000,
-							TRACE_TAB, msg->power, dBm2powerLvl(msg->power),
-							TRACE_TAB, VAL2MOULATION(msg->mod)
+				TRACE_INFO(	"RAD  > Transmit on radio %d, %d.%03d MHz, %d dBm (%d), %s, %d bits",
+							radio, msg->freq/1000000, (msg->freq%1000000)/1000, msg->power,
+							dBm2powerLvl(msg->power), VAL2MOULATION(msg->mod), msg->bin_len
 				);
 
 				if(msg->mod != lastModulation[radio]) // Modulation of last msg was different
@@ -272,15 +265,9 @@ THD_FUNCTION(moduleRADIO, arg) {
 
 			} else { // Error
 
-				TRACE_ERROR("RAD  > No radio available for this frequency\r\n"
-							"%s Radio %d\r\n"
-							"%s Frequency %d.%03d MHz\r\n"
-							"%s Power %d dBm (%d)\r\n"
-							"%s Modulation %s",
-							TRACE_TAB, 10,
-							TRACE_TAB, msg->freq/1000000, (msg->freq%1000000)/1000,
-							TRACE_TAB, msg->power, dBm2powerLvl(msg->power),
-							TRACE_TAB, VAL2MOULATION(msg->mod)
+				TRACE_ERROR("RAD  > No radio available for this frequency, %d.%03d MHz, %d dBm (%d), %s, %d bits",
+							radio, msg->freq/1000000, (msg->freq%1000000)/1000, msg->power,
+							dBm2powerLvl(msg->power), VAL2MOULATION(msg->mod), msg->bin_len
 				);
 
 			}
@@ -360,7 +347,7 @@ uint32_t getAPRSISSFrequency(void) {
 	return 145825000;
 }
 uint32_t getCustomFrequency(void) {
-	return 145300000;
+	return 434500000;
 }
 
 /**

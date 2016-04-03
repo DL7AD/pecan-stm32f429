@@ -13,7 +13,7 @@ char *PROTOCOL_STRING[] = {
 	"SSDV 2FSK", "SSDV on APRS AFSK 1200", "SSDV on APRS 2GFSK 9600", "CW"
 };
 char *MOULATION_STRING[] = {
-	"CW", "2FSK", "2GFSK", "DOMINOEX16", "AFSK"
+	"CW", "2FSK", "2GFSK 9k6", "DOMINOEX16", "AFSK 1k2"
 };
 
 mutex_t interference_mtx; // Needed to avoid HF interference
