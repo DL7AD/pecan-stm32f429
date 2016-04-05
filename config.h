@@ -59,7 +59,7 @@
 #define AFSK_PREAMBLE			300				/* APRS AFSK preamble length in ms */
 
 // 2GFSK configuration
-#define GFSK_PREAMBLE			50				/* APRS 2GFSK preamble length in ms */
+#define GFSK_PREAMBLE			10				/* APRS 2GFSK preamble length in ms */
 
 // 2FSK configuration
 #define FSK_PREDELAY			0				/* 2FSK pre-transmission delay */
@@ -150,12 +150,12 @@
 #define MODULES() { \
                   /* Cycle (sec) or Trigger   Sleep                       Frequency         Power Protocol              */ \
 /*	MODULE_IMAGE    (TX_CONTINUOSLY,          NO_SLEEP,                   CUSTOM_FREQ,      13,   PROT_SSDV_2FSK      );*/ \
-	MODULE_IMAGE    (TX_CONTINUOSLY,          NO_SLEEP,                   CUSTOM_FREQ,      10,   PROT_SSDV_APRS_AFSK ); \
+	MODULE_IMAGE    (TX_CONTINUOSLY,          NO_SLEEP,                   CUSTOM_FREQ,      10,   PROT_SSDV_APRS_2GFSK); \
 /*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_UKHAS_2FSK     );*/ \
 /*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_RAW_CW         );*/ \
 /*	MODULE_POSITION (3600,                    SLEEP_WHEN_BATT_BELOW_3V9,  APRS_REGION_FREQ, 10,   PROT_APRSCONFIG_AFSK);*/ \
 /*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  APRS_REGION_FREQ, 10,   PROT_APRS_AFSK      );*/ \
-/*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_APRS_2GFSK     );*/ /* TODO: Not working yet */ \
+/*	MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0,  CUSTOM_FREQ,      10,   PROT_APRS_2GFSK     );*/  \
 /*	MODULE_LOG      (120,                     SLEEP_WHEN_BATT_BELOW_3V3,  APRS_REGION_FREQ, 10,   PROT_APRS_AFSK      );*/ /* TODO: Not implemented yet */ \
 }
 

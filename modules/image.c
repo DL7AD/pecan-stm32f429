@@ -59,11 +59,8 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 
 		switch(parm->protocol) {
 			case PROT_SSDV_APRS_2GFSK:
-				TRACE_ERROR("IMG  > 2GFSK not yet implemented")
-				break;
-
 			case PROT_SSDV_APRS_AFSK:
-				msg.mod = MOD_AFSK;
+				msg.mod = parm->protocol == PROT_SSDV_APRS_AFSK ? MOD_AFSK : MOD_2GFSK;
 				msg.freq = (*fptr)();
 				msg.power = parm->power;
 
@@ -75,7 +72,7 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 				msg.bin_len = aprs_encode_image(msg.msg, msg.mod, pkt_base91, strlen((char*)pkt_base91));
 
 				while(!transmitOnRadio(&msg)) // Try to insert message into message box less aggressively
-					chThdSleepMilliseconds(2000);
+					chThdSleepMilliseconds(100);
 				break;
 
 			case PROT_SSDV_2FSK:
@@ -87,7 +84,7 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 				msg.bin_len = 8*sizeof(pkt);
 
 				while(!transmitOnRadio(&msg)) // Try to insert message into message box less aggressively
-					chThdSleepMilliseconds(2000);
+					chThdSleepMilliseconds(100);
 				break;
 
 			default:

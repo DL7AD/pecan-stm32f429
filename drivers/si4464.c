@@ -287,7 +287,7 @@ void setModem2GFSK(radio_t radio) {
 	Si4464_write(radio, no_sync_word, 5);
 
 	// Setup the NCO modulo and oversampling mode
-	uint32_t s = OSC_FREQ / 10;
+	uint32_t s = OSC_FREQ / 40;
 	uint8_t f3 = (s >> 24) & 0xFF;
 	uint8_t f2 = (s >> 16) & 0xFF;
 	uint8_t f1 = (s >>  8) & 0xFF;
@@ -296,7 +296,7 @@ void setModem2GFSK(radio_t radio) {
 	Si4464_write(radio, setup_oversampling, 8);
 
 	// setup the NCO data rate for 2GFSK
-	uint8_t setup_data_rate[] = {0x11, 0x20, 0x03, 0x03, 0x00, 0x4B, 0x00};
+	uint8_t setup_data_rate[] = {0x11, 0x20, 0x03, 0x03, 0x01, 0x25, 0x80};
 	Si4464_write(radio, setup_data_rate, 7);
 
 	// use 2GFSK from async GPIO0

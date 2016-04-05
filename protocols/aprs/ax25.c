@@ -37,11 +37,11 @@ static void update_crc(ax25_t *packet, char bit)
 		packet->crc = packet->crc >> 1;
 }
 
-uint32_t state;
+uint32_t lfsr;
 uint8_t scramble_bit(uint8_t _in) {
-	uint8_t _out = (_in ^ (state >> 16) ^ (state >> 11)) & 0x1;
-	state = ((state << 0x1) | (_in & 0x1));
-	return _out;
+	uint8_t x = (_in ^ (lfsr >> 16) ^ (lfsr >> 11)) & 1;
+	lfsr = (lfsr << 1) | (x & 1);
+	return x;
 }
 
 static void send_byte(ax25_t *packet, char byte)
@@ -145,7 +145,7 @@ void ax25_send_header(ax25_t *packet, const char *callsign, uint8_t ssid, const 
 		ax25_send_flag(packet);
 	}
 
-	ax25_send_path(packet, APRS_DEST_CALLSIGN, APRS_DEST_SSID, false);			// Destination callsign
+	ax25_send_path(packet, APRS_DEST_CALLSIGN, APRS_DEST_SSID, false);		// Destination callsign
 	ax25_send_path(packet, callsign, ssid, path[0] == 0 || path == NULL);	// Source callsign
 
 	// Parse path
@@ -225,8 +225,8 @@ void scramble(ax25_t *packet) {
 		return; // Scrambling not necessary
 
 	// Scramble
-	state = 0x0;
-	for(uint32_t i=GFSK_PREAMBLE*6/5; i<packet->size; i++) {
+	lfsr = 0;
+	for(uint32_t i=0; i<packet->size; i++) {
 		uint8_t bit = scramble_bit((packet->data[i >> 3] >> (i & 0x7)) & 0x1);
 		if(bit) {
 			AX25_WRITE_BIT(packet->data, i);
@@ -240,6 +240,9 @@ void scramble(ax25_t *packet) {
   * NRZ-I tone encoding (0: bit change, 1: no bit change)
   */
 void nrzi_encode(ax25_t *packet) {
+	if(packet->mod != MOD_AFSK)
+		return; // NRZ-I encode not necessary
+
 	uint8_t ctone = 0;
 	for(uint32_t i=0; i<packet->size; i++) {
 		if(((packet->data[i >> 3] >> (i & 0x7)) & 0x1) == 0)

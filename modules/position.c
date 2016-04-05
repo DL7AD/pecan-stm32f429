@@ -150,7 +150,7 @@ THD_FUNCTION(modulePOS, arg) {
 					msg.mod = parm->protocol == PROT_APRS_AFSK ? MOD_AFSK : MOD_2GFSK;
 					msg.bin_len = aprs_encode_position(msg.msg, msg.mod, trackPoint);
 					while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively (transmission)
-						chThdSleepMilliseconds(20);
+						chThdSleepMilliseconds(10);
 					break;
 
 				case PROT_APRSCONFIG_2GFSK: // Encode APRS telemetry encoding definition (conversion formulae)
@@ -161,7 +161,7 @@ THD_FUNCTION(modulePOS, arg) {
 					for(uint8_t i=0; i<sizeof(config); i++) {
 						msg.bin_len = aprs_encode_telemetry_configuration(msg.msg, msg.mod, config[i]); // Encode packet
 						while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively (transmission)
-							chThdSleepMilliseconds(20);
+							chThdSleepMilliseconds(10);
 						chThdSleepMilliseconds(5000); // Take a litte break between the package transmissions
 					}
 
@@ -179,7 +179,7 @@ THD_FUNCTION(modulePOS, arg) {
 
 					// Transmit message
 					while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively (transmission)
-						chThdSleepMilliseconds(20);
+						chThdSleepMilliseconds(10);
 					break;
 
 				case PROT_RAW_CW: // Encode CW
@@ -194,7 +194,7 @@ THD_FUNCTION(modulePOS, arg) {
 					// Transmit message
 					msg.bin_len = CW_encode(msg.msg, cwmsg); // Convert message to binary stream
 					while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively (transmission)
-						chThdSleepMilliseconds(20);
+						chThdSleepMilliseconds(10);
 					break;
 
 				default:

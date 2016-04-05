@@ -172,27 +172,30 @@ void send2GFSK(radio_t radio, radioMSG_t *msg) {
 	radioTune(radio, msg->freq, 0, msg->power);
 
 	// Transmit data
+	uint32_t sample_per_bit = 0;
 	uint32_t bit = 0;
 	uint8_t ctone = 0;
 	uint8_t current_byte = 0;
-	systime_t time = chVTGetSystemTimeX();
+	//systime_t time = chVTGetSystemTimeX();
 	while(bit < msg->bin_len) {
 
-		if((bit & 7) == 0) { // Load up next byte
-			current_byte = msg->msg[bit >> 3];
-		} else {
-			current_byte = current_byte / 2; // Load next bit
+		if(sample_per_bit++ > 1570) {
+			if((bit & 7) == 0) { // Load up next byte
+				current_byte = msg->msg[bit >> 3];
+			} else {
+				current_byte = current_byte / 2; // Load next bit
+			}
+
+			if((current_byte & 1) == 0)
+				ctone = !ctone; // Switch shifting
+			MOD_GPIO_SET(radio, ctone);
+			bit++;
+
+			palTogglePad(PORT(LED_YELLOW), PIN(LED_YELLOW));
+			sample_per_bit = 0;
 		}
 
-		chprintf((BaseSequentialStream*)&SD4, "%d", (current_byte & 1));
-
-		if((current_byte & 1) == 0)
-			ctone = !ctone; // Switch shifting
-		MOD_GPIO_SET(radio, ctone);
-		bit++;
-
-		time = chThdSleepUntilWindowed(time, time + 107);
-		palTogglePad(PORT(LED_YELLOW), PIN(LED_YELLOW));
+		//time = chThdSleepUntilWindowed(time, time + 27);
 	}
 }
 
@@ -345,7 +348,7 @@ uint32_t getAPRSISSFrequency(void) {
 	return 145825000;
 }
 uint32_t getCustomFrequency(void) {
-	return 434500000;
+	return 432495000;
 }
 
 /**
