@@ -14,13 +14,13 @@ static const SPIConfig ls_spicfg1 = {
 	NULL,
 	GPIOA,
 	11,
-	SPI_CR1_BR_2 | SPI_CR1_BR_1 | SPI_CR1_MSTR
+	SPI_CR1_MSTR
 };
 static const SPIConfig ls_spicfg2 = {
 	NULL,
 	GPIOB,
 	0,
-	SPI_CR1_BR_2 | SPI_CR1_BR_1 | SPI_CR1_MSTR
+	SPI_CR1_MSTR
 };
 #define getSPIDriver(radio) (radio == RADIO_2M ? &ls_spicfg1 : &ls_spicfg2)
 
