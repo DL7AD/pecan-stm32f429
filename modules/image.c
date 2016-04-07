@@ -8,6 +8,7 @@
 #include "ssdv.h"
 #include "aprs.h"
 #include "base.h"
+#include "testimage.h"
 #include <string.h>
 
 static uint32_t image_id;
@@ -31,6 +32,7 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 
 		while((c = ssdv_enc_get_packet(&ssdv)) == SSDV_FEED_ME)
 		{
+			TRACE_DEBUG("%d", bi);
 			b = &image[bi];
 			uint8_t r = bi < image_len-128 ? 128 : image_len - bi;
 			bi += 128;
@@ -154,7 +156,8 @@ THD_FUNCTION(moduleIMG, arg) {
 
 			if(tries) { // Capture successful
 				TRACE_INFO("IMG  > Encode/Transmit SSDV");
-				encode_ssdv(image, image_len, parm);
+				encode_ssdv(testimage_jpg, testimage_jpg_len, parm);
+				//encode_ssdv(image, image_len, parm);
 			} else {
 				TRACE_ERROR("IMG  > Image capturing failed");
 			}

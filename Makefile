@@ -144,6 +144,7 @@ CSRC = $(STARTUPSRC) \
        radio.c \
        math/sgp4.c \
        math/geofence.c \
+       images/testimage.c \
        main.c
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
@@ -232,7 +233,8 @@ UADEFS =
 
 # List all user directories here
 UINCDIR = modules/ drivers protocols/aprs protocols/ssdv \
-          protocols/cw math/ STM32F4xx_StdPeriph_Driver/inc
+          protocols/cw math/ STM32F4xx_StdPeriph_Driver/inc \
+          images/
 
 # List the user directory to look for the libraries here
 ULIBDIR =
