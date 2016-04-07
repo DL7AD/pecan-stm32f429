@@ -42,6 +42,7 @@ void radioShutdown(radio_t radio);
 bool radioTune(radio_t radio, uint32_t frequency, uint16_t shift, int8_t level);
 int8_t Si4464_getTemperature(radio_t radio);
 uint8_t dBm2powerLvl(int32_t dBm);
+bool isRadioInitialized(radio_t radio);
 
 #endif
 

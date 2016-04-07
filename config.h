@@ -56,7 +56,7 @@
 /* ------------------------------------------------------------- Modulation ------------------------------------------------------------- */
 
 // AFSK configuration
-#define AFSK_PREAMBLE			200				/* APRS AFSK preamble length in ms */
+#define AFSK_PREAMBLE			300				/* APRS AFSK preamble length in ms */
 
 // 2GFSK configuration
 #define GFSK_PREAMBLE			5				/* APRS 2GFSK preamble length in ms */
@@ -78,7 +78,7 @@
 #define RADIO_TIMEOUT			300				/* Radio transmission timeout in ms (radio switched off after x ms in idling) */
 
 // Tracking manager
-#define CYCLE_TIME				60				/* Tracking cycle (all peripheral data [airpressure, GPS, temperature, ...] is collected each x seconds */
+#define CYCLE_TIME				180				/* Tracking cycle (all peripheral data [airpressure, GPS, temperature, ...] is collected each x seconds */
 
 
 /*

@@ -134,7 +134,10 @@ void ax25_send_header(ax25_t *packet, const char *callsign, uint8_t ssid, const 
 	}
 
 	// Send flag
-	ax25_send_flag(packet);
+	for(uint8_t i=0; i<4; i++)
+	{
+		ax25_send_flag(packet);
+	}
 
 	ax25_send_path(packet, APRS_DEST_CALLSIGN, APRS_DEST_SSID, false);		// Destination callsign
 	ax25_send_path(packet, callsign, ssid, path[0] == 0 || path == NULL);	// Source callsign
@@ -202,10 +205,7 @@ void ax25_send_footer(ax25_t *packet)
 	packet->crc = final_crc;
 
 	// Signal the end of frame
-	for(uint8_t i=0; i<4; i++)
-	{
-		ax25_send_flag(packet);
-	}
+	ax25_send_flag(packet);
 }
 
 /**

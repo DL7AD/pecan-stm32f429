@@ -9,7 +9,7 @@
 #include "pi2c.h"
 #include <string.h>
 
-#define PLAYBACK_RATE		1600000									/* Samples per second (SYSCLK = 45MHz) */
+#define PLAYBACK_RATE		1620000									/* Samples per second (SYSCLK = 45MHz) */
 #define BAUD_RATE			1200									/* APRS AFSK baudrate */
 #define SAMPLES_PER_BAUD	(PLAYBACK_RATE / BAUD_RATE)				/* Samples per baud */
 #define PHASE_DELTA_1200	(((2 * 1200) << 16) / PLAYBACK_RATE)	/* Delta-phase per sample for 1200Hz tone */
@@ -23,6 +23,12 @@ uint32_t mb_buffer_index;
 static uint8_t mb_free = MB_SIZE;
 mutex_t radio_mtx;
 
+void initAFSK(radio_t radio, radioMSG_t *msg) {
+	// Initialize radio and tune
+	Si4464_Init(radio, MOD_AFSK);
+	radioTune(radio, msg->freq, 0, msg->power);
+}
+
 void sendAFSK(radio_t radio, radioMSG_t *msg) {
 	// Initialize variables for AFSK
 	uint32_t phase_delta = PHASE_DELTA_1200;	// 1200/2200 for standard AX.25
@@ -31,15 +37,15 @@ void sendAFSK(radio_t radio, radioMSG_t *msg) {
 	uint32_t current_sample_in_baud = 0;		// 1 bit = SAMPLES_PER_BAUD samples
 	uint8_t current_byte = 0;
 
-	// Initialize radio and tune
-	Si4464_Init(radio, MOD_AFSK);
-	radioTune(radio, msg->freq, 0, msg->power);
+	chSysDisable();
 
 	// Modulate
 	while(true)
 	{
-		if(packet_pos == msg->bin_len) // Packet transmission finished
+		if(packet_pos == msg->bin_len) { // Packet transmission finished
+			chSysEnable();
 			return;
+		}
 
 		if(current_sample_in_baud == 0) {
 			if((packet_pos & 7) == 0) { // Load up next byte
@@ -65,14 +71,16 @@ void sendAFSK(radio_t radio, radioMSG_t *msg) {
 	}
 }
 
+void initCW(radio_t radio, radioMSG_t *msg) {
+	// Initialize radio and tune
+	Si4464_Init(radio, MOD_CW);
+	radioTune(radio, msg->freq, 0, msg->power);
+}
+
 /**
   * Transmits binary CW message. One bit = 20ms (1: TONE, 0: NO TONE)
   */
 void sendCW(radio_t radio, radioMSG_t *msg) {
-	// Initialize radio and tune
-	Si4464_Init(radio, MOD_CW);
-	radioTune(radio, msg->freq, 0, msg->power);
-
 	// Transmit data
 	uint32_t bit = 0;
 	systime_t time = chVTGetSystemTimeX();
@@ -146,6 +154,13 @@ static void serial_cb(void *arg) {
 	}
 }
 
+void init2FSK(radio_t radio, radioMSG_t *msg) {
+	// Initialize radio and tune
+	Si4464_Init(radio, MOD_2FSK);
+	MOD_GPIO_SET(radio, HIGH);
+	radioTune(radio, msg->freq, FSK_SHIFT, msg->power);
+}
+
 void send2FSK(radio_t radio, radioMSG_t *msg) {
 	// Prepare serial machine states
 	txs = 6;
@@ -155,30 +170,29 @@ void send2FSK(radio_t radio, radioMSG_t *msg) {
 	fsk_msg = msg;
 	fsk_radio = radio;
 
-	// Initialize radio and tune
-	Si4464_Init(radio, MOD_2FSK);
-	MOD_GPIO_SET(radio, HIGH);
-	radioTune(radio, msg->freq, FSK_SHIFT, msg->power);
-
 	// Modulate
 	chVTSet(&vt, 1, serial_cb, NULL);	// Start timer
 	while(txs)
 		chThdSleepMilliseconds(1);		// Wait for routine to finish
 }
 
-void send2GFSK(radio_t radio, radioMSG_t *msg) {
+void init2GFSK(radio_t radio, radioMSG_t *msg) {
 	// Initialize radio and tune
 	Si4464_Init(radio, MOD_2GFSK);
 	radioTune(radio, msg->freq, 0, msg->power);
+	chThdSleepMilliseconds(10);
+}
 
+void send2GFSK(radio_t radio, radioMSG_t *msg) {
 	// Transmit data
 	uint32_t sample_per_bit = 0;
 	uint32_t bit = 0;
 	uint8_t ctone = 0;
 	uint8_t current_byte = 0;
-	//systime_t time = chVTGetSystemTimeX();
-	while(bit < msg->bin_len) {
 
+	chSysDisable();
+
+	while(bit < msg->bin_len) {
 		if(sample_per_bit++ > 1570) {
 			if((bit & 7) == 0) { // Load up next byte
 				current_byte = msg->msg[bit >> 3];
@@ -194,9 +208,9 @@ void send2GFSK(radio_t radio, radioMSG_t *msg) {
 			palTogglePad(PORT(LED_YELLOW), PIN(LED_YELLOW));
 			sample_per_bit = 0;
 		}
-
-		//time = chThdSleepUntilWindowed(time, time + 27);
 	}
+
+	chSysEnable();
 }
 
 THD_FUNCTION(moduleRADIO, arg) {
@@ -242,20 +256,28 @@ THD_FUNCTION(moduleRADIO, arg) {
 							dBm2powerLvl(msg->power), VAL2MOULATION(msg->mod), msg->bin_len
 				);
 
-				if(msg->mod != lastModulation[radio]) // Modulation of last msg was different
+				if(msg->mod != lastModulation[radio-1]) // Modulation of last msg was different
 					radioShutdown(radio); // Shutdown radio for reinitialization
 
 				switch(msg->mod) {
 					case MOD_2FSK:
+						if(!isRadioInitialized(radio))
+							init2FSK(radio, msg);
 						send2FSK(radio, msg);
 						break;
 					case MOD_2GFSK:
+						if(!isRadioInitialized(radio))
+							init2GFSK(radio, msg);
 						send2GFSK(radio, msg);
 						break;
 					case MOD_AFSK:
+						if(!isRadioInitialized(radio))
+							initAFSK(radio, msg);
 						sendAFSK(radio, msg);
 						break;
 					case MOD_CW:
+						if(!isRadioInitialized(radio))
+							initCW(radio, msg);
 						sendCW(radio, msg);
 						break;
 					case MOD_DOMINOEX16:
@@ -263,8 +285,8 @@ THD_FUNCTION(moduleRADIO, arg) {
 						break;
 				}
 
-				lastMessage[radio] = chVTGetSystemTimeX(); // Mark time for radio shutdown
-				lastModulation[radio] = msg->mod;
+				lastMessage[radio-1] = chVTGetSystemTimeX(); // Mark time for radio shutdown
+				lastModulation[radio-1] = msg->mod;
 
 			} else { // Error
 
@@ -282,7 +304,7 @@ THD_FUNCTION(moduleRADIO, arg) {
 		} else {
 			for(uint8_t i=0; i<2; i++) {
 				if(ST2MS(chVTGetSystemTimeX() - lastMessage[i]) >= RADIO_TIMEOUT) // Timeout reached
-					radioShutdown(i); // Shutdown radio
+					radioShutdown(i+1); // Shutdown radio
 			}
 		}
 		chMtxUnlock(&interference_mtx); // Heavy interference finished (HF)

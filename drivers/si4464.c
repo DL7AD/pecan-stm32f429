@@ -25,6 +25,7 @@ static const SPIConfig ls_spicfg2 = {
 #define getSPIDriver(radio) (radio == RADIO_2M ? &ls_spicfg1 : &ls_spicfg2)
 
 uint32_t outdiv;
+bool initialized[2];
 
 /**
  * Initializes Si4464 transceiver chip. Adjustes the frequency which is shifted by variable
@@ -103,6 +104,7 @@ void Si4464_Init(radio_t radio, mod_t modulation) {
 
 	// Temperature readout
 	// TRACE_INFO("SI %d > Transmitter temperature %d degC", radio, Si4464_getTemperature(radio));
+	initialized[radio] = true;
 }
 
 void Si4464_write(radio_t radio, uint8_t* txData, uint32_t len) {
@@ -118,9 +120,9 @@ void Si4464_write(radio_t radio, uint8_t* txData, uint32_t len) {
 	spiReleaseBus(&SPID2);
 
 	// Reqest ACK by Si4464
-	uint8_t counter = 0; // FIXME: Sometimes CTS is not returned by Si4464 correctly
+	uint32_t counter = 0; // FIXME: Sometimes CTS is not returned by Si4464 correctly
 	rxData[1] = 0x00;
-	while(rxData[1] != 0xFF && ++counter < 20) {
+	while(rxData[1] != 0xFF && ++counter < 2000) {
 
 		// Request ACK by Si4464
 		uint8_t rx_ready[] = {0x44};
@@ -150,9 +152,9 @@ void Si4464_read(radio_t radio, uint8_t* txData, uint32_t txlen, uint8_t* rxData
 	spiReleaseBus(&SPID2);
 
 	// Reqest ACK by Si4464
-	uint8_t counter = 0; // FIXME: Sometimes CTS is not returned by Si4464 correctly
+	uint32_t counter = 0; // FIXME: Sometimes CTS is not returned by Si4464 correctly
 	rxData[1] = 0x00;
-	while(rxData[1] != 0xFF && ++counter < 20) {
+	while(rxData[1] != 0xFF && ++counter < 2000) {
 
 		// Request ACK by Si4464
 		uint16_t rx_ready[rxlen];
@@ -165,9 +167,6 @@ void Si4464_read(radio_t radio, uint8_t* txData, uint32_t txlen, uint8_t* rxData
 		spiExchange(&SPID2, rxlen, rx_ready, rxData);
 		spiUnselect(&SPID2);
 		spiReleaseBus(&SPID2);
-
-		if(rxData[1] != 0xFF) // Si not finished, wait for it
-			chThdSleepMilliseconds(1);
 	}
 }
 
@@ -284,7 +283,7 @@ void setModem2GFSK(radio_t radio) {
 	Si4464_write(radio, no_sync_word, 5);
 
 	// Setup the NCO modulo and oversampling mode
-	uint32_t s = OSC_FREQ / 20;
+	uint32_t s = OSC_FREQ / 40;
 	uint8_t f3 = (s >> 24) & 0xFF;
 	uint8_t f2 = (s >> 16) & 0xFF;
 	uint8_t f1 = (s >>  8) & 0xFF;
@@ -320,6 +319,7 @@ void stopTx(radio_t radio) {
 void radioShutdown(radio_t radio) {
 	RADIO_SDN_SET(radio, true);	// Power down chip
 	RF_GPIO1_SET(radio, false);	// Set GPIO1 low
+	initialized[radio] = false;
 }
 
 /**
@@ -382,3 +382,6 @@ uint8_t dBm2powerLvl(int32_t dBm) {
 	}
 }
 
+bool isRadioInitialized(radio_t radio) {
+	return initialized[radio];
+}

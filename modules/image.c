@@ -19,7 +19,7 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 	uint8_t pkt_base91[BASE91LEN(SSDV_PKT_SIZE-37)];
 	uint16_t i = 0;
 	uint8_t *b;
-	uint16_t bi = 0;
+	uint32_t bi = 0;
 	uint8_t c = SSDV_OK;
 
 	// Init SSDV (FEC at 2FSK, non FEC at APRS)
@@ -32,10 +32,9 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 
 		while((c = ssdv_enc_get_packet(&ssdv)) == SSDV_FEED_ME)
 		{
-			TRACE_DEBUG("%d", bi);
 			b = &image[bi];
 			uint8_t r = bi < image_len-128 ? 128 : image_len - bi;
-			bi += 128;
+			bi += r;
 
 			if(r <= 0)
 			{
@@ -167,16 +166,4 @@ THD_FUNCTION(moduleIMG, arg) {
 		time = chThdSleepUntilWindowed(time, time + S2ST(parm->cycle)); // Wait until time + cycletime
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
