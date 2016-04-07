@@ -133,17 +133,8 @@ void ax25_send_header(ax25_t *packet, const char *callsign, uint8_t ssid, const 
 		ax25_send_sync(packet);
 	}
 
-	//start the actual frame. Send 3 of them (one empty frame and the real start)
-	for(i=0; i<4; i++)
-	{
-		ax25_send_flag(packet);
-	}
-
-	//start the actual frame. Send 3 of them (one empty frame and the real start)
-	for(i=0; i<4; i++)
-	{
-		ax25_send_flag(packet);
-	}
+	// Send flag
+	ax25_send_flag(packet);
 
 	ax25_send_path(packet, APRS_DEST_CALLSIGN, APRS_DEST_SSID, false);		// Destination callsign
 	ax25_send_path(packet, callsign, ssid, path[0] == 0 || path == NULL);	// Source callsign

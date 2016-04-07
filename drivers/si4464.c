@@ -132,9 +132,6 @@ void Si4464_write(radio_t radio, uint8_t* txData, uint32_t len) {
 		spiExchange(&SPID2, 3, rx_ready, rxData);
 		spiUnselect(&SPID2);
 		spiReleaseBus(&SPID2);
-
-		if(rxData[1] != 0xFF) // Si not finished, wait for it
-			chThdSleepMilliseconds(1);
 	}
 }
 
@@ -287,7 +284,7 @@ void setModem2GFSK(radio_t radio) {
 	Si4464_write(radio, no_sync_word, 5);
 
 	// Setup the NCO modulo and oversampling mode
-	uint32_t s = OSC_FREQ / 40;
+	uint32_t s = OSC_FREQ / 20;
 	uint8_t f3 = (s >> 24) & 0xFF;
 	uint8_t f2 = (s >> 16) & 0xFF;
 	uint8_t f1 = (s >>  8) & 0xFF;
