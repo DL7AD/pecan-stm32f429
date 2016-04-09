@@ -292,7 +292,7 @@ void setModem2GFSK(radio_t radio) {
 	Si4464_write(radio, setup_oversampling, 8);
 
 	// setup the NCO data rate for 2GFSK
-	uint8_t setup_data_rate[] = {0x11, 0x20, 0x03, 0x03, 0x01, 0x25, 0x80};
+	uint8_t setup_data_rate[] = {0x11, 0x20, 0x03, 0x03, 0x00, 0x25, 0x80};
 	Si4464_write(radio, setup_data_rate, 7);
 
 	// use 2GFSK from async GPIO0

@@ -193,7 +193,7 @@ void send2GFSK(radio_t radio, radioMSG_t *msg) {
 	chSysDisable();
 
 	while(bit < msg->bin_len) {
-		if(sample_per_bit++ > 1570) {
+		if(sample_per_bit++ > 1560) {
 			if((bit & 7) == 0) { // Load up next byte
 				current_byte = msg->msg[bit >> 3];
 			} else {
@@ -370,7 +370,7 @@ uint32_t getAPRSISSFrequency(void) {
 	return 145825000;
 }
 uint32_t getCustomFrequency(void) {
-	return 432495000;
+	return 145299000;
 }
 
 /**
