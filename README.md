@@ -1,6 +1,6 @@
 # Software for Pecan Balloon Trackers
 
-This is the software, which runs the [Pecan Pico 7 balloon trackers](https://github.com/DL7AD/pecanpico7). Since the new trackers can be used in many ways, this software is designed to be multiple purpose. It can be used for:
+This is the software, that runs the [Pecan Pico 7 balloon trackers](https://github.com/DL7AD/pecanpico7). Since the new trackers can be used in many ways, this software is designed for multiple purpose. It can be used for:
 - Image transmissions
    - [SSDV](https://ukhas.org.uk/guides:ssdv) as 2FSK modulation (RTTY)
    - [APRS](http://aprs.org)-encoded [SSDV](https://ukhas.org.uk/guides:ssdv) as AFSK or 2GFSK modulation
@@ -9,63 +9,63 @@ This is the software, which runs the [Pecan Pico 7 balloon trackers](https://git
    - 2FSK (RTTY)
    - CW (morse)
 
-This software may also provide in feature
+This software may also feature
 - Amateur satellite communication links
-- Full duplex relay for digital modulations (up 70cm, down 2m)
-- Ground control access by radio link
+- Full duplex repeater for digital modulations (up 70cm, down 2m)
+- Ground control access via radio link
 
 ###### Transmitted Test Images
-These are some images which were transmitted by [SSDV](https://ukhas.org.uk/guides:ssdv). These QVGA-images were shot by an [Omnivision OV9655](http://www.waveshare.com/wiki/OV9655_Camera_Board).
+Here are some images which were transmitted by [SSDV](https://ukhas.org.uk/guides:ssdv). These QVGA-images were captured by an [Omnivision OV9655](http://www.waveshare.com/wiki/OV9655_Camera_Board).
 
 ![Test image 1](https://raw.githubusercontent.com/DL7AD/pecan-stm32f429/master/doc/sample_pictures/test2.jpg)
 ![Test image 2](https://raw.githubusercontent.com/DL7AD/pecan-stm32f429/master/doc/sample_pictures/test3.jpg)<br>
 
 ###### Targets
-Currently there is only one target which is supported by the Software. Pecan Pico 7a will be replaced by Pecan Pico 7b due to some mayor errors ([See known PCB errors](https://github.com/DL7AD/pecanpico7/tree/7a)).
+Currently there is only one target supported by the Software. Pecan Pico 7a will be succeeded by Pecan Pico 7b due to some mayor errors ([See known PCB errors](https://github.com/DL7AD/pecanpico7/tree/7a)).
 
 <img src="https://raw.githubusercontent.com/DL7AD/pecan-stm32f429/master/doc/targets/pecanpico7a.jpg" width="320" alt="Pecan Pico 7a"><br>[Pecan Pico 7a](https://github.com/DL7AD/pecanpico7/tree/7a)
 
 ###### Features
-All features can be combined as it's needed for the user. Currently this software if unfinished but basic features can be used:
+All features can be combined as required for the user. Currently the software is incomplete but basic features can be used:
 
 - Image capturing (just QVGA at the moment) and transmission by SSDV
-- Receiving positions (by ublox MAX8 GNSS module)
-- Measuring Temperature/Airpressure/Temperature (by onboard BME280)
-- Measuring external Temperature/Airpressure/Temperature (by external BME280)
-- Measuring power consumption (battery charging and discharging)
+- Reception of positions (by ublox MAX8 GNSS module)
+- Measurement of temperature/air-pressure/humidity (by onboard BME280)
+- Measurement of temperature/air-pressure/humidity (by external BME280)
+- Measurement of the power consumption (battery charging and discharging)
 - Position and telemetry transmissions by 2FSK (or RTTY)
 - High altitude mode (up to 50km altitude)
 - Debugging (serial connection)
 - APRS encoding (AFSK, 2GFSK)
 - APRS SSDV-encoded Image Transmission
 
-What currently doesn't work at the moment (but planned):
-- High resolution image capturing (just QVGA at the moment)
-- Logging and Log transmissions
+What currently doesn't work (but planned):
+- High resolution image capture (just QVGA at the moment)
+- Logging and log transmissions
 - Amateur satellite orbit calculations and transmissions
 - Power save modes
-- Store data on the microSD card
+- Storage of telemetry and image data on the microSD card
 
-It is currently not planned to implement video capturing. The STM32F4 doesn't have enough calculation power for compression encoding. However the new pin-compabile [STM32F7x7](http://www.st.com/web/en/catalog/mmc/FM141/SC1169/SS1858) supports JPEG encoding. So video capturing may be possible in future.
+It is currently not planned to implement video capture. The STM32F4 doesn't have sufficient computing power for compression encoding. However the new pin-compabile [STM32F7x7](http://www.st.com/web/en/catalog/mmc/FM141/SC1169/SS1858) supports JPEG encoding. So video capture may be possible in future.
 
 ###### Dependency installations/ Compiling/ Flashing
-In order to make the hardware working, you are going to need a programmer. There are several devices on the market but I personally use the [STM32F429I-DISCOVERY](http://www.st.com/st-web-ui/static/active/en/resource/technical/document/user_manual/DM00093903.pdf) demo board. The discovery board is basically a programmer with a demo target (microcontroller) attached to it. It's designed in a way so you can either flash the demo target or the Pecan Pico 7 by switching specific jumpers on the board. You may get the programmer on [Mouser](http://www2.mouser.com/search/ProductDetail.aspx?R=0virtualkey0virtualkeySTM32F429I-DISC1), [Farnell](http://www.newark.com/stmicroelectronics/stm32f429i-disc1/dev-board-stm32f429zi-advanced/dp/72Y1169), [Digikey](http://www.digikey.de/product-detail/de/stmicroelectronics/STM32F429I-DISCO/497-13898-ND/4310131) or on Ebay for roughly $30. You need to connect the programmer following way. Don't forget to remove the jumpers which connect the programmer with the demo target.
+In order to get the hardware working, you'll need a programmer. There are several devices on the market but I personally use the [STM32F429I-DISCOVERY](http://www.st.com/st-web-ui/static/active/en/resource/technical/document/user_manual/DM00093903.pdf) demo board. The discovery board is basically a programmer with a demo target (microcontroller) attached to it. It's designed in a way so you can either flash the demo target or the Pecan Pico 7 by switching specific jumpers on the board. You may get the programmer at [Mouser](http://www2.mouser.com/search/ProductDetail.aspx?R=0virtualkey0virtualkeySTM32F429I-DISC1), [Farnell](http://www.newark.com/stmicroelectronics/stm32f429i-disc1/dev-board-stm32f429zi-advanced/dp/72Y1169), [Digikey](http://www.digikey.de/product-detail/de/stmicroelectronics/STM32F429I-DISCO/497-13898-ND/4310131) or on Ebay for roughly $30. You'll need to connect the programmer as follows. Don't forget to remove the jumpers which connect the programmer with the demo target.
 
-You will also need some software dependencies.
+You'll also need some software dependencies.
 - _GCC_ to build binary files
 - _ST-Flash_ to flash the binaries to your target
-There's a [great guide](http://www.wolinlabs.com/blog/linux.stm32.discovery.gcc.html) on the Web which I've taken myself to set up everything. They are using a different demo board but it works the same.
+There's a [great guide](http://www.wolinlabs.com/blog/linux.stm32.discovery.gcc.html) on the Web which I've followed myself to set up everything. They are using a different demo board but it works similarily.
 
-Then you are going to need the sources for the tracker:
+Then you'll need the source code for the tracker:
 ```
 git clone --recursive https://github.com/DL7AD/pecan-stm32f429.git
 cd pecan-stm32f429
 make
 make flash
 ```
-A _build_ folder will be created automatically. The software can be additionally configured in the [config.h](config.h).
+A _build_ folder will be created automatically. The software can be configured/customized in the [config.h](config.h).
 
-###### How to connect the programmer with the Pecan Pico 7
+###### How to connect the programmer to the Pecan Pico 7 PCB
 <img src="https://raw.githubusercontent.com/DL7AD/pecan-stm32f429/master/doc/programmer.jpg" width="400" alt="Programmer connected to Pecan Pico 7">
 
 
@@ -81,9 +81,9 @@ This section describes the different function blocks in the software and how the
 - IMAGE - for transmitting images
 - LOG - for transmitting logs
 
-There are two more specific modules which are started automatically be the software itself. They are necessary to do input/output jobs.
-- TRACKING (or tracking manager) - collects all the data from the peripheral components (BME280, GPS, etc.) and provides them (as struct) to other modules in the software.
-- RADIO - provides the two radios which are available. This module receives internal messages by other modules which want to send packets via VHF or UHF.
+There are two more specific modules which are started automatically be the software at run time. They are necessary to handle input/output jobs.
+- TRACKING (or tracking manager) - collects all the data from the periphery (BME280, GPS, etc.) and provides them (as struct) to other modules in the software.
+- RADIO - provides the two radios which are available. This module receives internal messages from other modules which intend to send packets via VHF or UHF.
 
 The following diagram shows how the modules interact with each other.
 
@@ -102,27 +102,27 @@ The following diagram shows how the modules interact with each other.
 ```
 
 ## Module configuration
-In order to use these modules, they can be configured operational in the MOULDES() macro in the [configuration file](config.h). All modules can be configured except of TRACKING and RADIO. They must not be configured because they are launched by the software automatically. The following example shows how a image module and a position module can be configured.
+In order to use these modules, they can be configured in the MOULDES() macro in the [configuration file](config.h). All modules can be configured except of TRACKING and RADIO. They have no configurable parameters because they get their parameters from other modules in run time. The following example shows how an image module and a position module can be configured.
 ```
 MODULES() { \
     MODULE_IMAGE   (TX_CONTINUOSLY,          SLEEP_WHEN_BATT_BELOW_3V5, CUSTOM_FREQ, 10, PROT_SSDV_2FSK ); \
     MODULE_POSITION(WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_3V0, CUSTOM_FREQ, 10, PROT_UKHAS_2FSK); \
 }
 ```
-As you can see, there are some parameters which can be used to configure a specific module:
+As you can see, there are several parameters which can be used to configure a specific module:
 
-**Parameter 1** specifies in which cycle the modules shall send it's data. This may be an amount of seconds. It's also allowed to place *TX_CONTINUOSLY* or *WAIT_FOR_TRACKING_POINT* in this field.<br>
-*TX_CONTINUOSLY* - Transmit new data once the old it sent completely<br>
-*WAIT_FOR_TRACKING_POINT* - Transmit when tracking manager generates a new track point<br>
-**Parameter 2** specifies the sleep mode. Note this functionality is currently not implemented. The modules will disregard this field.<br>
-**Parameter 3** specifies a frequency method. Currently *CUSTOM_FREQ* or *APRS_REGION_FREQ* can be used. The frequencies are currently static and set in [radio.c](radio.c). *CUSTOM_FREQ* is set to 434.500MHz and *APRS_REGION_FREQ* is set to 144.800MHz. It's planned to implement a geofencing algorithm in the future for *APRS_REGION_FREQ* in order to find out the specific APRS region frequency by the actual location.<br>
-**Parameter 4** specifies the transmission power in dBm. If the value is set to a point which the radio is unable to do (or damaging the PCB) the actual value may be limited by the RADIO module.<br>
-**Parameter 5** specifies the protocol and modulation. While you can use *PROT_UKHAS_2FSK*, *PROT_APRS_AFSK* or *PROT_RAW_CW* for the POSITION module the IMAGE module can only accept *PROT_SSDV_2FSK* at the moment.
+**Parameter 1** specifies in which cycle the modules shall send their data. This can be a time in seconds. It's also allowed to indicate *TX_CONTINUOSLY* or *WAIT_FOR_TRACKING_POINT* in this field.<br>
+*TX_CONTINUOSLY* - Transmit new data as soon as the previous frame is compled<br>
+*WAIT_FOR_TRACKING_POINT* - Transmit when the tracking manager generates a new track point<br>
+**Parameter 2** specifies the sleep mode. Note this function is currently not implemented. The modules will disregard this field.<br>
+**Parameter 3** specifies a frequency method. Currently *CUSTOM_FREQ* or *APRS_REGION_FREQ* can be used. The frequencies are dynamic and set in [radio.c](radio.c). *CUSTOM_FREQ* is set to 434.500MHz and *APRS_REGION_FREQ* is set to 144.800MHz as the default. A geofencing algorithm is implemented for *APRS_REGION_FREQ* in order to find out the specific APRS region frequency by the actual location.<br>
+**Parameter 4** specifies the transmission power in dBm. If the value is set to a point which the radio is unable to reach (or would damage the PCB) the actual value may be limited by the RADIO module.<br>
+**Parameter 5** specifies the protocol and modulation. While you can use *PROT_UKHAS_2FSK*, *PROT_APRS_AFSK* or *PROT_RAW_CW* for the POSITION module, the IMAGE module can accept *PROT_SSDV_2FSK*, *PROT_SSDV_APRS_AFSK* and *PROT_SSDV_APRS_2GFSK* at the moment.
 
-Note not all of the parameter call be used for all individual modules because some configurations may not make sense e.g. CW modulation for transmitting images. You can find an exact documentation in the [configuration file](config.h) which specific parameters can be applied to the the modules.
+Note not all of the parameters can be used for every individual module because some configurations may not make sense e.g. CW modulation for transmitting images. You can find an exact documentation in the [configuration file](config.h) which specific parameters can be applied to the the modules.
 
-## Multiple use of modules
-Modules can be combined various combination. But modules can be also understand as classes which instances can be used multiple times. So if you want to transmit telemetry and positions by RTTY and APRS at the same time, you may configure modules multiple times. The following example shows, how the position/telemetry is sent on a custon frequency while it's also transmitted by APRS on the regional APRS frequency and CW.
+## Concurrent use of modules
+Modules can be merged in various combinations. However modules can be also understood as classes whose instances can be used multiple times. So if you want to transmit telemetry and positions by RTTY and APRS at the same time, you may configure modules multiple times. The following example shows, how the position/telemetry is sent on a custon frequency while it's also transmitted by APRS on the regional APRS frequency and CW.
 ```
 MODULES() { \
     MODULE_POSITION (WAIT_FOR_TRACKING_POINT, SLEEP_WHEN_BATT_BELOW_2V5, CUSTOM_FREQ,      10, PROT_UKHAS_2FSK); \
@@ -132,14 +132,14 @@ MODULES() { \
 ```
 
 ## Module TRACKING (or tracking manager)
-The tracking manager keeps an eye on all peripheral components which provide data. With exception of the camera, the tracking manager collects the data of:
+The tracking manager keeps an eye on all peripheral components that provide data. With exception of the camera, the tracking manager collects the data of:
 - BME280 (airpressure, humidity, temperature)
 - MAX7/8 (GPS/GLONASS receiver)
 - PAC1720 (Power consumption tracking)
-The data of these components will be collected in a specific cycle time and provided to other modules in a struct [trackPoint_t](modules/tracking.h). The most recent sampled data can be accessed by other modules by [getLastTrackPoint()](modules/tracking.h).
+The data of these components will be collected at a specific cycle time and will be provided to other modules in a struct [trackPoint_t](modules/tracking.h). The most recently sampled data can be accessed by other modules by [getLastTrackPoint()](modules/tracking.h).
 
 ## Module RADIO
-The module RADIO handles the two radios which are available on the Pecan Pico 7. It initializes a mailbox in which messages (or data packets) can be written by other functions in order to use the radios. If a module wants to send a packet on HF, it may generate a [radioMSG_t](modules/radio.h) struct and pass is over to [transmitOnRadio()](modules/radio.h). The radio will determine a suitable radio by the frequency which is set in the struct. Once the radio is not used, the module will send the message. If the radio is already in use, the RADIO module may buffer up to 3 more messages in a message queue. The queue is cleared by the FIFO concept. While only 3 messages can be stored in the queue, the maximum generation-transmission delay is quiet small (<15sec usually). [transmitOnRadio()](modules/radio.h) may return *true* if the message is sent to the queue. *False* indicates the queue is full. If a module wants to send the message, it has to try again by calling transmitOnRadio() again. While there is no priority management at the moment, the modules have to try more or less aggressivly to insert its messages to the radio queue. This strategy more a workaround than a solution. Priority management would be better.
+The module RADIO handles the two radios which are available on the Pecan Pico 7. It initializes a mailbox in which messages (or data packets) can be written by other functions in order to use the radios. If a module wants to send a packet on HF, it may generate a [radioMSG_t](modules/radio.h) struct and pass is over to [transmitOnRadio()](modules/radio.h). The radio will determine a suitable radio by the frequency which is set in the struct. Once the radio is free, the module will send the message. If the radio is already in use, the RADIO module may buffer up to 3 more messages in a message queue. The queue is cleared by the FIFO concept. While only 3 messages can be stored in the queue, the maximum generation-transmission delay is quite small (<15sec usually). [transmitOnRadio()](modules/radio.h) may return *true* if the message is sent to the queue. *False* indicates the queue is full. If a module wants to send the message, it has to try again by calling transmitOnRadio() again. While there is no priority management at the moment, the modules have to try more or less aggressivly to insert its messages to the radio queue. This strategy more a workaround than a solution. Priority management would be better.
 
 ###### 2FSK modulation
 2FSK is the name for RTTY in the software because this modulation type also transmits start and stop bit (8n2). The modulation is managed by a software timer because the timing dont have to be that accurate (compared to AFSK and GFSK). The modulation is passed over to the Si446x by a GPIO pin. As the pin is toggled, the transmitter will change its frequency.
@@ -152,7 +152,7 @@ The APRS modulation is a Si446x-specific hack because the Si Chip is unable to d
 Unfortunately the modulation requires an accurate timing. If the timing is not managed correctly at the microcontroller, the modulation gets distorted. To ensure accurate timings, all threads and interrupts are disabled at the microcontroller so the pin is toggled at the right time.
 
 ###### APRS 2GFSK modulation
-The 2GFSK modulation is quiet simple because the Si446x supports 2 and 4GFSK natively. Like its done at AFSK, the modulation is generated by the microcontroller which requires timing. So the microcontroller cant do anything else at the actual transmission.
+The 2GFSK modulation is quite simple because the Si446x supports 2 and 4GFSK natively. Like it`s done at AFSK, the modulation is generated by the microcontroller which requires timing. So the microcontroller cant do anything else at the actual transmission.
 
 ## Module POSITION
 This module handles the radio transmission encoding for all position/telemetry packets. It is able to encode CW, APRS and 2FSK (or RTTY). A cycle can be continuosly, time-specific or be triggered by the TRACKING manager when a new track point is published. This modules can be configured in the MODULES() marco: `MODULE_POSITION(trigger, sleep, frequency, power, protocol)`.
