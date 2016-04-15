@@ -59,7 +59,6 @@
 #define OV9655_DCMI_REG_DR_ADDRESS	(OV9655_DCMI_BASE_ADR | OV9655_DCMI_REG_DR_OFFSET)
 
 uint16_t ov9655_ram_buffer[OV9655_BUFFER_SIZE];
-volatile uint32_t buffNum = 0;
 
 BGR RGB16x16[16][16] __attribute__((section(".ram4")));
 color_t R[16][16], G[16][16], B[16][16] __attribute__((section(".ram4")));
@@ -70,7 +69,7 @@ uint64_t subsclk = 0;
 uint64_t readclk = 0;
 uint8_t jpeg[50*1024] __attribute__((section(".ram4"))); // JPEG output buffer
 uint32_t jpeg_pos = 0;
-bool samplingFinished;
+bool ov9655_samplingFinished;
 
 
 // I2C camera configuration for QVGA resolution
@@ -194,7 +193,6 @@ bool OV9655_Snapshot2RAM(void)
 {
 	// Reset output pointer
 	jpeg_pos = 0;
-	buffNum = 0;
 
 	// Add JPEG header to buffer
 	huffman_start(OV9655_MAXY & -16, OV9655_MAXX & -16);
@@ -204,9 +202,9 @@ bool OV9655_Snapshot2RAM(void)
 	OV9655_InitDCMI();
 
 	// Encode JPEG data
-	samplingFinished = false;
+	ov9655_samplingFinished = false;
 	systime_t timeout = chVTGetSystemTimeX() + MS2ST(1000); // Timeout 1sec
-	while(!samplingFinished && chVTGetSystemTimeX() < timeout)
+	while(!ov9655_samplingFinished && chVTGetSystemTimeX() < timeout)
 		chThdSleepMilliseconds(1);
 
 	palSetPad(PORT(LED_YELLOW), PIN(LED_YELLOW));
@@ -270,10 +268,10 @@ bool OV9655_Snapshot2RAM(void)
   * Buffer size: OV9655_BUFFER_SIZE = OV9655_MAXX * 16 * bytes
   * Double buffer mode is activated.
   */
-void dma_avail(uint32_t flags)
+void OV9655_dma_avail(uint32_t flags)
 {
 	(void)flags;
-	samplingFinished = true;
+	ov9655_samplingFinished = true;
 	dmaStreamDisable(STM32_DMA2_STREAM1);
 }
 
@@ -283,7 +281,7 @@ void dma_avail(uint32_t flags)
 void OV9655_InitDMA(void)
 {
     const stm32_dma_stream_t *stream = STM32_DMA2_STREAM1;
-    dmaStreamAllocate(stream, 10, (stm32_dmaisr_t)dma_avail, NULL);
+    dmaStreamAllocate(stream, 10, (stm32_dmaisr_t)OV9655_dma_avail, NULL);
     dmaStreamSetPeripheral(stream, ((uint32_t*)OV9655_DCMI_REG_DR_ADDRESS));
     dmaStreamSetMemory0(stream, (uint32_t)ov9655_ram_buffer);
     dmaStreamSetTransactionSize(stream, OV9655_BUFFER_SIZE/sizeof(uint16_t));
@@ -407,15 +405,4 @@ void OV9655_deinit(void) {
 	TRACE_INFO("CAM  > Switch off");
 	palSetPad(PORT(CAM_OFF), PIN(CAM_OFF));	// Switch off camera
 }
-
-
-
-
-
-
-
-
-
-
-
 

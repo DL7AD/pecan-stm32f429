@@ -133,6 +133,7 @@ CSRC = $(STARTUPSRC) \
        drivers/pac1720.c \
        drivers/pi2c.c \
        drivers/ov9655.c \
+       drivers/ov2640.c \
        drivers/padc.c \
        drivers/ptime.c \
        jpegant/dct.c \

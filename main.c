@@ -50,7 +50,7 @@ int main(void) {
 	i2cInit();					// Startup I2C
 	initEssentialModules();		// Startup required modules (input/output modules)
 	initModules();				// Startup optional modules (eg. POSITION, LOG, ...)
-	pac1720_init();				// Startup current measurement
+	//pac1720_init();				// Startup current measurement
 
 	chThdSleepMilliseconds(100);
 

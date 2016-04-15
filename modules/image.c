@@ -4,6 +4,7 @@
 #include "debug.h"
 #include "modules.h"
 #include "ov9655.h"
+#include "ov2640.h"
 #include "pi2c.h"
 #include "ssdv.h"
 #include "aprs.h"
@@ -133,21 +134,21 @@ THD_FUNCTION(moduleIMG, arg) {
 			i2cCamInit();
 
 			// Init camera
-			OV9655_init();
+			OV2640_init();
 
 			// Sample data from DCMI through DMA into RAM
 			TRACE_INFO("IMG  > Capture image");
 			uint8_t tries = 5; // Try 5 times at maximum
 			bool status;
 			do { // Try capturing image until capture successful
-				status = OV9655_Snapshot2RAM();
+				status = OV2640_Snapshot2RAM();
 			} while(!status && --tries);
 
 			uint8_t *image;
-			uint32_t image_len = OV9655_getBuffer(&image);
+			uint32_t image_len = OV2640_getBuffer(&image);
 
 			// Switch off camera
-			OV9655_deinit();
+			OV2640_deinit();
 
 			// Unlock radio
 			TRACE_INFO("IMG  > Unlock radio");
@@ -155,8 +156,8 @@ THD_FUNCTION(moduleIMG, arg) {
 
 			if(tries) { // Capture successful
 				TRACE_INFO("IMG  > Encode/Transmit SSDV");
-				encode_ssdv(testimage_jpg, testimage_jpg_len, parm);
-				//encode_ssdv(image, image_len, parm);
+				//encode_ssdv(testimage_jpg, testimage_jpg_len, parm);
+				encode_ssdv(image, image_len, parm);
 			} else {
 				TRACE_ERROR("IMG  > Image capturing failed");
 			}
