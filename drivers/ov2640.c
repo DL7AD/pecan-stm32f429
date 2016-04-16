@@ -321,7 +321,7 @@ bool OV2640_Snapshot2RAM(void)
 
 	// Receive JPEG data
 	ov2640_samplingFinished = false;
-	systime_t timeout = chVTGetSystemTimeX() + MS2ST(3000); // Timeout 1sec
+	systime_t timeout = chVTGetSystemTimeX() + MS2ST(500); // Timeout 1sec
 	while(!ov2640_samplingFinished && chVTGetSystemTimeX() < timeout)
 		chThdSleepMilliseconds(1);
 
@@ -339,7 +339,6 @@ uint32_t OV2640_getBuffer(uint8_t** buffer) {
 		size--;
 	
 	TRACE_DEBUG("CAM > Image size: %d bytes", size);
-	TRACE_BIN(ov2640_ram_buffer, 32*8);
 
 	return size;
 }
@@ -432,9 +431,8 @@ void OV2640_InitClockout(void)
 void OV2640_TransmitConfig(void)
 {
 	for(uint32_t i=0; i<sizeof(OV2640_CONFIG); i+=2) {
-		TRACE_DEBUG("0x%02x 0x%02x", OV2640_CONFIG[i], OV2640_CONFIG[i+1]);
 		i2cCamSend(OV2640_I2C_ADR, &OV2640_CONFIG[i], 2, NULL, 0, MS2ST(100));
-		chThdSleepMilliseconds(100);
+		chThdSleepMilliseconds(10);
 	}
 }
 

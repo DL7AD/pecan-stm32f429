@@ -62,7 +62,7 @@
 #define initModules() MODULES()
 #define initEssentialModules() { \
 	chMtxObjectInit(&interference_mtx); \
-	/*MODULE_TRACKING(CYCLE_TIME);*/ /* Tracker data input */ \
+	MODULE_TRACKING(CYCLE_TIME); /* Tracker data input */ \
 	MODULE_RADIO(); /* Tracker data output */ \
 }
 
