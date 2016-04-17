@@ -38,6 +38,7 @@
 #include "stm32f4xx_rcc.h"
 #include "stm32f4xx_dcmi.h"
 #include "board.h"
+#include "defines.h"
 
 #include "jpegant/arch.h"
 #include "jpegant/dct.h"

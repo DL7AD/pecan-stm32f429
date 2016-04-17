@@ -5,14 +5,12 @@
 #include "hal.h"
 #include "config.h"
 #include "si4464.h"
-
-#define RADIO_2M	1	/* Radio 1 => 2m */
-#define RADIO_70CM	2	/* Radio 2 => 70cm */
+#include "modules.h"
 
 // Preprocessor macros for config file
-#define APRS_REGION_FREQ			getAPRSRegionFrequency
+#define APRS_REGION_FREQ_2M			getAPRSRegionFrequency2m
+#define APRS_REGION_FREQ_70CM		getAPRSRegionFrequency70cm
 #define APRS_ISS_FREQ				getAPRSISSFrequency
-#define CUSTOM_FREQ					getCustomFrequency
 
 // APRS region frequencies
 #define APRS_FREQ_OTHER				144800000
@@ -26,22 +24,13 @@
 #define APRS_FREQ_ARGENTINA			144930000
 #define APRS_FREQ_BRAZIL			145575000
 
-typedef struct { // Radio message type
-	uint8_t msg[512];	// Message (data)
-	uint32_t bin_len;	// Binary length
-	uint32_t freq;		// Frequency
-	uint8_t power;		// Power
-	mod_t mod;			// Modulation
-} radioMSG_t;
-
 extern mutex_t radio_image_mtx;
 
-extern uint32_t playback;
-
-uint32_t getAPRSRegionFrequency(void);
+uint32_t getAPRSRegionFrequency2m(void);
+uint32_t getAPRSRegionFrequency70cm(void);
 uint32_t getAPRSISSFrequency(void);
-uint32_t getCustomFrequency(void);
 bool transmitOnRadio(radioMSG_t *msg);
+uint32_t getFrequency(freuquency_config_t *config);
 
 THD_FUNCTION(moduleRADIO, arg);
 

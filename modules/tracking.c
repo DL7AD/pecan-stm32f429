@@ -36,13 +36,15 @@ trackPoint_t* getLastTrackPoint(void) {
   * Tracking Module (Thread)
   */
 THD_FUNCTION(moduleTRACKING, arg) {
+	(void)arg;
+
 	// Print infos
-	module_params_t* parm = (module_params_t*)arg;
+	//module_params_t* parm = (module_params_t*)arg;
 	TRACE_INFO("TRAC > Startup module TRACKING MANAGER");
-	TRACE_INFO("TRAC > Module TRACKING MANAGER info\r\n"
+	/*TRACE_INFO("TRAC > Module TRACKING MANAGER info\r\n"
 			   "%s Cycle: %d sec",
 			   TRACE_TAB, parm->cycle
-	);
+	); FIXME */
 
 	uint32_t id = 1;
 	lastTrackPoint = &trackPoints[0];
@@ -52,7 +54,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 	systime_t time = chVTGetSystemTimeX();
 	while(true)
 	{
-		parm->lastCycle = chVTGetSystemTimeX(); // Watchdog timer
+		//parm->lastCycle = chVTGetSystemTimeX(); // Watchdog timer TODO: Implement software watchdog
 		TRACE_INFO("TRAC > Do module TRACKING MANAGER cycle");
 		trackPoint_t* tp = &trackPoints[id % (sizeof(trackPoints) / sizeof(trackPoint_t))]; // Current track point
 		trackPoint_t* ltp = &trackPoints[(id-1) % (sizeof(trackPoints) / sizeof(trackPoint_t))]; // Last track point
@@ -63,7 +65,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 
 		do {
 			gps_get_fix(&gpsFix);
-		} while(!isGPSLocked(&gpsFix) && chVTGetSystemTimeX() <= time + S2ST(parm->cycle-5)); // Do as long no GPS lock and within timeout, timeout=cycle-1sec (-1sec in order to keep synchronization)
+		} while(!isGPSLocked(&gpsFix) && chVTGetSystemTimeX() <= time + S2ST(TRACK_CYCLE_TIME-5)); // Do as long no GPS lock and within timeout, timeout=cycle-1sec (-1sec in order to keep synchronization)
 
 		if(isGPSLocked(&gpsFix)) { // GPS locked
 
@@ -207,7 +209,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 		lastTrackPoint = tp;
 		id++;
 
-		time = chThdSleepUntilWindowed(time, time + S2ST(parm->cycle)); // Wait until time + cycletime
+		time = chThdSleepUntilWindowed(time, time + S2ST(TRACK_CYCLE_TIME)); // Wait until time + cycletime
 	}
 }
 

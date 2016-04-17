@@ -9,6 +9,7 @@
 #include "si4464.h"
 #include "modules.h"
 #include "debug.h"
+#include "types.h"
 
 static const SPIConfig ls_spicfg1 = {
 	NULL,
@@ -89,8 +90,8 @@ void Si4464_Init(radio_t radio, mod_t modulation) {
 		case MOD_AFSK:
 			setModemAFSK(radio);
 			break;
-		case MOD_CW:
-			setModemCW(radio);
+		case MOD_OOK:
+			setModemOOK(radio);
 			break;
 		case MOD_2FSK:
 			setModem2FSK(radio);
@@ -244,11 +245,11 @@ void setModemAFSK(radio_t radio) {
 	uint8_t setup_oversampling[] = {0x11, 0x20, 0x04, 0x06, f3, f2, f1, f0};
 	Si4464_write(radio, setup_oversampling, 8);
 
-	// setup the NCO data rate for APRS
+	// Setup the NCO data rate for APRS
 	uint8_t setup_data_rate[] = {0x11, 0x20, 0x03, 0x03, 0x00, 0x11, 0x30};
 	Si4464_write(radio, setup_data_rate, 7);
 
-	// use 2GFSK from async GPIO0
+	// Use 2GFSK from async GPIO0
 	uint8_t use_2gfsk[] = {0x11, 0x20, 0x01, 0x00, 0x0B};
 	Si4464_write(radio, use_2gfsk, 5);
 
@@ -261,10 +262,10 @@ void setModemAFSK(radio_t radio) {
 	}
 }
 
-void setModemCW(radio_t radio) {
-	// use CW from async GPIO0
-	uint8_t use_cw[] = {0x11, 0x20, 0x01, 0x00, 0x89};
-	Si4464_write(radio, use_cw, 5);
+void setModemOOK(radio_t radio) {
+	// Use OOK from async GPIO0
+	uint8_t use_ook[] = {0x11, 0x20, 0x01, 0x00, 0x89};
+	Si4464_write(radio, use_ook, 5);
 }
 
 void setModem2FSK(radio_t radio) {
@@ -295,7 +296,7 @@ void setModem2GFSK(radio_t radio) {
 	uint8_t setup_data_rate[] = {0x11, 0x20, 0x03, 0x03, 0x00, 0x25, 0x80};
 	Si4464_write(radio, setup_data_rate, 7);
 
-	// use 2GFSK from async GPIO0
+	// Use 2GFSK from async GPIO0
 	uint8_t use_2gfsk[] = {0x11, 0x20, 0x01, 0x00, 0x0B};
 	Si4464_write(radio, use_2gfsk, 5);
 }

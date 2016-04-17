@@ -8,13 +8,16 @@
 #include "pi2c.h"
 #include "ssdv.h"
 #include "aprs.h"
+#include "radio.h"
 #include "base.h"
 #include "testimage.h"
 #include <string.h>
+#include "types.h"
+#include "sleep.h"
 
 static uint32_t image_id;
 
-void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
+void encode_ssdv(uint8_t *image, uint32_t image_len, module_conf_t* config) {
 	ssdv_t ssdv;
 	uint8_t pkt[SSDV_PKT_SIZE];
 	uint8_t pkt_base91[BASE91LEN(SSDV_PKT_SIZE-37)];
@@ -24,12 +27,12 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 	uint8_t c = SSDV_OK;
 
 	// Init SSDV (FEC at 2FSK, non FEC at APRS)
-	ssdv_enc_init(&ssdv, parm->protocol == PROT_SSDV_2FSK ? SSDV_TYPE_NORMAL : SSDV_TYPE_NORMAL, SSDV_CALLSIGN, ++image_id);
+	ssdv_enc_init(&ssdv, config->protocol == PROT_SSDV_2FSK ? SSDV_TYPE_NORMAL : SSDV_TYPE_NORMAL, config->ssdv_config.callsign, ++image_id);
 	ssdv_enc_set_buffer(&ssdv, pkt);
 
 	while(true)
 	{
-		parm->lastCycle = chVTGetSystemTimeX(); // Update Watchdog timer
+		// parm->lastCycle = chVTGetSystemTimeX(); // Update Watchdog timer FIXME
 
 		while((c = ssdv_enc_get_packet(&ssdv)) == SSDV_FEED_ME)
 		{
@@ -56,22 +59,22 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 
 		// Transmit packet
 		radioMSG_t msg;
-		uint32_t (*fptr)(void);
-		fptr = parm->frequencyMethod;
+		msg.freq = getFrequency(&config->frequency);
+		msg.power = config->power;
 
-		switch(parm->protocol) {
-			case PROT_SSDV_APRS_2GFSK:
-			case PROT_SSDV_APRS_AFSK:
-				msg.mod = parm->protocol == PROT_SSDV_APRS_AFSK ? MOD_AFSK : MOD_2GFSK;
-				msg.freq = (*fptr)();
-				msg.power = parm->power;
+		switch(config->protocol) {
+			case PROT_APRS_2GFSK:
+			case PROT_APRS_AFSK:
+				msg.mod = config->protocol == PROT_APRS_AFSK ? MOD_AFSK : MOD_2GFSK;
+				msg.afsk_config = &(config->afsk_config);
+				msg.gfsk_config = &(config->gfsk_config);
 
 				// Deleting buffer
 				for(int t=0; t<256; t++)
 					pkt_base91[t] = 0;
 
 				base91_encode(&pkt[1], pkt_base91, sizeof(pkt)-37); // Sync byte, CRC and FEC of SSDV not transmitted
-				msg.bin_len = aprs_encode_image(msg.msg, msg.mod, pkt_base91, strlen((char*)pkt_base91));
+				msg.bin_len = aprs_encode_image(msg.msg, msg.mod, &config->aprs_config, pkt_base91, strlen((char*)pkt_base91));
 
 				while(!transmitOnRadio(&msg)) // Try to insert message into message box less aggressively
 					chThdSleepMilliseconds(100);
@@ -79,8 +82,7 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 
 			case PROT_SSDV_2FSK:
 				msg.mod = MOD_2FSK;
-				msg.freq = (*fptr)();
-				msg.power = parm->power;
+				msg.fsk_config = &(config->fsk_config);
 
 				memcpy(msg.msg, pkt, sizeof(pkt));
 				msg.bin_len = 8*sizeof(pkt);
@@ -93,6 +95,10 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 				TRACE_ERROR("IMG  > Unsupported protocol selected for module IMAGE");
 		}
 
+		// Packet spacing (delay)
+		if(config->packet_spacing)
+			chThdSleepMilliseconds(config->packet_spacing);
+
 		i++;
 	}
 
@@ -101,25 +107,17 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_params_t* parm) {
 
 THD_FUNCTION(moduleIMG, arg) {
 	// Print infos
-	module_params_t* parm = (module_params_t*)arg;
+	module_conf_t* config = (module_conf_t*)arg;
 	TRACE_INFO("IMG  > Startup module IMAGE");
-	TRACE_MODULE_INFO(parm, "IMG", "IMAGE");
-
-	uint32_t (*sleep)(void);
-	sleep = parm->sleepMethod;
+	// TRACE_MODULE_INFO(parm, "IMG", "IMAGE"); FIXME
 
 	systime_t time = chVTGetSystemTimeX();
 	while(true)
 	{
-		parm->lastCycle = chVTGetSystemTimeX(); // Watchdog timer
+		//parm->lastCycle = chVTGetSystemTimeX(); // Watchdog timer FIXME
 		TRACE_INFO("IMG  > Do module IMAGE cycle");
 
-		if(sleep() == SMOD_SLEEP) { // Sleep
-
-			TRACE_INFO("IMG  > Sleep (60sec+Cycle)");
-			chThdSleepMilliseconds(60000);
-
-		} else { // Active
+		if(!p_sleep(&config->sleep)) {
 
 			// Lock RADIO from producing interferences
 			TRACE_INFO("IMG  > Lock radio");
@@ -134,7 +132,7 @@ THD_FUNCTION(moduleIMG, arg) {
 			i2cCamInit();
 
 			// Init camera
-			OV2640_init();
+			OV2640_init(&config->ssdv_config);
 
 			// Sample data from DCMI through DMA into RAM
 			TRACE_INFO("IMG  > Capture image");
@@ -157,14 +155,14 @@ THD_FUNCTION(moduleIMG, arg) {
 			if(tries) { // Capture successful
 				TRACE_INFO("IMG  > Encode/Transmit SSDV");
 				//encode_ssdv(testimage_jpg, testimage_jpg_len, parm);
-				encode_ssdv(image, image_len, parm);
+				encode_ssdv(image, image_len, config);
 			} else {
 				TRACE_ERROR("IMG  > Image capturing failed");
 			}
 
 		}
 
-		time = chThdSleepUntilWindowed(time, time + S2ST(parm->cycle)); // Wait until time + cycletime
+		time = waitForTrigger(time, &config->trigger);
 	}
 }
 

@@ -1,6 +1,6 @@
 #include "ch.h"
 #include "hal.h"
-#include "cw.h"
+#include "morse.h"
 #include "debug.h"
 
 static uint8_t *buffer;
@@ -27,7 +27,7 @@ void blank(uint32_t ticks) {
 		ADDB(0);
 }
 
-void CW_encode_char(char letter)
+void morse_encode_char(char letter)
 {
 	switch(letter) {
 		case 'A':
@@ -249,17 +249,17 @@ void CW_encode_char(char letter)
 	blank(4);
 }
 
-uint32_t CW_encode(uint8_t* data, const char* letter)
+uint32_t morse_encode(uint8_t* data, const char* letter)
 {
 	// Blanking bits TODO: Replace this
 	for(uint32_t i=0; i<256; i++)
 		data[i] = 0;
 
-	// Encode CW
+	// Encode morse
 	buffer = data; // Buffer
 	c = 0; // Bitlength
 	for(uint32_t i=0; letter[i]!=0; i++)
-		CW_encode_char(letter[i]);
+		morse_encode_char(letter[i]);
 
 	return c;
 }

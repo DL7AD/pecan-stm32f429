@@ -17,5 +17,5 @@ char *MOULATION_STRING[] = {
 };
 
 mutex_t interference_mtx; // Needed to avoid HF interference
-module_params_t *modules[16];
+module_conf_t *modules[16];
 uint8_t moduleCount;

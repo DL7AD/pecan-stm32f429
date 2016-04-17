@@ -4,6 +4,10 @@
 #include "ch.h"
 #include "hal.h"
 #include "defines.h"
+#include "types.h"
+
+#define RADIO_2M	1	/* Radio 1 => 2m */
+#define RADIO_70CM	2	/* Radio 2 => 70cm */
 
 #define RADIO_SDN_SET(radio, state)			(radio == RADIO_2M ? palWritePad(PORT(RADIO1_SDN), PIN(RADIO1_SDN), state) : palWritePad(PORT(RADIO2_SDN), PIN(RADIO2_SDN), state))
 #define RADIO_CS_SET(radio, state)			(radio == RADIO_2M ? palWritePad(PORT(RADIO1_CS), PIN(RADIO1_CS), state) : palWritePad(PORT(RADIO2_CS), PIN(RADIO2_CS), state))
@@ -17,21 +21,12 @@
 #define inRadio1band(freq) (RADIO1_MIN_FREQ <= (freq) && (freq) <= RADIO1_MAX_FREQ)
 #define inRadio2band(freq) (RADIO2_MIN_FREQ <= (freq) && (freq) <= RADIO2_MAX_FREQ)
 
-typedef uint32_t radio_t; // Radio type
-typedef enum { // Modulation type
-	MOD_CW,
-	MOD_2FSK,
-	MOD_2GFSK,
-	MOD_DOMINOEX16,
-	MOD_AFSK
-} mod_t;
-
 void Si4464_Init(radio_t radio, mod_t modulation);
 void Si4464_write(radio_t radio, uint8_t* txData, uint32_t len);
 void setFrequency(radio_t radio, uint32_t freq, uint16_t shift);
 void setShift(radio_t radio, uint16_t shift);
 void setModemAFSK(radio_t radio);
-void setModemCW(radio_t radio);
+void setModemOOK(radio_t radio);
 void setModem2FSK(radio_t radio);
 void setModem2GFSK(radio_t radio);
 void setDeviation(radio_t radio, uint32_t deviation);

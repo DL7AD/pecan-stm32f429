@@ -38,7 +38,7 @@ static uint16_t loss_of_gps_counter = 0;
  * - Number of satellites being used
  * - Number of cycles where GPS has been lost (if applicable in cycle)
  */
-uint32_t aprs_encode_position(uint8_t* message, mod_t mod, trackPoint_t *trackPoint)
+uint32_t aprs_encode_position(uint8_t* message, mod_t mod, const aprs_config_t *config, trackPoint_t *trackPoint)
 {
 	char temp[22];
 	ptime_t date = trackPoint->time;
@@ -47,7 +47,7 @@ uint32_t aprs_encode_position(uint8_t* message, mod_t mod, trackPoint_t *trackPo
 	packet.max_size = 512; // TODO: replace 512 with real size
 	packet.mod = mod;
 
-	ax25_send_header(&packet, APRS_CALLSIGN, APRS_SSID, APRS_PATH);
+	ax25_send_header(&packet, config->callsign, config->ssid, config->path, config->preamble);
 	ax25_send_byte(&packet, '/');                // Report w/ timestamp, no APRS messaging. $ = NMEA raw data
 
 	// 170915 = 17h:09m:15s zulu (not allowed in Status Reports)
@@ -81,7 +81,7 @@ uint32_t aprs_encode_position(uint8_t* message, mod_t mod, trackPoint_t *trackPo
 	uint8_t src = NMEA_SRC_GGA;
 	uint8_t origin = ORIGIN_PICO;
 
-	temp[0]  = SYM_GET_TABLE(APRS_SYMBOL);
+	temp[0]  = (config->symbol >> 8) & 0xFF;
 	temp[1]  = y3+33;
 	temp[2]  = y2+33;
 	temp[3]  = y1+33;
@@ -90,7 +90,7 @@ uint32_t aprs_encode_position(uint8_t* message, mod_t mod, trackPoint_t *trackPo
 	temp[6]  = x2+33;
 	temp[7]  = x1+33;
 	temp[8]  = x1r+33;
-	temp[9]  = SYM_GET_SYMBOL(APRS_SYMBOL);
+	temp[9]  = config->symbol & 0xFF;
 	temp[10] = a1+33;
 	temp[11] = a1r+33;
 	temp[12] = ((gpsFix << 5) | (src << 3) | origin) + 33;
@@ -179,7 +179,7 @@ uint32_t aprs_encode_position(uint8_t* message, mod_t mod, trackPoint_t *trackPo
 /**
  * Transmit APRS log packet
  */
-uint32_t aprs_encode_log(uint8_t* message, mod_t mod)
+uint32_t aprs_encode_log(uint8_t* message, mod_t mod, const aprs_config_t *config, uint8_t length)
 {
 	ax25_t packet;
 	packet.data = message;
@@ -187,12 +187,12 @@ uint32_t aprs_encode_log(uint8_t* message, mod_t mod)
 	packet.mod = mod;
 
 	// Encode APRS header
-	ax25_send_header(&packet, APRS_CALLSIGN, APRS_SSID, APRS_PATH);
+	ax25_send_header(&packet, config->callsign, config->ssid, config->path, config->preamble);
 	ax25_send_string(&packet, "{{L");
 
 	// Encode log message
 	uint8_t i;
-	for(i=0; i<LOG_TRX_NUM; i++) {
+	for(i=0; i<length; i++) {
 		gpsFix_t dummy;
 		gpsFix_t *data = &dummy; // TODO: Implement getNextLogPoint() for this assignment
 		uint8_t base91[BASE91LEN(sizeof(gpsFix_t))+1];
@@ -211,7 +211,7 @@ uint32_t aprs_encode_log(uint8_t* message, mod_t mod)
 /**
  * Transmit APRS telemetry configuration
  */
-uint32_t aprs_encode_telemetry_configuration(uint8_t* message, mod_t mod, telemetryConfig_t type)
+uint32_t aprs_encode_telemetry_configuration(uint8_t* message, mod_t mod, const aprs_config_t *config, telemetry_config_t type)
 {
 	char temp[4];
 	ax25_t packet;
@@ -219,13 +219,13 @@ uint32_t aprs_encode_telemetry_configuration(uint8_t* message, mod_t mod, teleme
 	packet.max_size = 512; // TODO: replace 512 with real size
 	packet.mod = mod;
 
-	ax25_send_header(&packet, APRS_CALLSIGN, APRS_SSID, APRS_PATH); // Header
+	ax25_send_header(&packet, config->callsign, config->ssid, config->path, config->preamble); // Header
 	ax25_send_byte(&packet, ':'); // Message flag
 
 	// Callsign
-	ax25_send_string(&packet, APRS_CALLSIGN);
+	ax25_send_string(&packet, config->callsign);
 	ax25_send_byte(&packet, '-');
-	chsnprintf(temp, sizeof(temp), "%d", APRS_SSID);
+	chsnprintf(temp, sizeof(temp), "%d", config->ssid);
 	ax25_send_string(&packet, temp);
 
 	ax25_send_string(&packet, " :"); // Message separator
@@ -259,7 +259,7 @@ uint32_t aprs_encode_telemetry_configuration(uint8_t* message, mod_t mod, teleme
 	return packet.size;
 }
 
-uint32_t aprs_encode_image(uint8_t* message, mod_t mod, uint8_t *image, size_t size)
+uint32_t aprs_encode_image(uint8_t* message, mod_t mod, const aprs_config_t *config, uint8_t *image, size_t size)
 {
 	ax25_t packet;
 	packet.data = message;
@@ -267,7 +267,7 @@ uint32_t aprs_encode_image(uint8_t* message, mod_t mod, uint8_t *image, size_t s
 	packet.mod = mod;
 
 	// Encode APRS header
-	ax25_send_header(&packet, APRS_CALLSIGN, APRS_SSID, NULL);
+	ax25_send_header(&packet, config->callsign, config->ssid, NULL, config->preamble);
 	ax25_send_string(&packet, "{{I");
 
 	// Encode image message

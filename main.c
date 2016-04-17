@@ -50,9 +50,9 @@ int main(void) {
 	i2cInit();					// Startup I2C
 	initEssentialModules();		// Startup required modules (input/output modules)
 	initModules();				// Startup optional modules (eg. POSITION, LOG, ...)
-	pac1720_init();				// Startup current measurement
+	/*pac1720_init();				// Startup current measurement
 
-	chThdSleepMilliseconds(100);
+	chThdSleepMilliseconds(100);*/
 
 	// Initialize LED timer
 	chVTObjectInit(&vt);
@@ -62,8 +62,8 @@ int main(void) {
 		// Print time
 		PRINT_TIME("MAIN");
 
-		// Software watchdog
-		for(uint8_t i=0; i<moduleCount; i++) {
+		// Software watchdog FIXME
+		/*for(uint8_t i=0; i<moduleCount; i++) {
 			if(ST2S(chVTGetSystemTimeX() - modules[i]->lastCycle) <= (uint32_t)modules[0]->cycle + CYCLE_TIME) {
 				TRACE_INFO("MAIN > Module %s OK", modules[i]->name);
 				error = 0;
@@ -71,7 +71,7 @@ int main(void) {
 				TRACE_ERROR("MAIN > Module %s CRASHED", modules[i]->name);
 				error = 1; // Let red LED blink in virtual timer
 			}
-		}
+		}*/
 
 		chThdSleepMilliseconds(30000);
 		counter++;

@@ -113,7 +113,7 @@ void ax25_send_string(ax25_t *packet, const char *string)
 	}
 }
 
-void ax25_send_header(ax25_t *packet, const char *callsign, uint8_t ssid, const char *path)
+void ax25_send_header(ax25_t *packet, const char *callsign, uint8_t ssid, const char *path, uint16_t preamble)
 {
 	uint8_t i, j;
 	uint8_t tmp[8];
@@ -122,11 +122,10 @@ void ax25_send_header(ax25_t *packet, const char *callsign, uint8_t ssid, const 
 	packet->crc = 0xffff;
 
 	// Send preamble ("a bunch of 0s")
-	uint16_t preamble;
 	if(packet->mod == MOD_2GFSK) {
-		preamble = GFSK_PREAMBLE * 6 / 5;
+		preamble = preamble * 6 / 5;
 	} else {
-		preamble = AFSK_PREAMBLE * 3 / 20;
+		preamble = preamble * 3 / 20;
 	}
 	for(i=0; i<preamble; i++)
 	{

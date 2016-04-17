@@ -3,26 +3,14 @@
 
 #include "ch.h"
 #include "hal.h"
+#include "types.h"
 
-typedef enum {
-	SMOD_ACTIVE,
-	SMOD_SLEEP
-} smode_t;
+#define WAIT_FOR_TRACKING_POINT		trigger_new_tracking_point
+#define TX_CONTINUOSLY				trigger_immediately
 
-smode_t SLEEP_WHEN_BATT_BELOW_2V9(void);
-smode_t SLEEP_WHEN_BATT_BELOW_3V0(void);
-smode_t SLEEP_WHEN_BATT_BELOW_3V1(void);
-smode_t SLEEP_WHEN_BATT_BELOW_3V2(void);
-smode_t SLEEP_WHEN_BATT_BELOW_3V3(void);
-smode_t SLEEP_WHEN_BATT_BELOW_3V4(void);
-smode_t SLEEP_WHEN_BATT_BELOW_3V5(void);
-smode_t SLEEP_WHEN_BATT_BELOW_3V6(void);
-smode_t SLEEP_WHEN_BATT_BELOW_3V7(void);
-smode_t SLEEP_WHEN_BATT_BELOW_3V8(void);
-smode_t SLEEP_WHEN_BATT_BELOW_3V9(void);
-smode_t SLEEP_WHEN_BATT_BELOW_4V0(void);
-smode_t SLEEP_WHEN_BATT_BELOW_4V1(void);
-smode_t SLEEP_WHEN_BATTERY_LOW(void);
-smode_t NO_SLEEP(void);
+bool p_sleep(const sleep_config_t *config);
+systime_t waitForTrigger(systime_t prev, trigger_config_t *config);
+void trigger_new_tracking_point(void);
+void trigger_immediately(void);
 
 #endif

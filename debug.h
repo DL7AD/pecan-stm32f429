@@ -39,7 +39,7 @@ extern const SerialConfig uart_config;
 
 #define TRACE_TAB "                            "
 
-#define TRACE_MODULE_INFO(parm, thd, name) { \
+/*#define TRACE_MODULE_INFO(parm, thd, name) { \
 	uint32_t (*fptr)(void); \
 	fptr = (parm)->frequencyMethod; \
 	uint32_t freq = (*fptr)(); \
@@ -68,7 +68,7 @@ extern const SerialConfig uart_config;
 			TRACE_TAB, VAL2PROTOCOL((parm)->protocol) \
 		); \
 	} \
-}
+}*/
 
 #define TRACE_GPSFIX(fix) { \
 	TRACE_INFO("GPS  > New GPS Fix\r\n"\

@@ -8,6 +8,7 @@
 #include "pi2c.h"
 #include "debug.h"
 #include "config.h"
+#include "defines.h"
 
 /* 
  * gps_transmit_string

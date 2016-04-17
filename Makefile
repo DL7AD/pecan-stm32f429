@@ -121,11 +121,10 @@ CSRC = $(STARTUPSRC) \
        protocols/ssdv/rs8.c \
        protocols/aprs/aprs.c \
        protocols/aprs/ax25.c \
-       protocols/cw/cw.c \
+       protocols/morse/morse.c \
        modules/tracking.c \
        modules/position.c \
        modules/image.c \
-       modules/satellite.c \
        modules/log.c \
        drivers/max.c \
        drivers/si4464.c \
@@ -146,6 +145,7 @@ CSRC = $(STARTUPSRC) \
        math/sgp4.c \
        math/geofence.c \
        images/testimage.c \
+       config.c \
        main.c
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
@@ -234,7 +234,7 @@ UADEFS =
 
 # List all user directories here
 UINCDIR = modules/ drivers protocols/aprs protocols/ssdv \
-          protocols/cw math/ STM32F4xx_StdPeriph_Driver/inc \
+          protocols/morse math/ STM32F4xx_StdPeriph_Driver/inc \
           images/
 
 # List the user directory to look for the libraries here

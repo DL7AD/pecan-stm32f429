@@ -6,9 +6,9 @@
 
 THD_FUNCTION(moduleLOG, arg) {
 	// Print infos
-	module_params_t* parm = (module_params_t*)arg;
+	module_conf_t* config = (module_conf_t*)arg;
 	TRACE_INFO("LOG  > Startup module LOG");
-	TRACE_MODULE_INFO(parm, "LOG", "LOG");
+	//TRACE_MODULE_INFO(parm, "LOG", "LOG"); FIXME
 
 	systime_t time = chVTGetSystemTimeX();
 	while(true)
@@ -16,6 +16,10 @@ THD_FUNCTION(moduleLOG, arg) {
 		TRACE_INFO("LOG  > Do module LOG cycle");
 		TRACE_WARN("LOG  > Module LOG not fully implemented"); // FIXME
 
-		time = chThdSleepUntilWindowed(time, time + S2ST(parm->cycle)); // Wait until time + cycletime
+		if(!p_sleep(&config->sleep)) {
+			// TODO: Impelemt Log encoding
+		}
+
+		time = waitForTrigger(time, &config->trigger);
 	}
 }

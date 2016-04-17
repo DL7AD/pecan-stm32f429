@@ -19,6 +19,8 @@
 #define __APRS_H__
 
 #include "config.h"
+#include "si4464.h"
+#include "tracking.h"
 
 #define GSP_FIX_OLD						0x0
 #define GSP_FIX_CURRENT					0x1
@@ -40,21 +42,14 @@
 #define APRS_DEST_CALLSIGN				"APECAN" // APExxx = Pecan device
 #define APRS_DEST_SSID					0
 
-#define SYM_BALLOON						('/', 'O')
-#define SYM_SMALLAIRCRAFT				('/', '\'')
-#define SYM_SATELLITE					('\\', 'S')
+//#define SYM_BALLOON						('/', 'O')
+//#define SYM_SMALLAIRCRAFT				('/', '\'')
+//#define SYM_SATELLITE					('\\', 'S')
 
-typedef enum {
-	CONFIG_PARM,
-	CONFIG_UNIT,
-	CONFIG_EQNS,
-	CONFIG_BITS
-} telemetryConfig_t;
-
-uint32_t aprs_encode_position(uint8_t* message, mod_t mod, trackPoint_t *trackPoint);
-uint32_t aprs_encode_telemetry_configuration(uint8_t* message, mod_t mod, telemetryConfig_t type);
-uint32_t aprs_encode_log(uint8_t* message, mod_t mod);
-uint32_t aprs_encode_image(uint8_t* message, mod_t mod, uint8_t *image, size_t size);
+uint32_t aprs_encode_position(uint8_t* message, mod_t mod, const aprs_config_t *config, trackPoint_t *trackPoint);
+uint32_t aprs_encode_telemetry_configuration(uint8_t* message, mod_t mod, const aprs_config_t *config, telemetry_config_t type);
+uint32_t aprs_encode_log(uint8_t* message, mod_t mod, const aprs_config_t *config, uint8_t length);
+uint32_t aprs_encode_image(uint8_t* message, mod_t mod, const aprs_config_t *config, uint8_t *image, size_t size);
 
 #endif
 

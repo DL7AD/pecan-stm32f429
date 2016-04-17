@@ -2,14 +2,13 @@
 #include "hal.h"
 #include "defines.h"
 #include "debug.h"
-#include "modules.h"
 #include "radio.h"
 #include "si4464.h"
 #include "geofence.h"
 #include "pi2c.h"
 #include <string.h>
 
-#define PLAYBACK_RATE		1620000									/* Samples per second (SYSCLK = 45MHz) */
+#define PLAYBACK_RATE		1560000									/* Samples per second (SYSCLK = 45MHz) */
 #define BAUD_RATE			1200									/* APRS AFSK baudrate */
 #define SAMPLES_PER_BAUD	(PLAYBACK_RATE / BAUD_RATE)				/* Samples per baud */
 #define PHASE_DELTA_1200	(((2 * 1200) << 16) / PLAYBACK_RATE)	/* Delta-phase per sample for 1200Hz tone */
@@ -71,16 +70,16 @@ void sendAFSK(radio_t radio, radioMSG_t *msg) {
 	}
 }
 
-void initCW(radio_t radio, radioMSG_t *msg) {
+void initOOK(radio_t radio, radioMSG_t *msg) {
 	// Initialize radio and tune
-	Si4464_Init(radio, MOD_CW);
+	Si4464_Init(radio, MOD_OOK);
 	radioTune(radio, msg->freq, 0, msg->power);
 }
 
 /**
-  * Transmits binary CW message. One bit = 20ms (1: TONE, 0: NO TONE)
+  * Transmits binary OOK message. One bit = 20ms (1: TONE, 0: NO TONE)
   */
-void sendCW(radio_t radio, radioMSG_t *msg) {
+void sendOOK(radio_t radio, radioMSG_t *msg) {
 	// Transmit data
 	uint32_t bit = 0;
 	systime_t time = chVTGetSystemTimeX();
@@ -88,7 +87,7 @@ void sendCW(radio_t radio, radioMSG_t *msg) {
 		MOD_GPIO_SET(radio, (msg->msg[bit/8] >> (bit%8)) & 0x1);
 		bit++;
 
-		time = chThdSleepUntilWindowed(time, time + MS2ST(1200 / CW_SPEED));
+		time = chThdSleepUntilWindowed(time, time + MS2ST(1200 / msg->ook_config->speed));
 	}
 }
 
@@ -108,7 +107,7 @@ static void serial_cb(void *arg) {
 	{
 		case 6: // TX-delay
 			txj++;
-			if(txj > FSK_PREDELAY) {
+			if(txj > (uint32_t)(fsk_msg->fsk_config->predelay * fsk_msg->fsk_config->baud / 1000)) {
 				txj = 0;
 				txs = 7;
 			}
@@ -129,7 +128,7 @@ static void serial_cb(void *arg) {
 			break;
 
 		case 8:
-			if(txi < FSK_ASCII) {
+			if(txi < fsk_msg->fsk_config->bits) {
 				txi++;
 				MOD_GPIO_SET(fsk_radio, txc & 1);
 				txc = txc >> 1;
@@ -141,7 +140,7 @@ static void serial_cb(void *arg) {
 			break;
 
 		case 9:
-			if(FSK_STOPBITS == 2)
+			if(fsk_msg->fsk_config->stopbits == 2)
 				MOD_GPIO_SET(fsk_radio, HIGH); // Stop Bit
 			txs = 7;
 	}
@@ -149,7 +148,8 @@ static void serial_cb(void *arg) {
 	// Reload timer
 	if(txs) {
 		chSysLockFromISR();
-		chVTSetI(&vt, US2ST(1000000/FSK_BAUD), serial_cb, NULL);
+		uint32_t delay = US2ST(1000000/fsk_msg->fsk_config->baud);
+		chVTSetI(&vt, delay, serial_cb, NULL);
 		chSysUnlockFromISR();
 	}
 }
@@ -158,7 +158,7 @@ void init2FSK(radio_t radio, radioMSG_t *msg) {
 	// Initialize radio and tune
 	Si4464_Init(radio, MOD_2FSK);
 	MOD_GPIO_SET(radio, HIGH);
-	radioTune(radio, msg->freq, FSK_SHIFT, msg->power);
+	radioTune(radio, msg->freq, msg->fsk_config->shift, msg->power);
 }
 
 void send2FSK(radio_t radio, radioMSG_t *msg) {
@@ -214,7 +214,9 @@ void send2GFSK(radio_t radio, radioMSG_t *msg) {
 }
 
 THD_FUNCTION(moduleRADIO, arg) {
-	module_params_t* parm = (module_params_t*)arg;
+	(void)arg;
+
+	//module_params_t* parm = (module_params_t*)arg;
 	time_t lastMessage[2]; // Last transmission time (end of transmission)
 	mod_t lastModulation[2]; // Last modulation
 
@@ -231,7 +233,7 @@ THD_FUNCTION(moduleRADIO, arg) {
 
 	while(true)
 	{
-		parm->lastCycle = chVTGetSystemTimeX(); // Watchdog timer
+		// parm->lastCycle = chVTGetSystemTimeX(); // Watchdog timer FIXME
 
 		// Lock interference mutex
 		chMtxLock(&interference_mtx);
@@ -275,10 +277,10 @@ THD_FUNCTION(moduleRADIO, arg) {
 							initAFSK(radio, msg);
 						sendAFSK(radio, msg);
 						break;
-					case MOD_CW:
+					case MOD_OOK:
 						if(!isRadioInitialized(radio))
-							initCW(radio, msg);
-						sendCW(radio, msg);
+							initOOK(radio, msg);
+						sendOOK(radio, msg);
 						break;
 					case MOD_DOMINOEX16:
 						TRACE_ERROR("RAD  > Unimplemented modulation DominoEX16"); // TODO: Implement this
@@ -318,15 +320,15 @@ THD_FUNCTION(moduleRADIO, arg) {
   * use the APRS default frequency set in the config file if no GPS fix has
   * been received.
   */
-uint32_t getAPRSRegionFrequency(void) {
+uint32_t getAPRSRegionFrequency2m(void) {
 	trackPoint_t *point = getLastTrackPoint();
 
 	// Use this frequency for the rest of the world (unset regions, 144.800 MHz)
 	uint32_t freq = APRS_FREQ_OTHER;
 
-	// Use default frequency set in config file
+	// Position unknown
 	if(!point->gps_lat && !point->gps_lon)
-		freq = APRS_DEFAULT_FREQ;
+		freq = 0; // Use default frequency set in config file
 	
 	// America 144.390 MHz
 	if(isPointInAmerica(point->gps_lat, point->gps_lon))
@@ -366,11 +368,11 @@ uint32_t getAPRSRegionFrequency(void) {
 
 	return freq;
 }
+uint32_t getAPRSRegionFrequency70cm(void) {
+	return 432500000;
+}
 uint32_t getAPRSISSFrequency(void) {
 	return 145825000;
-}
-uint32_t getCustomFrequency(void) {
-	return 145299000;
 }
 
 /**
@@ -390,8 +392,23 @@ bool transmitOnRadio(radioMSG_t *msg) {
 	return false;
 }
 
+uint32_t getFrequency(freuquency_config_t *config)
+{
+	uint32_t (*fptr)(void);
 
+	switch(config->type) {
+		case FREQ_DYNAMIC: // Dynamic frequency determination
+			fptr = config->method;
+			uint32_t ret = (*fptr)();
+			if(!ret) // Use default frequency
+				return config->hz;
+			return ret;
 
+		case FREQ_STATIC: // Static frequency
+			return config->hz;
 
-
+		default:
+			return 0;
+	}
+}
 
