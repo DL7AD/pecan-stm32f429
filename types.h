@@ -163,11 +163,12 @@ typedef struct {
 } morse_config_t;
 
 typedef struct {
-	char				instance_name[32];
+	char				name[32];
 
+	// Radio
 	int8_t				power;
-	prot_t				protocol;
 	freuquency_config_t	frequency;
+	prot_t				protocol;
 
 	// Timing
 	uint32_t			init_delay;
@@ -176,15 +177,19 @@ typedef struct {
 	trigger_config_t	trigger;
 
 	// Modulation
-	fsk_config_t		fsk_config;
-	afsk_config_t		afsk_config;
-	gfsk_config_t		gfsk_config;
-	ook_config_t		ook_config;
+	union {
+		fsk_config_t	fsk_config;
+		afsk_config_t	afsk_config;
+		gfsk_config_t	gfsk_config;
+		ook_config_t	ook_config;
+	};
 
 	// Protocol
-	morse_config_t		morse_config;
-	ukhas_config_t		ukhas_config;
-	aprs_config_t		aprs_config;
+	union {
+		morse_config_t	morse_config;
+		ukhas_config_t	ukhas_config;
+		aprs_config_t	aprs_config;
+	};
 	log_config_t		log_config;
 	ssdv_config_t		ssdv_config;
 

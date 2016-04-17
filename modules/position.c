@@ -111,17 +111,20 @@ void replace_placeholders(char* fskmsg, uint16_t size, trackPoint_t *trackPoint)
 }
 
 THD_FUNCTION(modulePOS, arg) {
-	// Print infos
 	module_conf_t* config = (module_conf_t*)arg;
-	TRACE_INFO("POS  > Startup module POSITION");
-	// TRACE_MODULE_INFO(parm, "POS", "POSITION"); FIXME
+
+	// Execute Initial delay
+	if(config->init_delay)
+		chThdSleepMilliseconds(config->init_delay);
+
+	// Print infos
+	TRACE_INFO("POS  > Startup module %s", config->name);
 
 	trackPoint_t *trackPoint = getLastTrackPoint();
-
 	systime_t time = chVTGetSystemTimeX();
 	while(true)
 	{
-		//parm->lastCycle = chVTGetSystemTimeX(); // Watchdog timer TODO
+		// TODO: Implement software watchdog
 		TRACE_INFO("POS  > Do module POSITION cycle");
 
 		TRACE_INFO("POS  > Get last track point");

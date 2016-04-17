@@ -141,10 +141,10 @@
 
 #define RADIO1_MIN_FREQ			1				/* Min. Frequency range of Radio 1 */
 #define RADIO1_MAX_FREQ			2				/* Min. Frequency range of Radio 1 */
-#define RADIO1_MAX_PWR			13				/* Max. power of Radio 1 in dBm */
+#define RADIO1_MAX_PWR			20				/* Max. power of Radio 1 in dBm */
 #define RADIO2_MIN_FREQ			144000000		/* Min. Frequency range of Radio 2 */
 #define RADIO2_MAX_FREQ			450000000		/* Min. Frequency range of Radio 2 */
-#define RADIO2_MAX_PWR			13				/* Max. power of Radio 2 in dBm */
+#define RADIO2_MAX_PWR			20				/* Max. power of Radio 2 in dBm */
 
 
 

@@ -32,7 +32,7 @@ static const uint8_t OV2640_CONFIG1[] =
 	0x2e, 0xdf,
 	0xff, 0x01,
 	0x3c, 0x32,
-	//{0x11, 0x30,  // Divide clock by 49
+	//0x11, 0x30,  // Divide clock by 49
 	0x11, 0x02,   // Divide clock by 3
 	0x09, 0x02,
 	0x04, 0x28,
@@ -465,7 +465,7 @@ uint32_t OV2640_getBuffer(uint8_t** buffer) {
 	while(!ov2640_ram_buffer[size-1])
 		size--;
 	
-	TRACE_DEBUG("CAM > Image size: %d bytes", size);
+	TRACE_INFO("CAM > Image size: %d bytes", size);
 
 	return size;
 }

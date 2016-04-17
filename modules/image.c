@@ -106,15 +106,19 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_conf_t* config) {
 }
 
 THD_FUNCTION(moduleIMG, arg) {
-	// Print infos
 	module_conf_t* config = (module_conf_t*)arg;
-	TRACE_INFO("IMG  > Startup module IMAGE");
-	// TRACE_MODULE_INFO(parm, "IMG", "IMAGE"); FIXME
+
+	// Execute Initial delay
+	if(config->init_delay)
+		chThdSleepMilliseconds(config->init_delay);
+
+	// Print infos
+	TRACE_INFO("IMG  > Startup module %s", config->name);
 
 	systime_t time = chVTGetSystemTimeX();
 	while(true)
 	{
-		//parm->lastCycle = chVTGetSystemTimeX(); // Watchdog timer FIXME
+		// TODO: Implement software watchdog
 		TRACE_INFO("IMG  > Do module IMAGE cycle");
 
 		if(!p_sleep(&config->sleep)) {
