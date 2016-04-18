@@ -122,6 +122,10 @@ THD_FUNCTION(modulePOS, arg) {
 
 	trackPoint_t *trackPoint = getLastTrackPoint();
 	systime_t time = chVTGetSystemTimeX();
+
+	systime_t last_config_transmission = chVTGetSystemTimeX();
+	uint32_t current_config_count = 0;
+
 	while(true)
 	{
 		// TODO: Implement software watchdog
@@ -142,27 +146,40 @@ THD_FUNCTION(modulePOS, arg) {
 
 				case PROT_APRS_2GFSK: // Encode APRS
 				case PROT_APRS_AFSK:
+					// Position transmission
 					msg.mod = config->protocol == PROT_APRS_AFSK ? MOD_AFSK : MOD_2GFSK;
 					msg.gfsk_config = &(config->gfsk_config);
 					msg.afsk_config = &(config->afsk_config);
-					msg.bin_len = aprs_encode_position(msg.msg, msg.mod, &(config->aprs_config), trackPoint);
+
+					msg.bin_len = aprs_encode_position(msg.msg, msg.mod, &(config->aprs_config), trackPoint); // Encode packet
 					while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively (transmission)
 						chThdSleepMilliseconds(10);
-					break;
 
-				/*case PROT_APRSCONFIG_2GFSK: // Encode APRS telemetry encoding definition (conversion formulae) FIXME: This must be included in PROT_APRS_2GFSK and PROT_APRS_AFSK
-				case PROT_APRSCONFIG_AFSK:
-					msg.mod = config->protocol == PROT_APRSCONFIG_AFSK ? MOD_AFSK : MOD_2GFSK;
+					// Telemetry encoding parameter transmission
+					if(config->aprs_config.tel_encoding)
+					{
+						// Telemetry encoding parameter transmission trigger
+						if(last_config_transmission + S2ST(config->aprs_config.tel_encoding_cycle) < chVTGetSystemTimeX() && current_config_count >= 4)
+						{
+							last_config_transmission += S2ST(config->aprs_config.tel_encoding_cycle);
+							current_config_count = 0;
+						}
 
-					telemetry_config_t config[] = {CONFIG_PARM, CONFIG_UNIT, CONFIG_EQNS, CONFIG_BITS};
-					for(uint8_t i=0; i<sizeof(config); i++) {
-						msg.bin_len = aprs_encode_telemetry_configuration(msg.msg, msg.mod, config[i]); // Encode packet
-						while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively (transmission)
-							chThdSleepMilliseconds(10);
-						chThdSleepMilliseconds(5000); // Take a litte break between the package transmissions
+						// Actual transmission (each cycle a different config type will be sent)
+						if(config->aprs_config.tel_encoding && current_config_count < 4)
+						{
+							chThdSleepMilliseconds(5000); // Take a litte break between the package transmissions
+
+							const telemetry_config_t tel_config[] = {CONFIG_PARM, CONFIG_UNIT, CONFIG_EQNS, CONFIG_BITS};
+							msg.bin_len = aprs_encode_telemetry_configuration(msg.msg, msg.mod, &(config->aprs_config), tel_config[current_config_count]); // Encode packet
+							while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively (transmission)
+								chThdSleepMilliseconds(10);
+
+							current_config_count++;
+						}
 					}
 
-					break;*/
+					break;
 
 				case PROT_UKHAS_2FSK: // Encode UKHAS
 					msg.mod = MOD_2FSK;

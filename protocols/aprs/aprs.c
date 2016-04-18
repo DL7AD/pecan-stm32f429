@@ -137,35 +137,27 @@ uint32_t aprs_encode_position(uint8_t* message, mod_t mod, const aprs_config_t *
 	temp[1] = t%91 + 33;
 	ax25_send_string(&packet, temp);
 
-	// Battery voltage
-	t = trackPoint->adc_battery;
-	temp[0] = t/91 + 33;
-	temp[1] = t%91 + 33;
-	ax25_send_string(&packet, temp);
+	// Telemetry parameter
+	for(uint8_t i=0; i<5; i++) {
+		switch(config->tel[i]) {
+			case TEL_SATS:		t = trackPoint->gps_sats;			break;
+			case TEL_TTFF:		t = trackPoint->gps_ttff;			break;
+			case TEL_VBAT:		t = trackPoint->adc_battery;		break;
+			case TEL_VSOL:		t = trackPoint->adc_solar;			break;
+			case TEL_CHARGE:	t = trackPoint->adc_charge;			break;
+			case TEL_DISCHARGE:	t = trackPoint->adc_discharge;		break;
+			case TEL_IHUM:		t = trackPoint->int_hum;			break;
+			case TEL_EHUM:		t = trackPoint->ext_hum;			break;
+			case TEL_IPRESS:	t = trackPoint->int_press/125 - 40;	break;
+			case TEL_EPRESS:	t = trackPoint->ext_press/125 - 40;	break;
+			case TEL_ITEMP:		t = trackPoint->int_temp/10 + 1000;	break;
+			case TEL_ETEMP:		t = trackPoint->ext_temp/10 + 1000;	break;
+		}
 
-	// Solar voltage
-	t = trackPoint->adc_solar;
-	temp[0] = t/91 + 33;
-	temp[1] = t%91 + 33;
-	ax25_send_string(&packet, temp);
-
-	// Temperature
-	t = trackPoint->int_temp/10 + 1000;
-	temp[0] = t/91 + 33;
-	temp[1] = t%91 + 33;
-	ax25_send_string(&packet, temp);
-
-	// Battery charge
-	t = trackPoint->adc_charge;
-	temp[0] = t/91 + 33;
-	temp[1] = t%91 + 33;
-	ax25_send_string(&packet, temp);
-
-	// Battery discharge
-	t = trackPoint->adc_discharge;
-	temp[0] = t/91 + 33;
-	temp[1] = t%91 + 33;
-	ax25_send_string(&packet, temp);
+		temp[0] = t/91 + 33;
+		temp[1] = t%91 + 33;
+		ax25_send_string(&packet, temp);
+	}
 
 	ax25_send_byte(&packet, '|');
 
@@ -211,7 +203,7 @@ uint32_t aprs_encode_log(uint8_t* message, mod_t mod, const aprs_config_t *confi
 /**
  * Transmit APRS telemetry configuration
  */
-uint32_t aprs_encode_telemetry_configuration(uint8_t* message, mod_t mod, const aprs_config_t *config, telemetry_config_t type)
+uint32_t aprs_encode_telemetry_configuration(uint8_t* message, mod_t mod, const aprs_config_t *config, const telemetry_config_t type)
 {
 	char temp[4];
 	ax25_t packet;
@@ -231,24 +223,117 @@ uint32_t aprs_encode_telemetry_configuration(uint8_t* message, mod_t mod, const 
 	ax25_send_string(&packet, " :"); // Message separator
 
 	switch(type) {
-		case CONFIG_PARM:
-			ax25_send_string(&packet, "PARM.Battery,Solar,Temp,Charge,Discharge");
+		case CONFIG_PARM: // Telemetry parameter names
+
+			ax25_send_string(&packet, "PARM.");
+
+			for(uint8_t i=0; i<5; i++) {
+				switch(config->tel[i]) {
+					case TEL_SATS:		ax25_send_string(&packet, "Sats");				break;
+					case TEL_TTFF:		ax25_send_string(&packet, "TTFF");				break;
+					case TEL_VBAT:		ax25_send_string(&packet, "Battery");			break;
+					case TEL_VSOL:		ax25_send_string(&packet, "Solar");				break;
+					case TEL_CHARGE:	ax25_send_string(&packet, "Charge");			break;
+					case TEL_DISCHARGE:	ax25_send_string(&packet, "Discharge");			break;
+					case TEL_IHUM:		ax25_send_string(&packet, "Humidity int");		break;
+					case TEL_EHUM:		ax25_send_string(&packet, "Humidity ext");		break;
+					case TEL_IPRESS:	ax25_send_string(&packet, "Airpressure int");	break;
+					case TEL_EPRESS:	ax25_send_string(&packet, "Airpressure ext");	break;
+					case TEL_ITEMP:		ax25_send_string(&packet, "Temperature int");	break;
+					case TEL_ETEMP:		ax25_send_string(&packet, "Temperature ext");	break;
+				}
+				if(i < 4)
+					ax25_send_string(&packet, ",");
+			}
+
 			break;
-		case CONFIG_UNIT:
-			ax25_send_string(&packet, "UNIT.Volt,Volt,degC,mW,mW");
+
+		case CONFIG_UNIT: // Telemetry units
+
+			ax25_send_string(&packet, "UNIT.");
+
+			for(uint8_t i=0; i<5; i++) {
+				switch(config->tel[i]) {
+					case TEL_SATS:
+						break; // No unit
+
+					case TEL_TTFF:
+						ax25_send_string(&packet, "sec");
+						break;
+
+					case TEL_VBAT:
+					case TEL_VSOL:
+						ax25_send_string(&packet, "V");
+						break;
+
+					case TEL_CHARGE:
+					case TEL_DISCHARGE:
+						ax25_send_string(&packet, "W");
+						break;
+
+					case TEL_IHUM:
+					case TEL_EHUM:
+						ax25_send_string(&packet, "%");
+						break;
+
+					case TEL_IPRESS:
+					case TEL_EPRESS:
+						ax25_send_string(&packet, "Pa");
+						break;
+						
+					case TEL_ITEMP:
+					case TEL_ETEMP:
+						ax25_send_string(&packet, "degC");
+						break;
+				}
+				if(i < 4)
+					ax25_send_string(&packet, ",");
+			}
+
 			break;
-		case CONFIG_EQNS:
-			ax25_send_string(&packet,
-				"EQNS."
-				"0,.001,0,"
-				"0,.001,0,"
-				"0,0.1,-100,"
-				"0,1,0,"
-				"0,1,0"
-			);
+
+		case CONFIG_EQNS: // Telemetry conversion parameters
+
+			ax25_send_string(&packet, "EQNS.");
+
+			for(uint8_t i=0; i<5; i++) {
+				switch(config->tel[i]) {
+					case TEL_SATS:
+					case TEL_TTFF:
+						ax25_send_string(&packet, "0,1,0");
+						break;
+
+					case TEL_CHARGE:
+					case TEL_DISCHARGE:
+					case TEL_VBAT:
+					case TEL_VSOL:
+						ax25_send_string(&packet, "0,.001,0");
+						break;
+
+					case TEL_IHUM:
+					case TEL_EHUM:
+						ax25_send_string(&packet, "0,.1,0");
+						break;
+
+					case TEL_IPRESS:
+					case TEL_EPRESS:
+						ax25_send_string(&packet, "0,12.5,500");
+						break;
+						
+					case TEL_ITEMP:
+					case TEL_ETEMP:
+						ax25_send_string(&packet, "0,.1,-100");
+						break;
+				}
+				if(i < 4)
+					ax25_send_string(&packet, ",");
+			}
+
 			break;
+
 		case CONFIG_BITS:
-			ax25_send_string(&packet, "BITS.11111111,Pecan Balloon");
+			ax25_send_string(&packet, "BITS.11111111,");
+			ax25_send_string(&packet, config->tel_comment);
 			break;
 	}
 

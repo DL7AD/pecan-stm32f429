@@ -42,12 +42,8 @@
 #define APRS_DEST_CALLSIGN				"APECAN" // APExxx = Pecan device
 #define APRS_DEST_SSID					0
 
-//#define SYM_BALLOON						('/', 'O')
-//#define SYM_SMALLAIRCRAFT				('/', '\'')
-//#define SYM_SATELLITE					('\\', 'S')
-
 uint32_t aprs_encode_position(uint8_t* message, mod_t mod, const aprs_config_t *config, trackPoint_t *trackPoint);
-uint32_t aprs_encode_telemetry_configuration(uint8_t* message, mod_t mod, const aprs_config_t *config, telemetry_config_t type);
+uint32_t aprs_encode_telemetry_configuration(uint8_t* message, mod_t mod, const aprs_config_t *config, const telemetry_config_t type);
 uint32_t aprs_encode_log(uint8_t* message, mod_t mod, const aprs_config_t *config, uint8_t length);
 uint32_t aprs_encode_image(uint8_t* message, mod_t mod, const aprs_config_t *config, uint8_t *image, size_t size);
 

@@ -7,7 +7,7 @@ module_conf_t config[8];
 void initModules(void)
 {
 	// Module POSITION, APRS 2m AFSK
-	chsnprintf(config[0].name, 12, "POS APRS 2m");			// Instance name
+	chsnprintf(config[0].name, 17, "POS APRS 2m AFSK");		// Instance name
 	config[0].power = 20;									// Power 20 dBm
 	config[0].protocol = PROT_APRS_AFSK;					// Protocol APRS, modulation AFSK
 	config[0].frequency.type = FREQ_DYNAMIC;				// Dynamic frequency allocation
@@ -19,19 +19,20 @@ void initModules(void)
 	chsnprintf(config[0].aprs_config.callsign, 6, "DL7AD"); // APRS Callsign
 	config[0].aprs_config.ssid = 12;						// APRS SSID
 	config[0].aprs_config.symbol = SYM_BALLOON;				// APRS Symbol
-	chsnprintf(config[0].aprs_config.path, 8, "WIDE,WIDE");	// APRS Path
+	chsnprintf(config[0].aprs_config.path, 16, "WIDE1-1,WIDE1-1");// APRS Path
 	config[0].aprs_config.preamble = 200;					// APRS Preamble
-	config[0].aprs_config.tel1 = TEL_VBAT;					// APRS Telemetry parameter 1
-	config[0].aprs_config.tel2 = TEL_VSOL;					// APRS Telemetry parameter 2
-	config[0].aprs_config.tel3 = TEL_IPRESS;				// APRS Telemetry parameter 3
-	config[0].aprs_config.tel4 = TEL_ITEMP;					// APRS Telemetry parameter 4
-	config[0].aprs_config.tel5 = TEL_IHUM;					// APRS Telemetry parameter 5
+	config[0].aprs_config.tel[0] = TEL_VBAT;				// APRS Telemetry parameter 1
+	config[0].aprs_config.tel[1] = TEL_VSOL;				// APRS Telemetry parameter 2
+	config[0].aprs_config.tel[2] = TEL_IPRESS;				// APRS Telemetry parameter 3
+	config[0].aprs_config.tel[3] = TEL_ITEMP;				// APRS Telemetry parameter 4
+	config[0].aprs_config.tel[4] = TEL_IHUM;				// APRS Telemetry parameter 5
 	config[0].aprs_config.tel_encoding = TRUE;				// Transmit Telemetry encoding information activated
 	config[0].aprs_config.tel_encoding_cycle = 3600;		// Transmit Telemetry encoding information every 3600sec
+	chsnprintf(config[0].aprs_config.tel_comment, 14, "Pecan Balloon");// Telemetry comment
 	MODULE_POSITION(&config[0]);
 
-	// Module POSITION, APRS 70cm 2GFSK, night
-	chsnprintf(config[1].name, 14, "POS APRS 70cm");		// Instance name
+	// Module POSITION, APRS 2m 2GFSK
+	chsnprintf(config[1].name, 18, "POS APRS 2m 2GFSK");	// Instance name
 	config[1].power = 20;									// Power 10 dBm
 	config[1].protocol = PROT_APRS_2GFSK;					// Protocol APRS, modulation AFSK
 	config[1].frequency.type = FREQ_STATIC;					// Dynamic frequency allocation
@@ -42,18 +43,20 @@ void initModules(void)
 	chsnprintf(config[1].aprs_config.callsign, 6, "DL7AD"); // APRS Callsign
 	config[1].aprs_config.ssid = 12;						// APRS SSID
 	config[1].aprs_config.symbol = SYM_BALLOON;				// APRS Symbol
-	chsnprintf(config[1].aprs_config.path, 8, "WIDE,WIDE");	// APRS Path
-	config[1].aprs_config.preamble = 20;					// APRS Preamble
-	config[1].aprs_config.tel1 = TEL_VBAT;					// APRS Telemetry parameter 1
-	config[1].aprs_config.tel2 = TEL_VSOL;					// APRS Telemetry parameter 2
-	config[1].aprs_config.tel3 = TEL_IPRESS;				// APRS Telemetry parameter 3
-	config[1].aprs_config.tel4 = TEL_ITEMP;					// APRS Telemetry parameter 4
-	config[1].aprs_config.tel5 = TEL_IHUM;					// APRS Telemetry parameter 5
-	config[1].aprs_config.tel_encoding = FALSE;				// Transmit Telemetry encoding information disabled
+	chsnprintf(config[1].aprs_config.path, 16, "WIDE1-1,WIDE1-1");// APRS Path
+	config[1].aprs_config.preamble = 40;					// APRS Preamble
+	config[1].aprs_config.tel[0] = TEL_VBAT;				// APRS Telemetry parameter 1
+	config[1].aprs_config.tel[1] = TEL_VSOL;				// APRS Telemetry parameter 2
+	config[1].aprs_config.tel[2] = TEL_IPRESS;				// APRS Telemetry parameter 3
+	config[1].aprs_config.tel[3] = TEL_ITEMP;				// APRS Telemetry parameter 4
+	config[1].aprs_config.tel[4] = TEL_IHUM;				// APRS Telemetry parameter 5
+	config[1].aprs_config.tel_encoding = TRUE;				// Transmit Telemetry encoding information enabled
+	config[1].aprs_config.tel_encoding_cycle = 3600;		// Transmit Telemetry encoding information every 3600sec
+	chsnprintf(config[1].aprs_config.tel_comment, 14, "Pecan Balloon"); // Telemetry comment
 	MODULE_POSITION(&config[1]);
 
 	// Module POSITION, UKHAS 2m 2FSK
-	/*chsnprintf(config[2].name, 13, "POS UKHAS 2m");		// Instance name
+	chsnprintf(config[2].name, 13, "POS UKHAS 2m");			// Instance name
 	config[2].power = 10;									// Power 10 dBm
 	config[2].protocol = PROT_UKHAS_2FSK;					// Protocol UKHAS, modulation 2FSK
 	config[2].frequency.type = FREQ_STATIC;					// Static frequency allocation
@@ -70,7 +73,7 @@ void initModules(void)
 	config[2].fsk_config.shift = 425;						// Frequency shift in Hz
 	chsnprintf(config[2].ukhas_config.callsign, 6, "DL7AD"); // UKHAS Callsign
 	chsnprintf(config[2].ukhas_config.format, 134, "<CALL>,<ID>,<TIME>,<LAT>,<LON>,<ALT>,<SATS>,<TTFF>,<VBAT>,<VSOL>,<CHARGE>,<DISCHARGE>,<IPRESS>,<ITEMP>,<IHUM>,<EPRESS>,<ETEMP>,<EHUM>"); // UKHAS Format
-	MODULE_POSITION(&config[2]);*/
+	//MODULE_POSITION(&config[2]);
 
 	// Module POSITION, Morse 2m OOK
 	chsnprintf(config[3].name, 11, "POS OOK 2m");			// Instance name
@@ -84,10 +87,10 @@ void initModules(void)
 	config[3].ook_config.speed = 20;						// Speed 20wpm
 	chsnprintf(config[3].morse_config.callsign, 6, "DL7AD"); // UKHAS Callsign
 	chsnprintf(config[3].morse_config.format, 36, "BALLOON <CALL> <LOC> <ALT>M PSE QSL"); // Morse Format
-	MODULE_POSITION(&config[3]);
+	//MODULE_POSITION(&config[3]);
 
 	// Module IMAGE, APRS 2m AFSK
-	/*chsnprintf(config[4].name, 12, "IMG AFSK 2m");		// Instance name
+	chsnprintf(config[4].name, 12, "IMG AFSK 2m");			// Instance name
 	config[4].power = 10;									// Power 10 dBm
 	config[4].protocol = PROT_APRS_AFSK;					// Protocol Morse, modulation OOK
 	config[4].frequency.type = FREQ_STATIC;					// Static frequency allocation
@@ -100,7 +103,7 @@ void initModules(void)
 	config[4].trigger.timeout = 0;							// Transmit continously
 	chsnprintf(config[4].ssdv_config.callsign, 6, "DL7AD"); // SSDV Callsign
 	config[4].ssdv_config.res = RES_QVGA;					// Resolution QVGA
-	MODULE_IMAGE(&config[4]);*/
+	//MODULE_IMAGE(&config[4]);
 
 	// Module IMAGE, APRS 2m 2GFSK
 	chsnprintf(config[5].name, 13, "IMG 2GFSK 2m");			// Instance name
@@ -112,13 +115,13 @@ void initModules(void)
 	config[5].packet_spacing = 0;							// Packet spacing in ms
 	config[5].trigger.type = TRIG_TIMEOUT;					// Trigger transmission on timeout (Periodic cycling)
 	config[5].trigger.timeout = 0;							// Transmit continously
-	config[5].aprs_config.preamble = 20;					// APRS Preamble
+	config[5].aprs_config.preamble = 40;					// APRS Preamble
 	chsnprintf(config[5].ssdv_config.callsign, 6, "DL7AD"); // SSDV Callsign
 	config[5].ssdv_config.res = RES_XGA;					// Resolution QVGA
-	MODULE_IMAGE(&config[5]);
+	//MODULE_IMAGE(&config[5]);
 
 	// Module IMAGE, SSDV 2m 2FSK
-	/*chsnprintf(config[6].name, 12, "IMG 2FSK 2m");		// Instance name
+	chsnprintf(config[6].name, 12, "IMG 2FSK 2m");			// Instance name
 	config[6].power = 10;									// Power 10 dBm
 	config[6].protocol = PROT_SSDV_2FSK;					// Protocol SSDV, modulation 2FSK
 	config[6].frequency.type = FREQ_STATIC;					// Static frequency allocation
@@ -136,7 +139,7 @@ void initModules(void)
 	config[6].fsk_config.shift = 1000;						// Frequency shift in Hz
 	chsnprintf(config[6].ssdv_config.callsign, 6, "DL7AD"); // SSDV Callsign
 	config[6].ssdv_config.res = RES_QVGA;					// Resolution QVGA
-	MODULE_IMAGE(&config[6]);*/
+	//MODULE_IMAGE(&config[6]);
 }
 
 

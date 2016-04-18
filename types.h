@@ -27,7 +27,6 @@ typedef enum {
 } telemetry_config_t;
 
 typedef enum {
-	TEL_ALT,
 	TEL_SATS,
 	TEL_TTFF,
 	TEL_VBAT,
@@ -48,13 +47,10 @@ typedef struct {
 	uint16_t symbol;			// APRS symbol
 	char path[16];				// APRS path
 	uint16_t preamble;			// Preamble in milliseconds
-	telemetry_t tel1;			// Telemetry type for row 1
-	telemetry_t tel2;			// Telemetry type for row 2
-	telemetry_t tel3;			// Telemetry type for row 3
-	telemetry_t tel4;			// Telemetry type for row 4
-	telemetry_t tel5;			// Telemetry type for row 5
+	telemetry_t tel[5];			// Telemetry types
 	bool tel_encoding;			// Transmit telemetry encoding information
 	uint16_t tel_encoding_cycle;// Telemetry encoding cycle in seconds
+	char tel_comment[32];		// Telemetry comment
 } aprs_config_t;
 
 typedef enum {
