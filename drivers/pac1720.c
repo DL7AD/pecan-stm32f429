@@ -23,12 +23,12 @@ static int32_t pac1720_discharge_counter;
 
 int16_t pac1720_getPowerDischarge(void) {
 	int32_t fsp = FSV * FSC;
-	return read16(PAC1720_ADDRESS, PAC1720_CH2_PWR_RAT_HIGH) * fsp / 32768;
+	return read16(PAC1720_ADDRESS, PAC1720_CH2_PWR_RAT_HIGH) * fsp / 16384;
 }
 
 int16_t pac1720_getPowerCharge(void) {
 	int32_t fsp = FSV * FSC;
-	return read16(PAC1720_ADDRESS, PAC1720_CH1_PWR_RAT_HIGH) * fsp / 32768;
+	return read16(PAC1720_ADDRESS, PAC1720_CH1_PWR_RAT_HIGH) * fsp / 16384;
 }
 
 int16_t pac1720_getAverageChargePower(void) {
@@ -55,6 +55,7 @@ int16_t pac1720_getAverageDischargePower(void) {
 
 uint16_t pac1720_getBatteryVoltage(void) {
 	uint16_t reg = read16(PAC1720_ADDRESS, PAC1720_CH2_VSOURCE_HIGH);
+
 	uint32_t uv = 0;
 	for(uint32_t i=0, b=20000000; i<11; i++, b/=2)
 		uv += (reg >> (15-i)) & 0x1 ? b : 0;
@@ -92,7 +93,8 @@ void pac1720_init(void)
 	 */
 	write8(PAC1720_ADDRESS, PAC1720_CH1_VSENSE_SAMP_CONFIG, 0x53);
 	write8(PAC1720_ADDRESS, PAC1720_CH2_VSENSE_SAMP_CONFIG, 0x53);
+	write8(PAC1720_ADDRESS, PAC1720_V_SOURCE_SAMP_CONFIG,   0xFF);
 
 	TRACE_INFO("PAC  > Init PAC1720 continuous measurement");
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(256), NORMALPRIO, pac1720_thd, NULL);
+	//chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(256), NORMALPRIO, pac1720_thd, NULL);
 }
