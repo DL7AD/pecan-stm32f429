@@ -448,7 +448,7 @@ bool OV2640_Snapshot2RAM(void)
 
 	// Receive JPEG data
 	ov2640_samplingFinished = false;
-	systime_t timeout = chVTGetSystemTimeX() + MS2ST(500); // Timeout 1sec
+	systime_t timeout = chVTGetSystemTimeX() + MS2ST(1000); // Timeout 1sec
 	while(!ov2640_samplingFinished && chVTGetSystemTimeX() < timeout)
 		chThdSleepMilliseconds(1);
 
@@ -625,6 +625,8 @@ void OV2640_init(ssdv_config_t *config) {
 	TRACE_INFO("CAM  > Init DMA");
 	OV2640_InitDMA();
 
+	chThdSleepMilliseconds(5000);
+
 	// DCMI Init
 	TRACE_INFO("CAM  > Init DCMI");
 	OV2640_InitDCMI();
@@ -640,7 +642,7 @@ void OV2640_deinit(void) {
 	OV2640_DeinitDMA();
 
 	// Power off OV2640
-	//TRACE_INFO("CAM  > Switch off");
-	//palSetPad(PORT(CAM_OFF), PIN(CAM_OFF));	// Switch off camera
+	TRACE_INFO("CAM  > Switch off");
+	palSetPad(PORT(CAM_OFF), PIN(CAM_OFF));	// Switch off camera
 }
 
