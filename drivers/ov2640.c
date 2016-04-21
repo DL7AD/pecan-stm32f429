@@ -14,7 +14,7 @@
 #include "debug.h"
 #include <string.h>
 
-#define OV2640_BUFFER_SIZE		150*1024
+#define OV2640_BUFFER_SIZE		165*1024
 #define OV2640_I2C_ADR			0x30
 #define DCMI_BASE_ADR			((uint32_t)0x50050000)
 #define DCMI_REG_DR_OFFSET		0x28
@@ -457,6 +457,11 @@ bool OV2640_Snapshot2RAM(void)
 	return true;
 }
 
+bool OV2640_BufferOverflow(void)
+{
+	return OV2640_getBuffer(NULL) == 151552;
+}
+
 uint32_t OV2640_getBuffer(uint8_t** buffer) {
 	*buffer = ov2640_ram_buffer;
 
@@ -464,8 +469,6 @@ uint32_t OV2640_getBuffer(uint8_t** buffer) {
 	uint32_t size = sizeof(ov2640_ram_buffer);
 	while(!ov2640_ram_buffer[size-1])
 		size--;
-	
-	TRACE_INFO("CAM > Image size: %d bytes", size);
 
 	return size;
 }
@@ -491,7 +494,7 @@ void OV2640_InitDMA(void)
 							 STM32_DMA_CR_MINC | STM32_DMA_CR_PSIZE_WORD |
 							 STM32_DMA_CR_MSIZE_WORD | STM32_DMA_CR_MBURST_SINGLE |
 							 STM32_DMA_CR_PBURST_SINGLE | STM32_DMA_CR_TCIE);
-	dmaStreamSetFIFO(stream, STM32_DMA_FCR_FTH_HALF | STM32_DMA_FCR_DMDIS);
+	dmaStreamSetFIFO(stream, STM32_DMA_FCR_FTH_FULL);
 	dmaStreamEnable(stream);
 }
 

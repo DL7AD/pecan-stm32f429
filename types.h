@@ -110,7 +110,8 @@ typedef enum {
 	RES_QVGA,
 	RES_VGA,
 	RES_XGA,
-	RES_UXGA
+	RES_UXGA,
+	RES_MAX
 } resolution_t;
 
 typedef struct {

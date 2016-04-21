@@ -117,7 +117,7 @@ void initModules(void)
 	config[5].trigger.timeout = 0;							// Transmit continously
 	config[5].aprs_config.preamble = 40;					// APRS Preamble
 	chsnprintf(config[5].ssdv_config.callsign, 6, "DL7AD"); // SSDV Callsign
-	config[5].ssdv_config.res = RES_VGA;					// Resolution VGA
+	config[5].ssdv_config.res = RES_MAX;					// Resolution MAX
 	MODULE_IMAGE(&config[5]);
 
 	// Module IMAGE, SSDV 2m 2FSK

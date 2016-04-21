@@ -135,19 +135,52 @@ THD_FUNCTION(moduleIMG, arg) {
 			TRACE_INFO("IMG  > Init camera I2C");
 			i2cCamInit();
 
-			// Init camera
-			OV2640_init(&config->ssdv_config);
-
-			// Sample data from DCMI through DMA into RAM
-			TRACE_INFO("IMG  > Capture image");
-			uint8_t tries = 5; // Try 5 times at maximum
-			bool status;
-			do { // Try capturing image until capture successful
-				status = OV2640_Snapshot2RAM();
-			} while(!status && --tries);
-
 			uint8_t *image;
+			uint8_t tries;
+
+			if(config->ssdv_config.res == RES_MAX) // Maximum resolution
+			{
+
+				config->ssdv_config.res = RES_UXGA;
+
+				do {
+
+					// Init camera
+					OV2640_init(&config->ssdv_config);
+
+					// Sample data from DCMI through DMA into RAM
+					TRACE_INFO("IMG  > Capture image");
+
+					tries = 5; // Try 5 times at maximum
+					bool status;
+					do { // Try capturing image until capture successful
+						status = OV2640_Snapshot2RAM();
+					} while(!status && --tries);
+
+					config->ssdv_config.res--;
+
+				} while(OV2640_BufferOverflow() && config->ssdv_config.res >= RES_QVGA);
+
+				config->ssdv_config.res = RES_MAX;
+
+			} else { // Static resolution
+
+				// Init camera
+				OV2640_init(&config->ssdv_config);
+
+				// Sample data from DCMI through DMA into RAM
+				TRACE_INFO("IMG  > Capture image");
+
+				tries = 5; // Try 5 times at maximum
+				bool status;
+				do { // Try capturing image until capture successful
+					status = OV2640_Snapshot2RAM();
+				} while(!status && --tries);
+
+			}
+
 			uint32_t image_len = OV2640_getBuffer(&image);
+			TRACE_INFO("CAM > Image size: %d bytes", image_len);
 
 			// Switch off camera
 			OV2640_deinit();

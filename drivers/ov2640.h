@@ -16,6 +16,7 @@ void OV2640_InitDCMI(void);
 void OV2640_DeinitDCMI(void);
 void OV2640_InitGPIO(void);
 uint32_t OV2640_getBuffer(uint8_t** buffer);
+bool OV2640_BufferOverflow(void);
 void OV2640_TransmitConfig(ssdv_config_t *config);
 void OV2640_init(ssdv_config_t *config);
 void OV2640_deinit(void);
