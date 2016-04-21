@@ -459,7 +459,7 @@ bool OV2640_Snapshot2RAM(void)
 
 bool OV2640_BufferOverflow(void)
 {
-	return OV2640_getBuffer(NULL) == 151552;
+	return OV2640_getBuffer(NULL) > 151540;
 }
 
 uint32_t OV2640_getBuffer(uint8_t** buffer) {
