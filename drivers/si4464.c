@@ -13,14 +13,14 @@
 
 static const SPIConfig ls_spicfg1 = {
 	NULL,
-	GPIOA,
-	11,
+	PORT(RADIO1_CS),
+	PIN(RADIO1_CS),
 	SPI_CR1_MSTR
 };
 static const SPIConfig ls_spicfg2 = {
 	NULL,
-	GPIOB,
-	0,
+	PORT(RADIO2_CS),
+	PIN(RADIO2_CS),
 	SPI_CR1_MSTR
 };
 #define getSPIDriver(radio) (radio == RADIO_2M ? &ls_spicfg1 : &ls_spicfg2)
@@ -104,7 +104,7 @@ void Si4464_Init(radio_t radio, mod_t modulation) {
 	}
 
 	// Temperature readout
-	// TRACE_INFO("SI %d > Transmitter temperature %d degC", radio, Si4464_getTemperature(radio));
+	TRACE_INFO("SI %d > Transmitter temperature %d degC", radio, Si4464_getTemperature(radio));
 	initialized[radio] = true;
 }
 

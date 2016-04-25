@@ -15,14 +15,14 @@ const I2CConfig _i2cfg = {
 void write8(uint8_t address, uint8_t reg, uint8_t value)
 {
 	uint8_t txbuf[] = {reg, value};
-	i2cSend(address, txbuf, 2, NULL, 0, MS2ST(10));
+	i2cSend(address, txbuf, 2, NULL, 0, MS2ST(100));
 }
 
 uint8_t read8(uint8_t address, uint8_t reg)
 {
 	uint8_t txbuf[] = {reg};
 	uint8_t rxbuf[1];
-	i2cSend(address, txbuf, 1, rxbuf, 1, MS2ST(10));
+	i2cSend(address, txbuf, 1, rxbuf, 1, MS2ST(100));
 	return rxbuf[0];
 }
 
@@ -30,7 +30,7 @@ uint16_t read16(uint8_t address, uint8_t reg)
 {
 	uint8_t txbuf[] = {reg};
 	uint8_t rxbuf[2];
-	i2cSend(address, txbuf, 1, rxbuf, 2, MS2ST(10));
+	i2cSend(address, txbuf, 1, rxbuf, 2, MS2ST(100));
 	return (rxbuf[0] << 8) | rxbuf[1];
 }
 

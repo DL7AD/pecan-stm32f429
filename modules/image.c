@@ -131,14 +131,10 @@ THD_FUNCTION(moduleIMG, arg) {
 			radioShutdown(RADIO_2M);
 			radioShutdown(RADIO_70CM);
 
-			// Init I2C
-			TRACE_INFO("IMG  > Init camera I2C");
-			i2cCamInit();
-
 			uint8_t *image;
 			uint8_t tries;
 
-			if(config->ssdv_config.res == RES_MAX) // Maximum resolution
+			if(config->ssdv_config.res == RES_MAX && CAMERA_TYPE == OV2640) // Maximum resolution
 			{
 
 				config->ssdv_config.res = RES_UXGA;
@@ -166,7 +162,10 @@ THD_FUNCTION(moduleIMG, arg) {
 			} else { // Static resolution
 
 				// Init camera
-				OV2640_init(&config->ssdv_config);
+				if(CAMERA_TYPE == OV9655)
+					OV9655_init(&config->ssdv_config);
+				if(CAMERA_TYPE == OV2640)
+					OV2640_init(&config->ssdv_config);
 
 				// Sample data from DCMI through DMA into RAM
 				TRACE_INFO("IMG  > Capture image");
@@ -174,16 +173,26 @@ THD_FUNCTION(moduleIMG, arg) {
 				tries = 5; // Try 5 times at maximum
 				bool status;
 				do { // Try capturing image until capture successful
-					status = OV2640_Snapshot2RAM();
+					if(CAMERA_TYPE == OV9655)
+						status = OV9655_Snapshot2RAM();
+					if(CAMERA_TYPE == OV2640)
+						status = OV2640_Snapshot2RAM();
 				} while(!status && --tries);
 
 			}
 
-			uint32_t image_len = OV2640_getBuffer(&image);
+			uint32_t image_len;
+			if(CAMERA_TYPE == OV9655)
+				image_len = OV9655_getBuffer(&image);
+			if(CAMERA_TYPE == OV2640)
+				image_len = OV2640_getBuffer(&image);
 			TRACE_INFO("CAM > Image size: %d bytes", image_len);
 
 			// Switch off camera
-			OV2640_deinit();
+			if(CAMERA_TYPE == OV9655)
+				OV9655_deinit();
+			if(CAMERA_TYPE == OV2640)
+				OV2640_deinit();
 
 			// Unlock radio
 			TRACE_INFO("IMG  > Unlock radio");

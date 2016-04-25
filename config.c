@@ -11,8 +11,8 @@ void initModules(void)
 	config[0].power = 20;									// Power 20 dBm
 	config[0].protocol = PROT_APRS_AFSK;					// Protocol APRS, modulation AFSK
 	config[0].frequency.type = FREQ_DYNAMIC;				// Dynamic frequency allocation
-	config[0].frequency.hz = 144800000;						// Default frequency 144.800 MHz
-	config[0].frequency.method = APRS_REGION_FREQ_2M;		// Determine local APRS frequency on 2m
+	config[0].frequency.hz = 432500000;						// Default frequency 144.800 MHz
+	config[0].frequency.method = APRS_REGION_FREQ_70CM;		// Determine local APRS frequency on 2m
 	config[0].init_delay = 0;								// Module startup delay in sec
 	config[0].trigger.type = TRIG_TIMEOUT;					// Trigger transmission on timeout (Periodic cycling)
 	config[0].trigger.timeout = 120;						// Timeout 120sec
@@ -29,7 +29,7 @@ void initModules(void)
 	config[0].aprs_config.tel_encoding = TRUE;				// Transmit Telemetry encoding information activated
 	config[0].aprs_config.tel_encoding_cycle = 3600;		// Transmit Telemetry encoding information every 3600sec
 	chsnprintf(config[0].aprs_config.tel_comment, 14, "Pecan Balloon");// Telemetry comment
-	MODULE_POSITION(&config[0]);
+	//MODULE_POSITION(&config[0]);
 
 	// Module POSITION, APRS 2m 2GFSK
 	chsnprintf(config[1].name, 18, "POS APRS 2m 2GFSK");	// Instance name
@@ -53,7 +53,7 @@ void initModules(void)
 	config[1].aprs_config.tel_encoding = TRUE;				// Transmit Telemetry encoding information enabled
 	config[1].aprs_config.tel_encoding_cycle = 3600;		// Transmit Telemetry encoding information every 3600sec
 	chsnprintf(config[1].aprs_config.tel_comment, 14, "Pecan Balloon"); // Telemetry comment
-	MODULE_POSITION(&config[1]);
+	//MODULE_POSITION(&config[1]);
 
 	// Module POSITION, UKHAS 2m 2FSK
 	chsnprintf(config[2].name, 13, "POS UKHAS 2m");			// Instance name
@@ -105,12 +105,12 @@ void initModules(void)
 	config[4].ssdv_config.res = RES_QVGA;					// Resolution QVGA
 	//MODULE_IMAGE(&config[4]);
 
-	// Module IMAGE, APRS 2m 2GFSK
-	chsnprintf(config[5].name, 13, "IMG 2GFSK 2m");			// Instance name
-	config[5].power = 20;									// Power 10 dBm
+	// Module IMAGE, APRS 70cm 2GFSK
+	chsnprintf(config[5].name, 13, "IMG 2GFSK 70cm");		// Instance name
+	config[5].power = 10;									// Power 10 dBm
 	config[5].protocol = PROT_APRS_2GFSK;					// Protocol Morse, modulation OOK
 	config[5].frequency.type = FREQ_STATIC;					// Static frequency allocation
-	config[5].frequency.hz = 145300000;						// Transmission frequency 145.300 MHz
+	config[5].frequency.hz = 432500000;						// Transmission frequency 145.300 MHz
 	config[5].init_delay = 0;								// Module startup delay in sec
 	config[5].packet_spacing = 0;							// Packet spacing in ms
 	config[5].trigger.type = TRIG_TIMEOUT;					// Trigger transmission on timeout (Periodic cycling)

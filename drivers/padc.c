@@ -44,7 +44,7 @@ void initADC(void)
 	adcStart(&ADCD1, NULL);
 	adcSTM32EnableTSVREFE();
 	palSetPadMode(PORT(ADC_VSOLAR), PIN(ADC_VSOLAR), PAL_MODE_INPUT_ANALOG);			// Solar panels
-	palSetPadMode(PORT(ADC_VBAT_DIFF), PIN(ADC_VBAT_DIFF), PAL_MODE_INPUT_ANALOG);		// Battery voltage divider
+	palSetPadMode(PORT(ADC_VBAT), PIN(ADC_VBAT), PAL_MODE_INPUT_ANALOG);		// Battery voltage divider
 }
 
 void deinitADC(void)

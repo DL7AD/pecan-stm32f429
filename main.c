@@ -22,11 +22,11 @@ uint32_t error = 0;
   */
 static void led_cb(void *led_sw) {
 	// Switch LEDs
-	palWritePad(PORT(LED_GREEN), PIN(LED_GREEN), (bool)led_sw);	// Show I'M ALIVE
+	palWritePad(PORT(LED_3GREEN), PIN(LED_3GREEN), (bool)led_sw);	// Show I'M ALIVE
 	if(error) {
-		palWritePad(PORT(LED_RED), PIN(LED_RED), (bool)led_sw);	// Show error
+		palWritePad(PORT(LED_1RED), PIN(LED_1RED), (bool)led_sw);	// Show error
 	} else {
-		palSetPad(PORT(LED_RED), PIN(LED_RED));	// Shut off error
+		palSetPad(PORT(LED_1RED), PIN(LED_1RED));	// Shut off error
 	}
 
 	led_sw = (void*)!led_sw; // Set next state
@@ -42,6 +42,8 @@ static void led_cb(void *led_sw) {
 int main(void) {
 	halInit();					// Startup HAL
 	chSysInit();				// Startup RTOS
+
+	palClearPad(PORT(LED_4GREEN), PIN(LED_4GREEN)); // Show I'M ALIVE
 
 	DEBUG_INIT();				// Debug Init (Serial debug port, LEDs)
 	TRACE_INFO("MAIN > Startup");

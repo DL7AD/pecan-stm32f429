@@ -441,7 +441,7 @@ static const uint8_t OV2640_CONFIG2[] =
   */
 bool OV2640_Snapshot2RAM(void)
 {
-	palClearPad(PORT(LED_YELLOW), PIN(LED_YELLOW)); // Yellow LED shows when image is captured
+	palClearPad(PORT(LED_2YELLOW), PIN(LED_2YELLOW)); // Yellow LED shows when image is captured
 
 	// DCMI init
 	OV2640_InitDCMI();
@@ -452,7 +452,7 @@ bool OV2640_Snapshot2RAM(void)
 	while(!ov2640_samplingFinished && chVTGetSystemTimeX() < timeout)
 		chThdSleepMilliseconds(1);
 
-	palSetPad(PORT(LED_YELLOW), PIN(LED_YELLOW));
+	palSetPad(PORT(LED_2YELLOW), PIN(LED_2YELLOW));
 
 	return true;
 }
@@ -545,9 +545,7 @@ void OV2640_InitGPIO(void)
 	palSetPadMode(PORT(CAM_D8), PIN(CAM_D8), PAL_MODE_ALTERNATE(13));		// D6    -> PE5
 	palSetPadMode(PORT(CAM_D9), PIN(CAM_D9), PAL_MODE_ALTERNATE(13));		// D7    -> PE6
 
-	palSetPadMode(PORT(CAM_OFF), PIN(CAM_OFF), PAL_MODE_OUTPUT_PUSHPULL);	// CAM_OFF
-
-	i2cCamInit();
+	palSetPadMode(PORT(CAM_EN), PIN(CAM_EN), PAL_MODE_OUTPUT_PUSHPULL);		// CAM_EN
 }
 
 /**
@@ -561,7 +559,7 @@ void OV2640_InitClockout(void)
 void OV2640_TransmitConfig(ssdv_config_t *config)
 {
 	for(uint32_t i=0; i<sizeof(OV2640_CONFIG1); i+=2) {
-		i2cCamSend(OV2640_I2C_ADR, &OV2640_CONFIG1[i], 2, NULL, 0, MS2ST(100));
+		write8(OV2640_I2C_ADR, OV2640_CONFIG1[i], OV2640_CONFIG1[i+1]);
 		chThdSleepMilliseconds(10);
 	}
 
@@ -594,12 +592,12 @@ void OV2640_TransmitConfig(ssdv_config_t *config)
 	}
 
 	for(uint32_t i=0; i<length; i+=2) {
-		i2cCamSend(OV2640_I2C_ADR, &ov_config[i], 2, NULL, 0, MS2ST(100));
+		write8(OV2640_I2C_ADR, ov_config[i], ov_config[i+1]);
 		chThdSleepMilliseconds(10);
 	}
 
 	for(uint32_t i=0; i<sizeof(OV2640_CONFIG2); i+=2) {
-		i2cCamSend(OV2640_I2C_ADR, &OV2640_CONFIG2[i], 2, NULL, 0, MS2ST(100));
+		write8(OV2640_I2C_ADR, OV2640_CONFIG2[i], OV2640_CONFIG2[i+1]);
 		chThdSleepMilliseconds(10);
 	}
 }
@@ -616,7 +614,7 @@ void OV2640_init(ssdv_config_t *config) {
 
 	// Power on OV2640
 	TRACE_INFO("CAM  > Switch on");
-	palClearPad(PORT(CAM_OFF), PIN(CAM_OFF));	// Switch on camera
+	palSetPad(PORT(CAM_EN), PIN(CAM_EN)); // Switch on camera
 
 	chThdSleepMilliseconds(1000);
 
@@ -646,6 +644,6 @@ void OV2640_deinit(void) {
 
 	// Power off OV2640
 	TRACE_INFO("CAM  > Switch off");
-	palSetPad(PORT(CAM_OFF), PIN(CAM_OFF));	// Switch off camera
+	palClearPad(PORT(CAM_EN), PIN(CAM_EN)); // Switch off camera
 }
 

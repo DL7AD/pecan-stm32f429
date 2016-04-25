@@ -373,13 +373,13 @@ bool GPS_Init(void) {
 	// Initialize pins
 	TRACE_INFO("GPS  > Init pins");
 	palSetPadMode(PORT(GPS_RESET), PIN(GPS_RESET), PAL_MODE_OUTPUT_PUSHPULL);	// GPS reset
-	palSetPadMode(PORT(GPS_OFF), PIN(GPS_OFF), PAL_MODE_OUTPUT_PUSHPULL);		// GPS off
+	palSetPadMode(PORT(GPS_EN), PIN(GPS_EN), PAL_MODE_OUTPUT_PUSHPULL);			// GPS off
 	palSetPadMode(PORT(GPS_TIMEPULSE), PIN(GPS_TIMEPULSE), PAL_MODE_INPUT);		// GPS timepulse
 
 	// Switch MOSFET
 	TRACE_INFO("GPS  > Switch on");
 	palSetPad(PORT(GPS_RESET), PIN(GPS_RESET));	// Pull up GPS reset
-	palClearPad(PORT(GPS_OFF), PIN(GPS_OFF));	// Switch on GPS
+	palSetPad(PORT(GPS_EN), PIN(GPS_EN));		// Switch on GPS
 	
 	// Wait for GPS startup
 	chThdSleepMilliseconds(3000);
@@ -426,7 +426,7 @@ void GPS_Deinit(void)
 {
 	// Switch MOSFET
 	TRACE_INFO("GPS  > Switch off");
-	palSetPad(PORT(GPS_OFF), PIN(GPS_OFF));
+	palClearPad(PORT(GPS_EN), PIN(GPS_EN));
 
 }
 

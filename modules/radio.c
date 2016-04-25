@@ -8,7 +8,7 @@
 #include "pi2c.h"
 #include <string.h>
 
-#define PLAYBACK_RATE		1620000									/* Samples per second (SYSCLK = 45MHz) */
+#define PLAYBACK_RATE		1510000									/* Samples per second (SYSCLK = 45MHz) */
 #define BAUD_RATE			1200									/* APRS AFSK baudrate */
 #define SAMPLES_PER_BAUD	(PLAYBACK_RATE / BAUD_RATE)				/* Samples per baud */
 #define PHASE_DELTA_1200	(((2 * 1200) << 16) / PLAYBACK_RATE)	/* Delta-phase per sample for 1200Hz tone */
@@ -63,10 +63,11 @@ void sendAFSK(radio_t radio, radioMSG_t *msg) {
 		current_sample_in_baud++;
 
 		if(current_sample_in_baud == SAMPLES_PER_BAUD) {	// Old bit consumed, load next bit
-			palTogglePad(PORT(LED_YELLOW), PIN(LED_YELLOW));
+			palTogglePad(PORT(LED_2YELLOW), PIN(LED_2YELLOW));
 			current_sample_in_baud = 0;
 			packet_pos++;
 		}
+		__NOP();__NOP();
 	}
 }
 
@@ -205,7 +206,7 @@ void send2GFSK(radio_t radio, radioMSG_t *msg) {
 			MOD_GPIO_SET(radio, ctone);
 			bit++;
 
-			palTogglePad(PORT(LED_YELLOW), PIN(LED_YELLOW));
+			palTogglePad(PORT(LED_2YELLOW), PIN(LED_2YELLOW));
 			sample_per_bit = 0;
 		}
 	}

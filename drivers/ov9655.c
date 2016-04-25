@@ -199,7 +199,7 @@ bool OV9655_Snapshot2RAM(void)
 	huffman_start(OV9655_MAXY & -16, OV9655_MAXX & -16);
 
 	// DCMI init
-	palClearPad(PORT(LED_YELLOW), PIN(LED_YELLOW)); // Yellow LED shows when image is captured
+	palClearPad(PORT(LED_2YELLOW), PIN(LED_2YELLOW)); // Yellow LED shows when image is captured
 	OV9655_InitDCMI();
 
 	// Encode JPEG data
@@ -208,9 +208,9 @@ bool OV9655_Snapshot2RAM(void)
 	while(!ov9655_samplingFinished && chVTGetSystemTimeX() < timeout)
 		chThdSleepMilliseconds(1);
 
-	palSetPad(PORT(LED_YELLOW), PIN(LED_YELLOW));
+	palSetPad(PORT(LED_2YELLOW), PIN(LED_2YELLOW));
 	chThdSleepMilliseconds(1);						// Tiny break to mark encoding (visible on oscilloscope)
-	palClearPad(PORT(LED_YELLOW), PIN(LED_YELLOW)); // Yellow LED shows when image is encoded
+	palClearPad(PORT(LED_2YELLOW), PIN(LED_2YELLOW)); // Yellow LED shows when image is encoded
 
 	if(chVTGetSystemTimeX() >= timeout) { // Timeout has occurred
 
@@ -259,7 +259,7 @@ bool OV9655_Snapshot2RAM(void)
 	// Add JPEG footer to buffer
 	huffman_stop();
 
-	palSetPad(PORT(LED_YELLOW), PIN(LED_YELLOW));
+	palSetPad(PORT(LED_2YELLOW), PIN(LED_2YELLOW));
 
 	return true;
 }
@@ -345,9 +345,7 @@ void OV9655_InitGPIO(void)
 	palSetPadMode(PORT(CAM_D8), PIN(CAM_D8), PAL_MODE_ALTERNATE(13));		// D6    -> PE5
 	palSetPadMode(PORT(CAM_D9), PIN(CAM_D9), PAL_MODE_ALTERNATE(13));		// D7    -> PE6
 
-	palSetPadMode(PORT(CAM_OFF), PIN(CAM_OFF), PAL_MODE_OUTPUT_PUSHPULL);	// CAM_OFF
-
-	i2cCamInit();
+	palSetPadMode(PORT(CAM_EN), PIN(CAM_EN), PAL_MODE_OUTPUT_PUSHPULL);		// CAM_EN
 }
 
 /**
@@ -366,19 +364,21 @@ uint32_t OV9655_getBuffer(uint8_t** buffer) {
 
 void OV9655_TransmitConfig(void) {
 	for(uint32_t i=0; i<sizeof(OV9655_CONFIG); i+=2) {
-		i2cCamSend(OV9655_I2C_ADR, &OV9655_CONFIG[i], 2, NULL, 0, MS2ST(100));
+		write8(OV9655_I2C_ADR, OV9655_CONFIG[i], OV9655_CONFIG[i+1]);
 		chThdSleepMilliseconds(10);
 	}
 }
 
-void OV9655_init(void) {
+void OV9655_init(ssdv_config_t *config) {
+	(void)config;
+
 	TRACE_INFO("CAM  > Init pins");
 	OV9655_InitClockout();
 	OV9655_InitGPIO();
 
 	// Power on OV9655
 	TRACE_INFO("CAM  > Switch on");
-	palClearPad(PORT(CAM_OFF), PIN(CAM_OFF));	// Switch on camera
+	palSetPad(PORT(CAM_EN), PIN(CAM_EN));	// Switch on camera
 
 	// Send settings to OV9655
 	TRACE_INFO("CAM  > Transmit config to camera");
@@ -404,6 +404,6 @@ void OV9655_deinit(void) {
 
 	// Power off OV9655
 	TRACE_INFO("CAM  > Switch off");
-	palSetPad(PORT(CAM_OFF), PIN(CAM_OFF));	// Switch off camera
+	//palClearPad(PORT(CAM_EN), PIN(CAM_EN));	// Switch off camera
 }
 
