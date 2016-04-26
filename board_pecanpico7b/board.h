@@ -556,7 +556,7 @@
                                      PIN_OSPEED_HIGH(GPIOB_SPI_MISO) |      \
                                      PIN_OSPEED_HIGH(GPIOB_SPI_MOSI))
 #define VAL_GPIOB_PUPDR             (PIN_PUPDR_PULLUP(GPIOB_GPS_RESET) |    \
-                                     PIN_PUPDR_FLOATING(GPIOB_GPS_TIMEPULSE)| \
+                                     PIN_PUPDR_PULLUP(GPIOB_GPS_TIMEPULSE)| \
                                      PIN_PUPDR_PULLUP(GPIOB_BOOT1) |        \
                                      PIN_PUPDR_FLOATING(GPIOB_SWO) |        \
                                      PIN_PUPDR_PULLUP(GPIOB_PIN4) |         \

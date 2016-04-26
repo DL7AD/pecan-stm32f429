@@ -10,7 +10,6 @@
 #include "aprs.h"
 #include "radio.h"
 #include "base.h"
-#include "testimage.h"
 #include <string.h>
 #include "types.h"
 #include "sleep.h"
@@ -200,7 +199,6 @@ THD_FUNCTION(moduleIMG, arg) {
 
 			if(tries) { // Capture successful
 				TRACE_INFO("IMG  > Encode/Transmit SSDV");
-				//encode_ssdv(testimage_jpg, testimage_jpg_len, parm);
 				encode_ssdv(image, image_len, config);
 			} else {
 				TRACE_ERROR("IMG  > Image capturing failed");

@@ -144,7 +144,6 @@ CSRC = $(STARTUPSRC) \
        radio.c \
        math/sgp4.c \
        math/geofence.c \
-       images/testimage.c \
        config.c \
        main.c
 
@@ -234,8 +233,7 @@ UADEFS =
 
 # List all user directories here
 UINCDIR = modules/ drivers protocols/aprs protocols/ssdv \
-          protocols/morse math/ STM32F4xx_StdPeriph_Driver/inc \
-          images/
+          protocols/morse math/ STM32F4xx_StdPeriph_Driver/inc
 
 # List the user directory to look for the libraries here
 ULIBDIR =
