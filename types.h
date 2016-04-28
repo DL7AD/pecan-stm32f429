@@ -115,9 +115,11 @@ typedef enum {
 } resolution_t;
 
 typedef struct {
-	char callsign[8];	// Callsign
-	resolution_t res;	// Camera resolution
-	uint8_t quality;	// JPEG quality
+	char callsign[8];		// Callsign
+	resolution_t res;		// Camera resolution
+	uint8_t quality;		// JPEG quality
+	uint8_t *ram_buffer;	// Camera Buffer (do not set in config)
+	size_t ram_size;		// Size of buffer (do not set in config)
 } ssdv_config_t;
 
 typedef enum {

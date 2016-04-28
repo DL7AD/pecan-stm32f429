@@ -369,7 +369,6 @@ uint8_t gps_power_save(int on) {
 }*/
 
 bool GPS_Init(void) {
-
 	// Initialize pins
 	TRACE_INFO("GPS  > Init pins");
 	palSetPadMode(PORT(GPS_RESET), PIN(GPS_RESET), PAL_MODE_OUTPUT_PUSHPULL);	// GPS reset

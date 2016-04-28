@@ -29,7 +29,7 @@ void initModules(void)
 	config[0].aprs_config.tel_encoding = TRUE;				// Transmit Telemetry encoding information activated
 	config[0].aprs_config.tel_encoding_cycle = 3600;		// Transmit Telemetry encoding information every 3600sec
 	chsnprintf(config[0].aprs_config.tel_comment, 14, "Pecan Balloon");// Telemetry comment
-	//MODULE_POSITION(&config[0]);
+	MODULE_POSITION(&config[0]);
 
 	// Module POSITION, APRS 2m 2GFSK
 	chsnprintf(config[1].name, 18, "POS APRS 2m 2GFSK");	// Instance name
@@ -117,7 +117,7 @@ void initModules(void)
 	config[5].trigger.timeout = 0;							// Transmit continously
 	config[5].aprs_config.preamble = 40;					// APRS Preamble
 	chsnprintf(config[5].ssdv_config.callsign, 6, "DL7AD"); // SSDV Callsign
-	config[5].ssdv_config.res = RES_MAX;					// Resolution MAX
+	config[5].ssdv_config.res = RES_QVGA;					// Resolution QVGA
 	MODULE_IMAGE(&config[5]);
 
 	// Module IMAGE, SSDV 2m 2FSK

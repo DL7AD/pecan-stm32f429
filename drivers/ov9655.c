@@ -59,8 +59,6 @@
 #define OV9655_DCMI_REG_DR_OFFSET	0x28
 #define OV9655_DCMI_REG_DR_ADDRESS	(OV9655_DCMI_BASE_ADR | OV9655_DCMI_REG_DR_OFFSET)
 
-uint16_t ov9655_ram_buffer[OV9655_BUFFER_SIZE];
-
 BGR RGB16x16[16][16] __attribute__((section(".ram4")));
 color_t R[16][16], G[16][16], B[16][16] __attribute__((section(".ram4")));
 conv Y8x8[2][2][8][8] __attribute__((section(".ram4"))); // four 8x8 blocks - 16x16
@@ -71,6 +69,7 @@ uint64_t readclk = 0;
 uint8_t jpeg[50*1024] __attribute__((section(".ram4"))); // JPEG output buffer
 uint32_t jpeg_pos = 0;
 bool ov9655_samplingFinished;
+ssdv_config_t *ov9655_config;
 
 
 // I2C camera configuration for QVGA resolution
@@ -228,7 +227,7 @@ bool OV9655_Snapshot2RAM(void)
 				// Create 16x16 block
 				for(yb=0; yb<16; yb++) {
 					for(xb=0; xb<16; xb++) {
-						color=ov9655_ram_buffer[(yb+y)*OV9655_MAXX + (xb+x)];
+						color = ov9655_config->ram_buffer[(yb+y)*OV9655_MAXX + (xb+x)];
 						RGB16x16[yb][xb].Blue = ((color&0x001F)<<3);	// 5bit blue
 						RGB16x16[yb][xb].Green = ((color&0x07E0)>>3);	// 6bit green
 						RGB16x16[yb][xb].Red = ((color&0xF800)>>8);		// 5bit red
@@ -284,8 +283,8 @@ void OV9655_InitDMA(void)
     const stm32_dma_stream_t *stream = STM32_DMA2_STREAM1;
     dmaStreamAllocate(stream, 10, (stm32_dmaisr_t)OV9655_dma_avail, NULL);
     dmaStreamSetPeripheral(stream, ((uint32_t*)OV9655_DCMI_REG_DR_ADDRESS));
-    dmaStreamSetMemory0(stream, (uint32_t)ov9655_ram_buffer);
-    dmaStreamSetTransactionSize(stream, OV9655_BUFFER_SIZE/sizeof(uint16_t));
+    dmaStreamSetMemory0(stream, (uint32_t)ov9655_config->ram_buffer);
+    dmaStreamSetTransactionSize(stream, ov9655_config->ram_size/sizeof(uint16_t));
     dmaStreamSetMode(stream, STM32_DMA_CR_CHSEL(1) | STM32_DMA_CR_DIR_P2M |
 							STM32_DMA_CR_MINC | STM32_DMA_CR_PSIZE_WORD |
 							STM32_DMA_CR_MSIZE_HWORD | STM32_DMA_CR_MBURST_SINGLE |
@@ -348,15 +347,6 @@ void OV9655_InitGPIO(void)
 	palSetPadMode(PORT(CAM_EN), PIN(CAM_EN), PAL_MODE_OUTPUT_PUSHPULL);		// CAM_EN
 }
 
-/**
-  * Setup a CLOCKOUT pin (PA8) which is needed by the camera (XCLK pin)
-  */
-void OV9655_InitClockout(void)
-{
-	palSetPadMode(PORT(CAM_XCLK), PIN(CAM_XCLK), PAL_MODE_ALTERNATE(0));	// PA8    -> XCLK
-	RCC->CFGR = (RCC->CFGR & 0xF89FFFFF) | (0x0 << 24) | (0x0 << 21);		// 16MHz on PA8
-}
-
 uint32_t OV9655_getBuffer(uint8_t** buffer) {
 	*buffer = jpeg;
 	return jpeg_pos;
@@ -370,15 +360,10 @@ void OV9655_TransmitConfig(void) {
 }
 
 void OV9655_init(ssdv_config_t *config) {
-	(void)config;
+	ov9655_config = config;
 
 	TRACE_INFO("CAM  > Init pins");
-	OV9655_InitClockout();
 	OV9655_InitGPIO();
-
-	// Power on OV9655
-	TRACE_INFO("CAM  > Switch on");
-	palSetPad(PORT(CAM_EN), PIN(CAM_EN));	// Switch on camera
 
 	// Send settings to OV9655
 	TRACE_INFO("CAM  > Transmit config to camera");
@@ -404,6 +389,17 @@ void OV9655_deinit(void) {
 
 	// Power off OV9655
 	TRACE_INFO("CAM  > Switch off");
-	//palClearPad(PORT(CAM_EN), PIN(CAM_EN));	// Switch off camera
+	palClearPad(PORT(CAM_EN), PIN(CAM_EN));	// Switch off camera
+}
+
+bool OV9655_isAvailable(void)
+{
+	uint16_t id = read16(OV9655_I2C_ADR, 0x0A);
+	return id == 0x9656 || id == 0x9657;
+}
+
+void OV9655_poweron(void)
+{
+	palSetPad(PORT(CAM_EN), PIN(CAM_EN)); // Switch on camera
 }
 

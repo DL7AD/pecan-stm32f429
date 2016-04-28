@@ -20,5 +20,7 @@ uint32_t OV9655_getBuffer(uint8_t** buffer);
 void OV9655_TransmitConfig(void);
 void OV9655_init(ssdv_config_t *config);
 void OV9655_deinit(void);
+bool OV9655_isAvailable(void);
+void OV9655_poweron(void);
 
 #endif

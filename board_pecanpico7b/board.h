@@ -446,7 +446,7 @@
                                      PIN_PUPDR_PULLUP(GPIOA_PIN5) |         \
                                      PIN_PUPDR_PULLUP(GPIOA_CAM_PCLK) |     \
                                      PIN_PUPDR_PULLUP(GPIOA_PIN7)|\
-                                     PIN_PUPDR_PULLUP(GPIOA_CAM_XCLK) |     \
+                                     PIN_PUPDR_FLOATING(GPIOA_CAM_XCLK) |     \
                                      PIN_PUPDR_PULLUP(GPIOA_PIN9) | \
                                      PIN_PUPDR_PULLUP(GPIOA_PIN10) | \
                                      PIN_PUPDR_PULLUP(GPIOA_PIN11) |    \

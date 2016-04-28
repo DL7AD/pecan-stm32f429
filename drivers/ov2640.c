@@ -14,14 +14,13 @@
 #include "debug.h"
 #include <string.h>
 
-#define OV2640_BUFFER_SIZE		165*1024
 #define OV2640_I2C_ADR			0x30
 #define DCMI_BASE_ADR			((uint32_t)0x50050000)
 #define DCMI_REG_DR_OFFSET		0x28
 #define DCMI_REG_DR_ADDRESS		(DCMI_BASE_ADR | DCMI_REG_DR_OFFSET)
 
-uint8_t ov2640_ram_buffer[OV2640_BUFFER_SIZE];
 bool ov2640_samplingFinished;
+ssdv_config_t *ov2640_config;
 
 // I2C camera configuration
 static const uint8_t OV2640_CONFIG1[] =
@@ -463,11 +462,11 @@ bool OV2640_BufferOverflow(void)
 }
 
 uint32_t OV2640_getBuffer(uint8_t** buffer) {
-	*buffer = ov2640_ram_buffer;
+	*buffer = ov2640_config->ram_buffer;
 
 	// Detect size
-	uint32_t size = sizeof(ov2640_ram_buffer);
-	while(!ov2640_ram_buffer[size-1])
+	uint32_t size = sizeof(ov2640_config->ram_buffer);
+	while(!ov2640_config->ram_buffer[size-1])
 		size--;
 
 	return size;
@@ -488,8 +487,8 @@ void OV2640_InitDMA(void)
 	const stm32_dma_stream_t *stream = STM32_DMA2_STREAM1;
 	dmaStreamAllocate(stream, 2, (stm32_dmaisr_t)OV2640_dma_avail, NULL);
 	dmaStreamSetPeripheral(stream, ((uint32_t*)DCMI_REG_DR_ADDRESS));
-	dmaStreamSetMemory0(stream, (uint32_t)ov2640_ram_buffer);
-	dmaStreamSetTransactionSize(stream, OV2640_BUFFER_SIZE);
+	dmaStreamSetMemory0(stream, (uint32_t)ov2640_config->ram_buffer);
+	dmaStreamSetTransactionSize(stream, ov2640_config->ram_size);
 	dmaStreamSetMode(stream, STM32_DMA_CR_CHSEL(1) | STM32_DMA_CR_DIR_P2M |
 							 STM32_DMA_CR_MINC | STM32_DMA_CR_PSIZE_WORD |
 							 STM32_DMA_CR_MSIZE_WORD | STM32_DMA_CR_MBURST_SINGLE |
@@ -548,15 +547,7 @@ void OV2640_InitGPIO(void)
 	palSetPadMode(PORT(CAM_EN), PIN(CAM_EN), PAL_MODE_OUTPUT_PUSHPULL);		// CAM_EN
 }
 
-/**
-  * Setup a CLOCKOUT pin (PA8) which is needed by the camera (XCLK pin)
-  */
-void OV2640_InitClockout(void)
-{
-	palSetPadMode(PORT(CAM_XCLK), PIN(CAM_XCLK), PAL_MODE_ALTERNATE(0));	// PA8    -> XCLK
-}
-
-void OV2640_TransmitConfig(ssdv_config_t *config)
+void OV2640_TransmitConfig(void)
 {
 	for(uint32_t i=0; i<sizeof(OV2640_CONFIG1); i+=2) {
 		write8(OV2640_I2C_ADR, OV2640_CONFIG1[i], OV2640_CONFIG1[i+1]);
@@ -565,7 +556,7 @@ void OV2640_TransmitConfig(ssdv_config_t *config)
 
 	size_t length;
 	const uint8_t* ov_config;
-	switch(config->res) {
+	switch(ov2640_config->res) {
 		case RES_QVGA:
 			length = sizeof(OV2640_QVGA);
 			ov_config = OV2640_QVGA;
@@ -603,24 +594,19 @@ void OV2640_TransmitConfig(ssdv_config_t *config)
 }
 
 void OV2640_init(ssdv_config_t *config) {
+	ov2640_config = config;
+
 	// Clearing buffer
 	uint32_t i;
-	for(i=0; i<OV2640_BUFFER_SIZE; i++)
-		ov2640_ram_buffer[i] = 0;
+	for(i=0; i<ov2640_config->ram_size; i++)
+		ov2640_config->ram_buffer[i] = 0;
 
 	TRACE_INFO("CAM  > Init pins");
-	OV2640_InitClockout();
 	OV2640_InitGPIO();
-
-	// Power on OV2640
-	TRACE_INFO("CAM  > Switch on");
-	palSetPad(PORT(CAM_EN), PIN(CAM_EN)); // Switch on camera
-
-	chThdSleepMilliseconds(1000);
 
 	// Send settings to OV2640
 	TRACE_INFO("CAM  > Transmit config to camera");
-	OV2640_TransmitConfig(config);
+	OV2640_TransmitConfig();
 
 	// DCMI DMA
 	TRACE_INFO("CAM  > Init DMA");
@@ -647,3 +633,12 @@ void OV2640_deinit(void) {
 	palClearPad(PORT(CAM_EN), PIN(CAM_EN)); // Switch off camera
 }
 
+bool OV2640_isAvailable(void)
+{
+	return read16(OV2640_I2C_ADR, 0x0A) == 0x2626;
+}
+
+void OV2640_poweron(void)
+{
+	palSetPad(PORT(CAM_EN), PIN(CAM_EN)); // Switch on camera
+}

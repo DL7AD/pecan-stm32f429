@@ -60,7 +60,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 		trackPoint_t* ltp = &trackPoints[(id-1) % (sizeof(trackPoints) / sizeof(trackPoint_t))]; // Last track point
 
 		// Search for GPS satellites
-		gpsFix_t gpsFix;
+		/*gpsFix_t gpsFix;
 		GPS_Init();
 
 		do {
@@ -147,7 +147,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 			tp->gps_lock = false;
 			tp->gps_sats = 0;
 
-		}
+		}*/
 
 		tp->id = id; // Serial ID
 		tp->gps_ttff = ST2S(chVTGetSystemTimeX() - time); // Time to first fix
