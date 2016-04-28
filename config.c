@@ -114,7 +114,7 @@ void initModules(void)
 	config[5].init_delay = 0;								// Module startup delay in sec
 	config[5].packet_spacing = 0;							// Packet spacing in ms
 	config[5].trigger.type = TRIG_TIMEOUT;					// Trigger transmission on timeout (Periodic cycling)
-	config[5].trigger.timeout = 0;							// Transmit continously
+	config[5].trigger.timeout = 60;							// Transmit every 60 sec
 	config[5].aprs_config.preamble = 40;					// APRS Preamble
 	chsnprintf(config[5].ssdv_config.callsign, 6, "DL7AD"); // SSDV Callsign
 	config[5].ssdv_config.res = RES_QVGA;					// Resolution QVGA

@@ -465,7 +465,7 @@ uint32_t OV2640_getBuffer(uint8_t** buffer) {
 	*buffer = ov2640_config->ram_buffer;
 
 	// Detect size
-	uint32_t size = sizeof(ov2640_config->ram_buffer);
+	uint32_t size = 151540;//sizeof(ov2640_config->ram_buffer);
 	while(!ov2640_config->ram_buffer[size-1])
 		size--;
 

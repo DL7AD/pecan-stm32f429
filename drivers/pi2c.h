@@ -23,7 +23,7 @@
 	i2cAcquireBus(driver); \
 	msg_t i2c_status = i2cMasterTransmitTimeout(driver, addr, txbuf, txbytes, rxbuf, rxbytes, timeout); \
 	if(i2c_status == MSG_TIMEOUT) { /* Restart I2C at timeout */ \
-		TRACE_ERROR("I2C  > TIMEOUT > RESTART"); \
+		TRACE_ERROR("I2C  > TIMEOUT > RESTART (%02x)", addr); \
 		i2cStop(driver); \
 		i2cStart(driver, &_i2cfg); \
 	} else if(i2c_status == MSG_RESET) { \
@@ -36,11 +36,11 @@
 	i2cAcquireBus(driver); \
 	msg_t i2c_status = i2cMasterTransmitTimeout(driver, addr, rxbuf, rxbytes, timeout); \
 	if(i2c_status == MSG_TIMEOUT) { /* Restart I2C at timeout */ \
-		/*TRACE_ERROR("I2C  > TIMEOUT > RESTART");*/ \
+		TRACE_ERROR("I2C  > TIMEOUT > RESTART (%02x)", addr); \
 		i2cStop(driver); \
 		i2cStart(driver, &_i2cfg); \
 	} else if(i2c_status == MSG_RESET) { \
-		/*TRACE_ERROR("I2C  > RESET");*/ \
+		TRACE_ERROR("I2C  > RESET"); \
 	} \
 	i2cReleaseBus(driver); \
 }
