@@ -8,14 +8,19 @@
 
 const I2CConfig _i2cfg = {
 	OPMODE_I2C,
-	75000,
-	STD_DUTY_CYCLE,
+	150000,
+	FAST_DUTY_CYCLE_2,
 };
 
 void write8(uint8_t address, uint8_t reg, uint8_t value)
 {
 	uint8_t txbuf[] = {reg, value};
 	i2cSend(address, txbuf, 2, NULL, 0, MS2ST(100));
+}
+
+void writeN(uint8_t address, uint8_t *txbuf, uint32_t length)
+{
+	i2cSend(address, txbuf, length, NULL, 0, MS2ST(100));
 }
 
 uint8_t read8(uint8_t address, uint8_t reg)

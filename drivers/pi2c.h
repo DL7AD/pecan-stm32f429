@@ -51,6 +51,7 @@
 extern const I2CConfig _i2cfg;
 
 void write8(uint8_t address, uint8_t reg, uint8_t value);
+void writeN(uint8_t address, uint8_t *txbuf, uint32_t length);
 uint8_t read8(uint8_t address, uint8_t reg);
 uint16_t read16(uint8_t address, uint8_t reg);
 uint16_t read16_LE(uint8_t address, uint8_t reg);
