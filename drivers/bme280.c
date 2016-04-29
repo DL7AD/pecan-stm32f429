@@ -78,6 +78,11 @@ int16_t BME280_getTemperature(bme280_t *handle)
 	return (handle->t_fine * 5 + 128) >> 8;
 }
 
+bool SLEEP_WHEN_NIGHT(void)
+{
+
+}
+
 /**
   * Reads the barometric pressure
   * @param Values to be sampled
