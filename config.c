@@ -9,7 +9,7 @@ void initModules(void)
 	// Module POSITION, APRS 2m AFSK
 	chsnprintf(config[0].name, 17, "POS APRS 2m AFSK");		// Instance name
 	config[0].power = 20;									// Power 20 dBm
-	config[0].protocol = PROT_APRS_AFSK;					// Protocol APRS, modulation AFSK
+	config[0].protocol = PROT_APRS_2GFSK;					// Protocol APRS, modulation AFSK
 	config[0].frequency.type = FREQ_DYNAMIC;				// Dynamic frequency allocation
 	config[0].frequency.hz = 432500000;						// Default frequency 144.800 MHz
 	config[0].frequency.method = APRS_REGION_FREQ_70CM;		// Determine local APRS frequency on 2m
@@ -34,7 +34,7 @@ void initModules(void)
 	// Module POSITION, APRS 2m 2GFSK
 	chsnprintf(config[1].name, 18, "POS APRS 2m 2GFSK");	// Instance name
 	config[1].power = 20;									// Power 10 dBm
-	config[1].protocol = PROT_APRS_2GFSK;					// Protocol APRS, modulation AFSK
+	config[1].protocol = PROT_APRS_AFSK;					// Protocol APRS, modulation AFSK
 	config[1].frequency.type = FREQ_STATIC;					// Dynamic frequency allocation
 	config[1].frequency.hz = 145300000;						// Default frequency 144.800 MHz
 	config[1].init_delay = 0;								// Module startup delay in sec

@@ -38,7 +38,7 @@
 #define STM32_HSECLK                26000000U
 //#endif
 
-#define STM32_HSE_BYPASS
+//#define STM32_HSE_BYPASS			FALSE
 
 /*
  * Board voltages.
@@ -129,7 +129,7 @@
 
 #define RADIO1_MIN_FREQ			144000000		/* Min. Frequency range of Radio 1 */
 #define RADIO1_MAX_FREQ			148000000		/* Min. Frequency range of Radio 1 */
-#define RADIO1_MAX_PWR			13				/* Max. power of Radio 1 in dBm */
+#define RADIO1_MAX_PWR			20				/* Max. power of Radio 1 in dBm */
 #define RADIO2_MIN_FREQ			430000000		/* Min. Frequency range of Radio 2 */
 #define RADIO2_MAX_FREQ			450000000		/* Min. Frequency range of Radio 2 */
 #define RADIO2_MAX_PWR			20				/* Max. power of Radio 2 in dBm */
@@ -751,7 +751,7 @@
                                      PIN_MODE_INPUT(GPIOD_PIN7) |           \
                                      PIN_MODE_OUTPUT(GPIOD_RADIO1_GPIO1) |           \
                                      PIN_MODE_OUTPUT(GPIOD_RADIO1_CS) |           \
-                                     PIN_MODE_OUTPUT(GPIOD_RADIO1_VREG_SW) |          \
+                                     PIN_MODE_INPUT(GPIOD_RADIO1_VREG_SW) |          \
                                      PIN_MODE_INPUT(GPIOD_PIN11) |          \
                                      PIN_MODE_INPUT(GPIOD_PIN12) |          \
                                      PIN_MODE_OUTPUT(GPIOD_RADIO1_GPIO0) |          \
@@ -799,7 +799,7 @@
                                      PIN_PUPDR_PULLUP(GPIOD_PIN7) |         \
                                      PIN_PUPDR_PULLUP(GPIOD_RADIO1_GPIO1) |         \
                                      PIN_PUPDR_PULLUP(GPIOD_RADIO1_CS) |         \
-                                     PIN_PUPDR_PULLUP(GPIOD_RADIO1_VREG_SW) |        \
+                                     PIN_PUPDR_PULLDOWN(GPIOD_RADIO1_VREG_SW) |        \
                                      PIN_PUPDR_PULLUP(GPIOD_PIN11) |        \
                                      PIN_PUPDR_PULLUP(GPIOD_PIN12) |        \
                                      PIN_PUPDR_PULLUP(GPIOD_RADIO1_GPIO0) |        \
@@ -1210,7 +1210,7 @@
  * PH15 - PIN15                     (input pullup)
  */
 #define VAL_GPIOH_MODER             (PIN_MODE_INPUT(GPIOH_OSC_IN) |           \
-                                     PIN_MODE_OUTPUT(GPIOH_LED_1RED) |           \
+                                     PIN_MODE_INPUT(GPIOH_LED_1RED) |           \
                                      PIN_MODE_INPUT(GPIOH_PIN2) |           \
                                      PIN_MODE_INPUT(GPIOH_PIN3) |           \
                                      PIN_MODE_INPUT(GPIOH_PIN4) |           \
@@ -1242,7 +1242,7 @@
                                      PIN_OTYPE_PUSHPULL(GPIOH_LED_1RED4) |      \
                                      PIN_OTYPE_PUSHPULL(GPIOH_LED_1RED5))
 #define VAL_GPIOH_OSPEEDR           (PIN_OSPEED_HIGH(GPIOH_OSC_IN) |       \
-                                     PIN_OSPEED_VERYLOW(GPIOH_LED_1RED) |       \
+                                     PIN_OSPEED_HIGH(GPIOH_LED_1RED) |       \
                                      PIN_OSPEED_VERYLOW(GPIOH_PIN2) |       \
                                      PIN_OSPEED_VERYLOW(GPIOH_PIN3) |       \
                                      PIN_OSPEED_VERYLOW(GPIOH_PIN4) |       \
@@ -1258,7 +1258,7 @@
                                      PIN_OSPEED_VERYLOW(GPIOH_LED_1RED4) |      \
                                      PIN_OSPEED_VERYLOW(GPIOH_LED_1RED5))
 #define VAL_GPIOH_PUPDR             (PIN_PUPDR_FLOATING(GPIOH_OSC_IN) |         \
-                                     PIN_PUPDR_PULLUP(GPIOH_LED_1RED) |         \
+                                     PIN_PUPDR_FLOATING(GPIOH_LED_1RED) |         \
                                      PIN_PUPDR_PULLUP(GPIOH_PIN2) |         \
                                      PIN_PUPDR_PULLUP(GPIOH_PIN3) |         \
                                      PIN_PUPDR_PULLUP(GPIOH_PIN4) |         \
