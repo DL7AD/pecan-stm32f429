@@ -14,11 +14,11 @@
 #include "types.h"
 #include "sleep.h"
 
-static uint32_t image_id;
+static uint32_t gimage_id;
 mutex_t camera_mtx;
 //uint8_t ram_buffer[165*1024];
 
-void encode_ssdv(uint8_t *image, uint32_t image_len, module_conf_t* config) {
+void encode_ssdv(uint8_t *image, uint32_t image_len, module_conf_t* config, uint8_t image_id) {
 	ssdv_t ssdv;
 	uint8_t pkt[SSDV_PKT_SIZE];
 	uint8_t pkt_base91[BASE91LEN(SSDV_PKT_SIZE-37)];
@@ -28,7 +28,7 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_conf_t* config) {
 	uint8_t c = SSDV_OK;
 
 	// Init SSDV (FEC at 2FSK, non FEC at APRS)
-	ssdv_enc_init(&ssdv, config->protocol == PROT_SSDV_2FSK ? SSDV_TYPE_NORMAL : SSDV_TYPE_NORMAL, config->ssdv_config.callsign, ++image_id);
+	ssdv_enc_init(&ssdv, config->protocol == PROT_SSDV_2FSK ? SSDV_TYPE_NORMAL : SSDV_TYPE_NORMAL, config->ssdv_config.callsign, image_id);
 	ssdv_enc_set_buffer(&ssdv, pkt);
 
 	while(true)
@@ -237,8 +237,8 @@ THD_FUNCTION(moduleIMG, arg) {
 				chMtxUnlock(&camera_mtx);
 
 				if(tries) { // Capture successful
-					TRACE_INFO("IMG  > Encode/Transmit SSDV");
-					encode_ssdv(image, image_len, config);
+					TRACE_INFO("IMG  > Encode/Transmit SSDV ID=%d", ++gimage_id);
+					encode_ssdv(image, image_len, config, gimage_id);
 				} else {
 					TRACE_ERROR("IMG  > Image capturing failed");
 				}
@@ -249,8 +249,8 @@ THD_FUNCTION(moduleIMG, arg) {
 				TRACE_INFO("IMG  > Image size: %d bytes", image_len);
 
 				TRACE_INFO("IMG  > Camera disabled");
-				TRACE_INFO("IMG  > Encode/Transmit SSDV");
-				encode_ssdv(image, image_len, config);
+				TRACE_INFO("IMG  > Encode/Transmit SSDV ID=%d", gimage_id);
+				encode_ssdv(image, image_len, config, gimage_id);
 
 			}
 		}

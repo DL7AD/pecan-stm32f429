@@ -83,7 +83,7 @@ void initModules(void)
 	config[3].frequency.hz = 432597900;						// Transmission frequency 144.85125 MHz
 	config[3].init_delay = 10000;							// Module startup delay in sec
 	config[3].trigger.type = TRIG_TIMEOUT;					// Trigger transmission on timeout (Periodic cycling)
-	config[3].trigger.timeout = 120;						// Timeout 180sec
+	config[3].trigger.timeout = 600;						// Timeout 600sec
 	config[3].ook_config.speed = 20;						// Speed 20wpm
 	chsnprintf(config[3].morse_config.callsign, 7, "DL4MDW");// Morse Callsign
 	chsnprintf(config[3].morse_config.format, 43, "BALLOON <CALL> <LOC> <ALT>M www.tkrahn.net"); // Morse Format
@@ -107,15 +107,15 @@ void initModules(void)
 	MODULE_IMAGE(&config[4]);
 
 	// Module IMAGE, APRS 70cm 2GFSK
-	chsnprintf(config[5].name, 13, "IMG 2GFSK 70cm");		// Instance name
+	chsnprintf(config[5].name, 15, "IMG 2GFSK 70cm");		// Instance name
 	config[5].power = 20;									// Power 10 dBm
 	config[5].protocol = PROT_APRS_2GFSK;					// Protocol APRS SSDV, modulation 2GFSK
 	config[5].frequency.type = FREQ_STATIC;					// Static frequency allocation
 	config[5].frequency.hz = 432600000;						// Transmission frequency 144.85125 MHz
-	config[5].init_delay = 30000;							// Module startup delay in sec
-	config[5].packet_spacing = 7500;						// Packet spacing in ms
+	config[5].init_delay = 45000;							// Module startup delay in sec
+	config[5].packet_spacing = 6500;						// Packet spacing in ms
 	config[5].trigger.type = TRIG_TIMEOUT;					// Trigger transmission on timeout (Periodic cycling)
-	config[5].trigger.timeout = 900;						// Transmit every 600 sec
+	config[5].trigger.timeout = 1200;						// Transmit every 1200 sec
 	config[5].aprs_config.preamble = 40;					// APRS Preamble
 	chsnprintf(config[5].ssdv_config.callsign, 7, "DL4MDW");// SSDV Callsign
 	config[5].ssdv_config.ram_buffer = ssdv2_buffer;		// Camera buffer
@@ -130,10 +130,10 @@ void initModules(void)
 	config[6].protocol = PROT_SSDV_2FSK;					// Protocol SSDV, modulation 2FSK
 	config[6].frequency.type = FREQ_STATIC;					// Static frequency allocation
 	config[6].frequency.hz = 432600000;						// Transmission frequency 144.85125 MHz
-	config[6].init_delay = 60000;							// Module startup delay in sec
-	config[6].packet_spacing = 7500;						// Packet spacing in ms
+	config[6].init_delay = 75000;							// Module startup delay in sec
+	config[6].packet_spacing = 6500;						// Packet spacing in ms
 	config[6].trigger.type = TRIG_TIMEOUT;					// Trigger transmission on timeout (Periodic cycling)
-	config[6].trigger.timeout = 900;						// Transmit every 600sec
+	config[6].trigger.timeout = 1200;						// Transmit every 1200 sec
 	config[6].fsk_config.bits = 8;							// 8bit
 	config[6].fsk_config.stopbits = 2;						// 2 Stopbits
 	config[6].fsk_config.predelay = 100;					// Predelay in ms (continuos carrier before actual transmission)
