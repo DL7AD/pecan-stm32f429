@@ -37,6 +37,7 @@ typedef struct {
 	uint32_t plln;
 } trackPoint_t;
 
+void waitForNewTrackPoint(void);
 trackPoint_t* getLastTrackPoint(void);
 THD_FUNCTION(moduleTRACKING, arg);
 

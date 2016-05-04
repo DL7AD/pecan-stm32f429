@@ -15,7 +15,8 @@
 #include "sleep.h"
 
 static uint32_t image_id;
-uint8_t ram_buffer[165*1024];
+mutex_t camera_mtx;
+//uint8_t ram_buffer[165*1024];
 
 void encode_ssdv(uint8_t *image, uint32_t image_len, module_conf_t* config) {
 	ssdv_t ssdv;
@@ -107,8 +108,6 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_conf_t* config) {
 
 THD_FUNCTION(moduleIMG, arg) {
 	module_conf_t* config = (module_conf_t*)arg;
-	config->ssdv_config.ram_buffer = ram_buffer;		// Set camera buffer
-	config->ssdv_config.ram_size = sizeof(ram_buffer);	// Set buffer size
 
 	// Execute Initial delay
 	if(config->init_delay)
@@ -131,107 +130,129 @@ THD_FUNCTION(moduleIMG, arg) {
 			OV2640_poweron();
 			chThdSleepMilliseconds(1000);
 
-			// Detect camera
-			uint16_t cam_type = 0x0000;
-			if(OV9655_isAvailable()) // OV9655 available
-			{
-				TRACE_INFO("IMG  > OV9655 found");
-				cam_type = 0x9655;
-			}
-			if(OV2640_isAvailable()) // OV2640 available
-			{
-				TRACE_INFO("IMG  > OV2640 found");
-				cam_type = 0x2640;
-			}
-
-			if(!cam_type)
-			{
-				TRACE_ERROR("IMG  > No camera found");
-				continue;
-			}
-
-			// Lock RADIO from producing interferences
-			TRACE_INFO("IMG  > Lock radio");
-			chMtxLock(&interference_mtx);
-
-			// Shutdown radios (to avoid interference)
-			radioShutdown(RADIO_2M);
-			radioShutdown(RADIO_70CM);
-
+			uint32_t image_len = 0;
 			uint8_t *image;
-			uint8_t tries;
 
-			if(config->ssdv_config.res == RES_MAX && cam_type == 0x2640) // Maximum resolution
+			// Take photo if camera activated (if camera disabled, camera buffer is probably shared in config file)
+			if(!config->ssdv_config.no_camera)
 			{
+				// Lock camera
+				TRACE_INFO("IMG  > Lock camera");
+				chMtxLock(&camera_mtx);
 
-				config->ssdv_config.res = RES_UXGA;
+				// Detect camera
+				uint16_t cam_type = 0x0000;
+				if(OV9655_isAvailable()) // OV9655 available
+				{
+					TRACE_INFO("IMG  > OV9655 found");
+					cam_type = 0x9655;
+				}
+				if(OV2640_isAvailable()) // OV2640 available
+				{
+					TRACE_INFO("IMG  > OV2640 found");
+					cam_type = 0x2640;
+				}
 
-				do {
+				if(!cam_type)
+				{
+					TRACE_ERROR("IMG  > No camera found");
+					continue;
+				}
+
+				// Lock RADIO from producing interferences
+				TRACE_INFO("IMG  > Lock radio");
+				chMtxLock(&interference_mtx);
+
+				// Shutdown radios (to avoid interference)
+				radioShutdown(RADIO_2M);
+				radioShutdown(RADIO_70CM);
+
+				uint8_t tries;
+
+				if(config->ssdv_config.res == RES_MAX && cam_type == 0x2640) // Maximum resolution
+				{
+
+					config->ssdv_config.res = RES_UXGA;
+
+					do {
+
+						// Init camera
+						OV2640_init(&config->ssdv_config);
+
+						// Sample data from DCMI through DMA into RAM
+						TRACE_INFO("IMG  > Capture image");
+
+						tries = 5; // Try 5 times at maximum
+						bool status;
+						do { // Try capturing image until capture successful
+							status = OV2640_Snapshot2RAM();
+						} while(!status && --tries);
+
+						config->ssdv_config.res--;
+
+					} while(OV2640_BufferOverflow() && config->ssdv_config.res >= RES_QVGA);
+
+					config->ssdv_config.res = RES_MAX;
+
+				} else { // Static resolution
 
 					// Init camera
-					OV2640_init(&config->ssdv_config);
+					if(cam_type == 0x9655)
+						OV9655_init(&config->ssdv_config);
+					if(cam_type == 0x2640)
+						OV2640_init(&config->ssdv_config);
 
 					// Sample data from DCMI through DMA into RAM
 					TRACE_INFO("IMG  > Capture image");
 
 					tries = 5; // Try 5 times at maximum
-					bool status;
+					bool status = false;
 					do { // Try capturing image until capture successful
-						status = OV2640_Snapshot2RAM();
+						if(cam_type == 0x9655)
+							status = OV9655_Snapshot2RAM();
+						if(cam_type == 0x2640)
+							status = OV2640_Snapshot2RAM();
 					} while(!status && --tries);
 
-					config->ssdv_config.res--;
+				}
 
-				} while(OV2640_BufferOverflow() && config->ssdv_config.res >= RES_QVGA);
-
-				config->ssdv_config.res = RES_MAX;
-
-			} else { // Static resolution
-
-				// Init camera
 				if(cam_type == 0x9655)
-					OV9655_init(&config->ssdv_config);
+					image_len = OV9655_getBuffer(&image);
 				if(cam_type == 0x2640)
-					OV2640_init(&config->ssdv_config);
+					image_len = OV2640_getBuffer(&image);
+				TRACE_INFO("IMG  > Image size: %d bytes", image_len);
 
-				// Sample data from DCMI through DMA into RAM
-				TRACE_INFO("IMG  > Capture image");
+				// Switch off camera
+				if(cam_type == 0x9655)
+					OV9655_deinit();
+				if(cam_type == 0x2640)
+					OV2640_deinit();
 
-				tries = 5; // Try 5 times at maximum
-				bool status = false;
-				do { // Try capturing image until capture successful
-					if(cam_type == 0x9655)
-						status = OV9655_Snapshot2RAM();
-					if(cam_type == 0x2640)
-						status = OV2640_Snapshot2RAM();
-				} while(!status && --tries);
+				// Unlock radio
+				TRACE_INFO("IMG  > Unlock radio");
+				chMtxUnlock(&interference_mtx);
 
-			}
+				// Lock camera
+				TRACE_INFO("IMG  > Unlock camera");
+				chMtxUnlock(&camera_mtx);
 
-			uint32_t image_len = 0;
-			if(cam_type == 0x9655)
-				image_len = OV9655_getBuffer(&image);
-			if(cam_type == 0x2640)
+				if(tries) { // Capture successful
+					TRACE_INFO("IMG  > Encode/Transmit SSDV");
+					encode_ssdv(image, image_len, config);
+				} else {
+					TRACE_ERROR("IMG  > Image capturing failed");
+				}
+
+			} else {
+
 				image_len = OV2640_getBuffer(&image);
-			TRACE_INFO("IMG  > Image size: %d bytes", image_len);
+				TRACE_INFO("IMG  > Image size: %d bytes", image_len);
 
-			// Switch off camera
-			if(cam_type == 0x9655)
-				OV9655_deinit();
-			if(cam_type == 0x2640)
-				OV2640_deinit();
-
-			// Unlock radio
-			TRACE_INFO("IMG  > Unlock radio");
-			chMtxUnlock(&interference_mtx);
-
-			if(tries) { // Capture successful
+				TRACE_INFO("IMG  > Camera disabled");
 				TRACE_INFO("IMG  > Encode/Transmit SSDV");
 				encode_ssdv(image, image_len, config);
-			} else {
-				TRACE_ERROR("IMG  > Image capturing failed");
-			}
 
+			}
 		}
 
 		time = waitForTrigger(time, &config->trigger);

@@ -49,8 +49,6 @@ THD_FUNCTION(moduleTRACKING, arg) {
 	uint32_t id = 1;
 	lastTrackPoint = &trackPoints[0];
 
-	uint32_t plln = 360;
-
 	systime_t time = chVTGetSystemTimeX();
 	while(true)
 	{
@@ -68,34 +66,6 @@ THD_FUNCTION(moduleTRACKING, arg) {
 		} while(!isGPSLocked(&gpsFix) && chVTGetSystemTimeX() <= time + S2ST(TRACK_CYCLE_TIME-5)); // Do as long no GPS lock and within timeout, timeout=cycle-1sec (-1sec in order to keep synchronization)
 
 		if(isGPSLocked(&gpsFix)) { // GPS locked
-
-			// Get MCU frequency from GPS timepulse
-			uint32_t mcu_frequency = GPS_get_mcu_frequency();
-			TRACE_INFO("Old MCU frequency: %d Hz", mcu_frequency);
-
-			// Adjust PLLN
-			plln = mcu_frequency != 0 ? (uint32_t)((44500000.0 / ((float)mcu_frequency)) * ((float)plln)) : 0;
-			if(plln > 340 && plln < 380) {
-				TRACE_INFO("Set PLLN to %d", plln);
-				chThdSleepMilliseconds(10);
-
-				chSysLock();
-				RCC->CFGR = (RCC->CFGR & ~(RCC_CFGR_SW)) | RCC_CFGR_SW_HSI; // Select HSI clock as main clock
-				RCC->CR &= ~RCC_CR_PLLON; // Disable PLL
-				RCC->PLLCFGR = (RCC->PLLCFGR & ~RCC_PLLN_MASK) | ((plln << RCC_PLLN_POS) & RCC_PLLN_MASK);
-				RCC->CR |= RCC_CR_PLLON; // Enable PLL
-				while(!(RCC->CR & RCC_CR_PLLRDY)); // Wait till PLL is ready
-				RCC->CFGR = (RCC->CFGR & ~(RCC_CFGR_SW)) | RCC_CFGR_SW_PLL; // Enable PLL as main clock
-				chSysUnlock();
-
-				tp->plln = plln;
-			} else {
-				TRACE_ERROR("Do set to invalid PLLN %d", plln);
-				tp->plln = 0; // Error mark
-			}
-
-			mcu_frequency = GPS_get_mcu_frequency();
-			TRACE_INFO("New MCU frequency: %d Hz", mcu_frequency);
 
 			// Switch off GPS
 			GPS_Deinit();
@@ -212,4 +182,29 @@ THD_FUNCTION(moduleTRACKING, arg) {
 		time = chThdSleepUntilWindowed(time, time + S2ST(TRACK_CYCLE_TIME)); // Wait until time + cycletime
 	}
 }
+
+void waitForNewTrackPoint(void)
+{
+	uint32_t old_id = getLastTrackPoint()->id;
+	while(old_id == getLastTrackPoint()->id)
+		chThdSleepMilliseconds(1000);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

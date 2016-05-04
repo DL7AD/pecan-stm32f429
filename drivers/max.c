@@ -114,7 +114,7 @@ uint16_t gps_receive_payload(uint8_t class_id, uint8_t msg_id, unsigned char *pa
 			chThdSleepMilliseconds(50);
 			continue;
 		}
-			
+		
 		rx_byte = gps_receive_byte();
 		bytes_avail--;
 

@@ -15,20 +15,27 @@ bool p_sleep(const sleep_config_t *config)
 
 systime_t waitForTrigger(systime_t prev, trigger_config_t *config)
 {
-	void (*fptr)(void);
-
 	switch(config->type)
 	{
 		case TRIG_EVENT: // Wait for new tracking point
-			
-			fptr = config->events[0]; // FIXME: Currently its only possible to trigger on one event
-			(*fptr)();
+			switch(config->event)
+			{
+				case EVENT_NEW_POINT:
+					waitForNewTrackPoint();
+					return chVTGetSystemTimeX();
+
+				case NO_EVENT: // No event defined
+					while(1); // Assert
+			}
 		
 		case TRIG_TIMEOUT: // Wait for specified timeout
 			return chThdSleepUntilWindowed(prev, prev + S2ST(config->timeout));
 
-		default: // No trigger FIXME
-			break;
+		case TRIG_CONTINOUSLY: // Immediate trigger
+			return chVTGetSystemTimeX();
+
+		case TRIG_DISABLED: // No trigger defined
+			while(1); // Assert
 	}
 
 	return chVTGetSystemTimeX();
@@ -44,7 +51,3 @@ void trigger_new_tracking_point(void)
 	} while(newtp->id == oldID);
 }
 
-void trigger_immediately(void)
-{
-	// Nothing to do here
-}

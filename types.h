@@ -120,6 +120,7 @@ typedef struct {
 	uint8_t quality;		// JPEG quality
 	uint8_t *ram_buffer;	// Camera Buffer (do not set in config)
 	size_t ram_size;		// Size of buffer (do not set in config)
+	bool no_camera;			// Camera disabled
 } ssdv_config_t;
 
 typedef enum {
@@ -136,13 +137,19 @@ typedef struct {
 typedef enum {
 	TRIG_DISABLED,
 	TRIG_EVENT,
-	TRIG_TIMEOUT
+	TRIG_TIMEOUT,
+	TRIG_CONTINOUSLY
 } trigger_type_t;
+
+typedef enum {
+	NO_EVENT,
+	EVENT_NEW_POINT
+} event_t;
 
 typedef struct {
 	trigger_type_t type;	// Trigger type
 	uint32_t timeout;		// Timeout in seconds
-	void* events[3];		// Trigger events
+	event_t event;			// Trigger events
 } trigger_config_t;
 
 typedef struct {

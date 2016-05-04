@@ -14,6 +14,12 @@ static virtual_timer_t vt;
 uint32_t counter = 0;
 uint32_t error = 0;
 
+static const WDGConfig wdgcfg = {
+	STM32_IWDG_PR_256,
+	STM32_IWDG_RL(10000),
+	STM32_IWDG_WIN_DISABLED
+};
+
 /**
   * LED blinking routine
   * RED LED blinks: One or more modules crashed (software watchdog)
@@ -48,8 +54,7 @@ int main(void) {
 	DEBUG_INIT();				// Debug Init (Serial debug port, LEDs)
 	TRACE_INFO("MAIN > Startup");
 
-	TRACE_INFO("MAIN > Startup SENSOR I2C");
-	i2cInit();					// Startup I2C
+	pi2cInit();					// Startup I2C
 	initEssentialModules();		// Startup required modules (input/output modules)
 	initModules();				// Startup optional modules (eg. POSITION, LOG, ...)
 	pac1720_init();				// Startup current measurement
@@ -60,9 +65,19 @@ int main(void) {
 	chVTObjectInit(&vt);
 	chVTSet(&vt, MS2ST(500), led_cb, 0);
 
+	chThdSleepMilliseconds(1000);
+
+	// Initialize Watchdog
+	wdgStart(&WDGD1, &wdgcfg);
+	wdgReset(&WDGD1);
+
 	while(true) {
 		// Print time
+		if(counter % 10 == 0)
 		PRINT_TIME("MAIN");
+
+		// Watchdog reset
+		wdgReset(&WDGD1);
 
 		// Software watchdog FIXME
 		/*for(uint8_t i=0; i<moduleCount; i++) {
@@ -75,7 +90,7 @@ int main(void) {
 			}
 		}*/
 
-		chThdSleepMilliseconds(30000);
+		chThdSleepMilliseconds(1000);
 		counter++;
 	}
 }

@@ -10,31 +10,32 @@
 #include "types.h"
 
 #define MODULE_POSITION(CONF) { \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(2048), NORMALPRIO, modulePOS, CONF); \
-	modules[moduleCount++] = CONF; \
+	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(2048), (CONF)->name, NORMALPRIO, modulePOS, (CONF)); \
+	modules[moduleCount++] = (CONF); \
 }
 
 #define MODULE_IMAGE(CONF) { \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(4096), NORMALPRIO, moduleIMG, CONF); \
-	modules[moduleCount++] = CONF; \
+	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(4096), (CONF)->name, NORMALPRIO, moduleIMG, (CONF)); \
+	modules[moduleCount++] = (CONF); \
 }
 
 #define MODULE_LOG(CONF) { \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), NORMALPRIO, moduleLOG, CONF); \
-	modules[moduleCount++] = CONF; \
+	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), (CONF)->name, NORMALPRIO, moduleLOG, (CONF)); \
+	modules[moduleCount++] = (CONF); \
 }
 
 #define MODULE_TRACKING(CYCLE) { \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(2048), NORMALPRIO, moduleTRACKING, NULL); \
+	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(2048), "Tracking", NORMALPRIO, moduleTRACKING, NULL); \
 }
 
 #define MODULE_RADIO() { \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(2048), HIGHPRIO, moduleRADIO, NULL); \
+	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(2048), "Radio", HIGHPRIO, moduleRADIO, NULL); \
 }
 
 #define initEssentialModules() { \
 	chMtxObjectInit(&interference_mtx); \
-	/*MODULE_TRACKING(CYCLE_TIME);*/ /* Tracker data input */ \
+	chMtxObjectInit(&camera_mtx); \
+	MODULE_TRACKING(CYCLE_TIME); /* Tracker data input */ \
 	MODULE_RADIO(); /* Tracker data output */ \
 }
 
