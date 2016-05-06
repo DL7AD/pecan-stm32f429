@@ -32,9 +32,6 @@ typedef struct {
 	uint32_t ext_press;		// Airpressure in Pa in balloon (in 0.1Pa)
 	uint8_t ext_hum;		// Rel. humidity in % in balloon (in 0.1%)
 	int16_t ext_temp;		// Temperature in K*100 in balloon (in 0.01°C)
-
-	// PLL settings
-	uint32_t plln;
 } trackPoint_t;
 
 void waitForNewTrackPoint(void);

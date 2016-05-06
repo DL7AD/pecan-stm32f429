@@ -110,11 +110,6 @@ uint32_t aprs_encode_position(uint8_t* message, mod_t mod, const aprs_config_t *
 		chsnprintf(temp, sizeof(temp), "%d", trackPoint->gps_ttff);
 		ax25_send_string(&packet, temp);
 		ax25_send_string(&packet, "sec");
-
-		// MCUF (MCU frequency)
-		ax25_send_string(&packet, " PLLN ");
-		chsnprintf(temp, sizeof(temp), "%d", trackPoint->plln);
-		ax25_send_string(&packet, temp);
 	}
 
 	// GPS Loss counter
