@@ -58,7 +58,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 		trackPoint_t* ltp = &trackPoints[(id-1) % (sizeof(trackPoints) / sizeof(trackPoint_t))]; // Last track point
 
 		// Search for GPS satellites
-		gpsFix_t gpsFix;
+		gpsFix_t gpsFix = {{0,0,0,0,0,0,0},0,0,0,0,0};
 		GPS_Init();
 
 		do {
