@@ -23,12 +23,12 @@ static int32_t pac1720_discharge_counter;
 
 int16_t pac1720_getPowerDischarge(void) {
 	int32_t fsp = FSV * FSC;
-	return read16(PAC1720_ADDRESS, PAC1720_CH2_PWR_RAT_HIGH) * fsp / 16384;
+	return I2C_read16(PAC1720_ADDRESS, PAC1720_CH2_PWR_RAT_HIGH) * fsp / 16384;
 }
 
 int16_t pac1720_getPowerCharge(void) {
 	int32_t fsp = FSV * FSC;
-	return read16(PAC1720_ADDRESS, PAC1720_CH1_PWR_RAT_HIGH) * fsp / 16384;
+	return I2C_read16(PAC1720_ADDRESS, PAC1720_CH1_PWR_RAT_HIGH) * fsp / 16384;
 }
 
 int16_t pac1720_getAverageChargePower(void) {
@@ -54,7 +54,7 @@ int16_t pac1720_getAverageDischargePower(void) {
 }
 
 uint16_t pac1720_getBatteryVoltage(void) {
-	uint16_t reg = read16(PAC1720_ADDRESS, PAC1720_CH2_VSOURCE_HIGH);
+	uint16_t reg = I2C_read16(PAC1720_ADDRESS, PAC1720_CH2_VSOURCE_HIGH);
 
 	uint32_t uv = 0;
 	for(uint32_t i=0, b=20000000; i<11; i++, b/=2)
@@ -64,7 +64,7 @@ uint16_t pac1720_getBatteryVoltage(void) {
 
 bool pac1720_isAvailable(void)
 {
-	return read8(PAC1720_ADDRESS, PAC1720_PRODUCT_ID) == 0x57;
+	return I2C_read8(PAC1720_ADDRESS, PAC1720_PRODUCT_ID) == 0x57;
 }
 
 THD_FUNCTION(pac1720_thd, arg)
@@ -91,9 +91,9 @@ void pac1720_init(void)
 	 * Current sensing average disabled
 	 * Current sensing range +-80mV (FSR)
 	 */
-	write8(PAC1720_ADDRESS, PAC1720_CH1_VSENSE_SAMP_CONFIG, 0x53);
-	write8(PAC1720_ADDRESS, PAC1720_CH2_VSENSE_SAMP_CONFIG, 0x53);
-	write8(PAC1720_ADDRESS, PAC1720_V_SOURCE_SAMP_CONFIG,   0xFF);
+	I2C_write8(PAC1720_ADDRESS, PAC1720_CH1_VSENSE_SAMP_CONFIG, 0x53);
+	I2C_write8(PAC1720_ADDRESS, PAC1720_CH2_VSENSE_SAMP_CONFIG, 0x53);
+	I2C_write8(PAC1720_ADDRESS, PAC1720_V_SOURCE_SAMP_CONFIG,   0xFF);
 
 	TRACE_INFO("PAC  > Init PAC1720 continuous measurement");
 	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(256), "PAC1720", NORMALPRIO, pac1720_thd, NULL);

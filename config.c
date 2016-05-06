@@ -13,8 +13,8 @@ void initModules(void)
 	config[0].power = 20;									// Power 20 dBm
 	config[0].protocol = PROT_APRS_AFSK;					// Protocol APRS, modulation AFSK
 	config[0].frequency.type = FREQ_DYNAMIC;				// Dynamic frequency allocation
-	config[0].frequency.hz = 432500000;						// Default frequency 144.800 MHz
-	config[0].frequency.method = APRS_REGION_FREQ_70CM;		// Determine local APRS frequency on 2m
+	config[0].frequency.hz = 144800000;						// Default frequency 144.800 MHz
+	config[0].frequency.method = APRS_REGION_FREQ_2M;		// Determine local APRS frequency on 2m
 	config[0].init_delay = 0;								// Module startup delay in sec
 	config[0].trigger.type = TRIG_EVENT;					// Trigger transmission on event
 	config[0].trigger.event = EVENT_NEW_POINT;				// Trigger when new track point released
@@ -38,7 +38,7 @@ void initModules(void)
 	config[1].power = 20;									// Power 10 dBm
 	config[1].protocol = PROT_APRS_2GFSK;					// Protocol APRS, modulation AFSK
 	config[1].frequency.type = FREQ_STATIC;					// Dynamic frequency allocation
-	config[1].frequency.hz = 432600000;						// Default frequency 144.85125 MHz
+	config[1].frequency.hz = 144862500;						// Default frequency 144.85125 MHz
 	config[1].init_delay = 0;								// Module startup delay in sec
 	config[1].trigger.type = TRIG_EVENT;					// Trigger transmission on event
 	config[1].trigger.event = EVENT_NEW_POINT;				// Trigger when new track point released
@@ -59,10 +59,10 @@ void initModules(void)
 
 	// Module POSITION, UKHAS 2m 2FSK
 	chsnprintf(config[2].name, 13, "POS UKHAS 2m");			// Instance name
-	config[2].power = 10;									// Power 10 dBm
+	config[2].power = 20;									// Power 10 dBm
 	config[2].protocol = PROT_UKHAS_2FSK;					// Protocol UKHAS, modulation 2FSK
 	config[2].frequency.type = FREQ_STATIC;					// Static frequency allocation
-	config[2].frequency.hz = 432600000;						// Transmission frequency 144.85125 MHz
+	config[2].frequency.hz = 144862500;						// Transmission frequency 144.85125 MHz
 	config[2].init_delay = 2000;							// Module startup delay in sec
 	config[2].trigger.type = TRIG_EVENT;					// Trigger transmission on event
 	config[2].trigger.event = EVENT_NEW_POINT;				// Trigger when new track point released
@@ -80,7 +80,7 @@ void initModules(void)
 	config[3].power = 10;									// Power 10 dBm
 	config[3].protocol = PROT_MORSE;						// Protocol Morse, modulation OOK
 	config[3].frequency.type = FREQ_STATIC;					// Static frequency allocation
-	config[3].frequency.hz = 432597900;						// Transmission frequency 144.85125 MHz
+	config[3].frequency.hz = 144860000;						// Transmission frequency 144.85125 MHz
 	config[3].init_delay = 10000;							// Module startup delay in sec
 	config[3].trigger.type = TRIG_TIMEOUT;					// Trigger transmission on timeout (Periodic cycling)
 	config[3].trigger.timeout = 600;						// Timeout 600sec
@@ -94,8 +94,8 @@ void initModules(void)
 	config[4].power = 20;									// Power 20 dBm
 	config[4].protocol = PROT_APRS_AFSK;					// Protocol APRS SSDV, modulation AFSK
 	config[4].frequency.type = FREQ_DYNAMIC;				// Static frequency allocation
-	config[4].frequency.hz = 432500000;						// Transmission frequency 144.800 MHz
-	config[4].frequency.method = APRS_REGION_FREQ_70CM;		// Determine local APRS frequency on 2m
+	config[4].frequency.hz = 144800000;						// Transmission frequency 144.800 MHz
+	config[4].frequency.method = APRS_REGION_FREQ_2M;		// Determine local APRS frequency on 2m
 	config[4].init_delay = 10000;							// Module startup delay in sec
 	config[4].packet_spacing = 20000;						// Packet spacing in ms
 	config[4].trigger.type = TRIG_CONTINOUSLY;				// Trigger transmission on timeout (Periodic cycling)
@@ -111,7 +111,7 @@ void initModules(void)
 	config[5].power = 20;									// Power 10 dBm
 	config[5].protocol = PROT_APRS_2GFSK;					// Protocol APRS SSDV, modulation 2GFSK
 	config[5].frequency.type = FREQ_STATIC;					// Static frequency allocation
-	config[5].frequency.hz = 432600000;						// Transmission frequency 144.85125 MHz
+	config[5].frequency.hz = 144862500;						// Transmission frequency 144.85125 MHz
 	config[5].init_delay = 45000;							// Module startup delay in sec
 	config[5].packet_spacing = 6500;						// Packet spacing in ms
 	config[5].trigger.type = TRIG_TIMEOUT;					// Trigger transmission on timeout (Periodic cycling)
@@ -126,10 +126,10 @@ void initModules(void)
 
 	// Module IMAGE, SSDV 2m 2FSK
 	chsnprintf(config[6].name, 12, "IMG 2FSK 2m");			// Instance name
-	config[6].power = 10;									// Power 10 dBm
+	config[6].power = 20;									// Power 10 dBm
 	config[6].protocol = PROT_SSDV_2FSK;					// Protocol SSDV, modulation 2FSK
 	config[6].frequency.type = FREQ_STATIC;					// Static frequency allocation
-	config[6].frequency.hz = 432600000;						// Transmission frequency 144.85125 MHz
+	config[6].frequency.hz = 144862500;						// Transmission frequency 144.85125 MHz
 	config[6].init_delay = 75000;							// Module startup delay in sec
 	config[6].packet_spacing = 6500;						// Packet spacing in ms
 	config[6].trigger.type = TRIG_TIMEOUT;					// Trigger transmission on timeout (Periodic cycling)

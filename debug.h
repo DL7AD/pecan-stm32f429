@@ -49,8 +49,8 @@ extern const SerialConfig uart_config;
 		"%s Altitude: %d Meter", \
 		TRACE_TAB, (fix)->time.year, (fix)->time.month, (fix)->time.day, (fix)->time.hour, (fix)->time.minute, (fix)->time.second, \
 		TRACE_TAB, (fix)->num_svs, \
-		TRACE_TAB, (fix)->lat/10000000, (fix)->lat%10000000, /* TODO: this calculation does not work in other hemispheres */ \
-		TRACE_TAB, (fix)->lon/10000000, (fix)->lon%10000000, /* TODO: this calculation does not work in other hemispheres */ \
+		TRACE_TAB, (fix)->lat/10000000, ((fix)->lat > 0 ? 1:-1)*(fix)->lat%10000000, \
+		TRACE_TAB, (fix)->lon/10000000, ((fix)->lon > 0 ? 1:-1)*(fix)->lon%10000000, \
 		TRACE_TAB, (fix)->alt \
 	); \
 }

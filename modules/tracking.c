@@ -167,7 +167,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 					"%s EXT p=%6d.%01dPa T=%2d.%02ddegC phi=%2d.%01d%%",
 					tp->id,
 					TRACE_TAB, tp->time.year, tp->time.month, tp->time.day, tp->time.hour, tp->time.minute, tp->time.day,
-					TRACE_TAB, tp->gps_lat/10000000, tp->gps_lat%10000000, tp->gps_lon/10000000, tp->gps_lon%10000000, tp->gps_alt,
+					TRACE_TAB, tp->gps_lat/10000000, (tp->gps_lat > 0 ? 1:-1)*tp->gps_lat%10000000, tp->gps_lon/10000000, (tp->gps_lon > 0 ? 1:-1)*tp->gps_lon%10000000, tp->gps_alt,
 					TRACE_TAB, tp->gps_sats, tp->gps_ttff,
 					TRACE_TAB, tp->adc_battery/1000, (tp->adc_battery%1000), tp->adc_solar/1000, (tp->adc_solar%1000), tp->adc_charge, tp->adc_discharge,
 					TRACE_TAB, tp->int_press/10, tp->int_press%10, tp->int_temp/100, tp->int_temp%100, tp->int_hum/10, tp->int_hum%10,

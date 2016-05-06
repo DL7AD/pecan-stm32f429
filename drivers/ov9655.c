@@ -354,7 +354,7 @@ uint32_t OV9655_getBuffer(uint8_t** buffer) {
 
 void OV9655_TransmitConfig(void) {
 	for(uint32_t i=0; i<sizeof(OV9655_CONFIG); i+=2) {
-		write8(OV9655_I2C_ADR, OV9655_CONFIG[i], OV9655_CONFIG[i+1]);
+		I2C_write8(OV9655_I2C_ADR, OV9655_CONFIG[i], OV9655_CONFIG[i+1]);
 		chThdSleepMilliseconds(10);
 	}
 }
@@ -394,7 +394,7 @@ void OV9655_deinit(void) {
 
 bool OV9655_isAvailable(void)
 {
-	uint16_t id = read16(OV9655_I2C_ADR, 0x0A);
+	uint16_t id = I2C_read16(OV9655_I2C_ADR, 0x0A);
 	return id == 0x9656 || id == 0x9657;
 }
 

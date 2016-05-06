@@ -15,25 +15,19 @@
  *
  * transmits a command to the GPS
  */
-void gps_transmit_string(uint8_t *cmd, uint8_t length) {
-	//i2cSend(UBLOX_MAX_ADDRESS, cmd, length, NULL, 0, MS2ST(100));
-	writeN(UBLOX_MAX_ADDRESS, cmd, length);
+void gps_transmit_string(uint8_t *cmd, uint8_t length)
+{
+	I2C_writeN(UBLOX_MAX_ADDRESS, cmd, length);
 }
 
-uint8_t gps_receive_byte(void) {
-	/*uint8_t rxbuf[1];
-	uint8_t txbuf = {0xFF};
-	i2cSend(UBLOX_MAX_ADDRESS, (uint8_t*)&txbuf, 1, (uint8_t*)&rxbuf, 1, MS2ST(100));
-	return rxbuf[0];*/
-	return read8(UBLOX_MAX_ADDRESS, 0xFF);
+uint8_t gps_receive_byte(void)
+{
+	return I2C_read8(UBLOX_MAX_ADDRESS, 0xFF);
 }
 
-uint8_t gps_bytes_avail(void) {
-	/*uint8_t rxbuf[2];
-	uint8_t txbuf = {0xFD};
-	i2cSend(UBLOX_MAX_ADDRESS, (uint8_t*)&txbuf, 1, (uint8_t*)&rxbuf, 2, MS2ST(100));
-	return (rxbuf[0] << 8) | rxbuf[1];*/
-	return read16(UBLOX_MAX_ADDRESS, 0xFD);
+uint8_t gps_bytes_avail(void)
+{
+	return I2C_read16(UBLOX_MAX_ADDRESS, 0xFD);
 }
 
 /* 

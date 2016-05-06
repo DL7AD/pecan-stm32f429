@@ -550,7 +550,7 @@ void OV2640_InitGPIO(void)
 void OV2640_TransmitConfig(void)
 {
 	for(uint32_t i=0; i<sizeof(OV2640_CONFIG1); i+=2) {
-		write8_lock(OV2640_I2C_ADR, OV2640_CONFIG1[i], OV2640_CONFIG1[i+1]);
+		I2C_write8_locked(OV2640_I2C_ADR, OV2640_CONFIG1[i], OV2640_CONFIG1[i+1]);
 		chThdSleepMilliseconds(10);
 	}
 
@@ -583,12 +583,12 @@ void OV2640_TransmitConfig(void)
 	}
 
 	for(uint32_t i=0; i<length; i+=2) {
-		write8_lock(OV2640_I2C_ADR, ov_config[i], ov_config[i+1]);
+		I2C_write8_locked(OV2640_I2C_ADR, ov_config[i], ov_config[i+1]);
 		chThdSleepMilliseconds(10);
 	}
 
 	for(uint32_t i=0; i<sizeof(OV2640_CONFIG2); i+=2) {
-		write8_lock(OV2640_I2C_ADR, OV2640_CONFIG2[i], OV2640_CONFIG2[i+1]);
+		I2C_write8_locked(OV2640_I2C_ADR, OV2640_CONFIG2[i], OV2640_CONFIG2[i+1]);
 		chThdSleepMilliseconds(10);
 	}
 }
@@ -597,7 +597,7 @@ void OV2640_init(ssdv_config_t *config) {
 	ov2640_config = config;
 
 	// Take I2C (due to silicon bug of OV2640, it interferes if byte 0x30 transmitted on I2C bus)
-	aquireI2cExclusive();
+	I2C_lock();
 
 	// Clearing buffer
 	uint32_t i;
@@ -636,15 +636,16 @@ void OV2640_deinit(void) {
 	palClearPad(PORT(CAM_EN), PIN(CAM_EN)); // Switch off camera
 
 	// Release I2C (due to silicon bug of OV2640, it interferes if byte 0x30 transmitted on I2C bus)
-	releaseI2cExclusive();
+	I2C_unlock();
 }
 
 bool OV2640_isAvailable(void)
 {
-	return read16(OV2640_I2C_ADR, 0x0A) == 0x2626;
+	return I2C_read16(OV2640_I2C_ADR, 0x0A) == 0x2626;
 }
 
 void OV2640_poweron(void)
 {
 	palSetPad(PORT(CAM_EN), PIN(CAM_EN)); // Switch on camera
 }
+
