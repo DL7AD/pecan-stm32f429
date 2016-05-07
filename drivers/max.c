@@ -171,7 +171,7 @@ bool gps_get_fix(gpsFix_t *fix) {
 	bool resp = gps_receive_payload(0x01, 0x07, response, 5000);
 
 	if(!resp) { // Failed to aquire GPS data
-		TRACE_ERROR("GPS  > PVT Polling FAILED");
+		TRACE_INFO("GPS  > PVT Polling FAILED");
 		return false;
 	} else {
 		TRACE_INFO("GPS  > PVT Polling OK");

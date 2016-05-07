@@ -117,15 +117,16 @@ CSRC = $(STARTUPSRC) \
        $(CHIBIOS)/os/various/syscalls.c \
        $(CHIBIOS)/os/hal/lib/streams/memstreams.c \
        $(CHIBIOS)/os/hal/lib/streams/chprintf.c \
+       modules/radio.c \
+       modules/tracking.c \
+       modules/position.c \
+       modules/image.c \
+       modules/log.c \
        protocols/ssdv/ssdv.c \
        protocols/ssdv/rs8.c \
        protocols/aprs/aprs.c \
        protocols/aprs/ax25.c \
        protocols/morse/morse.c \
-       modules/tracking.c \
-       modules/position.c \
-       modules/image.c \
-       modules/log.c \
        drivers/max.c \
        drivers/si4464.c \
        drivers/bme280.c \
@@ -141,7 +142,6 @@ CSRC = $(STARTUPSRC) \
        sleep.c \
        modules.c \
        math/base.c \
-       radio.c \
        math/sgp4.c \
        math/geofence.c \
        config.c \

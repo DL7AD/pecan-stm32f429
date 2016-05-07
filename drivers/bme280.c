@@ -46,8 +46,9 @@ void BME280_Init(bme280_t *handle, uint8_t address)
 	handle->calib.dig_H1 = I2C_read8(address, BME280_REGISTER_DIG_H1);
 	handle->calib.dig_H2 = I2C_readS16_LE(address, BME280_REGISTER_DIG_H2);
 	handle->calib.dig_H3 = I2C_read8(address, BME280_REGISTER_DIG_H3);
-	handle->calib.dig_H4 = (I2C_read8(address, BME280_REGISTER_DIG_H4) << 4) | (I2C_read8(address, BME280_REGISTER_DIG_H4+1) & 0xF);
-	handle->calib.dig_H5 = (I2C_read8(address, BME280_REGISTER_DIG_H5+1) << 4) | (I2C_read8(address, BME280_REGISTER_DIG_H5) >> 4);
+	handle->calib.dig_H4 = (((int8_t)I2C_read8(address, BME280_REGISTER_DIG_H4)) << 4) | (I2C_read8(address, BME280_REGISTER_DIG_H5) & 0x0F);
+	handle->calib.dig_H5 = (((int8_t)I2C_read8(address, BME280_REGISTER_DIG_H6)) << 4) | (I2C_read8(address, BME280_REGISTER_DIG_H5) >> 4 & 0x0F);
+
 	handle->calib.dig_H6 = (int8_t)I2C_read8(address, BME280_REGISTER_DIG_H6);
 
 	I2C_write8(address, BME280_REGISTER_CONTROLHUMID, 0x03); // Set before CONTROL (DS 5.4.3)

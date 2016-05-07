@@ -25,12 +25,12 @@ typedef struct {
 
 	// Internal BME280 (on board)
 	uint32_t int_press;		// Airpressure in Pa*10 (in 0.1Pa)
-	uint8_t int_hum;		// Rel. humidity in %*10 (in 0.1%)
+	uint16_t int_hum;		// Rel. humidity in %*10 (in 0.1%)
 	int16_t int_temp;		// Temperature in degC*100 (in 0.01°C)
 
 	// External BME280 (off board)
 	uint32_t ext_press;		// Airpressure in Pa in balloon (in 0.1Pa)
-	uint8_t ext_hum;		// Rel. humidity in % in balloon (in 0.1%)
+	uint16_t ext_hum;		// Rel. humidity in % in balloon (in 0.1%)
 	int16_t ext_temp;		// Temperature in K*100 in balloon (in 0.01°C)
 } trackPoint_t;
 

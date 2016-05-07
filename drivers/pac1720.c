@@ -23,12 +23,12 @@ static int32_t pac1720_discharge_counter;
 
 int16_t pac1720_getPowerDischarge(void) {
 	int32_t fsp = FSV * FSC;
-	return I2C_read16(PAC1720_ADDRESS, PAC1720_CH2_PWR_RAT_HIGH) * fsp / 16384;
+	return I2C_read16(PAC1720_ADDRESS, PAC1720_CH2_PWR_RAT_HIGH) * fsp / 65536;
 }
 
 int16_t pac1720_getPowerCharge(void) {
 	int32_t fsp = FSV * FSC;
-	return I2C_read16(PAC1720_ADDRESS, PAC1720_CH1_PWR_RAT_HIGH) * fsp / 16384;
+	return I2C_read16(PAC1720_ADDRESS, PAC1720_CH1_PWR_RAT_HIGH) * fsp / 65536;
 }
 
 int16_t pac1720_getAverageChargePower(void) {

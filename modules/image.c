@@ -232,7 +232,7 @@ THD_FUNCTION(moduleIMG, arg) {
 				TRACE_INFO("IMG  > Unlock radio");
 				chMtxUnlock(&interference_mtx);
 
-				// Lock camera
+				// Unlock camera
 				TRACE_INFO("IMG  > Unlock camera");
 				chMtxUnlock(&camera_mtx);
 

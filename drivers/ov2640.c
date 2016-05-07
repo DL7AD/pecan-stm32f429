@@ -240,7 +240,8 @@ static const uint8_t OV2640_CONFIG1[] =
 	0xda, 0x10,
 	0xe0, 0x00,
 	0xFF, 0x01,
-	0x04, 0x08
+	0x04, 0x08,
+	0xff, 0xff
 };
 
 
@@ -284,7 +285,8 @@ static const uint8_t OV2640_XGA[] =
 	0x5a, 0x00,
 	0x5b, 0xC0,
 	0x5c, 0x01,
-	0xd3, 0x02
+	0xd3, 0x02,
+	0xff, 0xff
 };
 
 // UXGA 1600x1200
@@ -329,7 +331,8 @@ static const uint8_t OV2640_UXGA[] =
 	0x5b, 0x2C,
 	0x5c, 0x05,
 	0xd3, 0x02,
-	0xe0, 0x00
+	0xe0, 0x00,
+	0xff, 0xff
 };
 
 // QVGA 320x240
@@ -373,7 +376,8 @@ static const uint8_t OV2640_QVGA[] =
 	0x5a, 0x50,
 	0x5b, 0x3c,
 	0x5c, 0x00,
-	0xe0, 0x00
+	0xe0, 0x00,
+	0xff, 0xff
 };
 
 // VGA 640x480
@@ -419,7 +423,8 @@ static const uint8_t OV2640_VGA[] =
 	0x5b, 0x78,
 	0x5c, 0x00,
 	0xd3, 0x04,
-	0xe0, 0x00
+	0xe0, 0x00,
+	0xff, 0xff
 };
 
 static const uint8_t OV2640_CONFIG2[] =
@@ -431,7 +436,8 @@ static const uint8_t OV2640_CONFIG2[] =
 	0xda, 0x10,
 	0xe0, 0x00,
 	0xFF, 0x01,
-	0x04, 0x08
+	0x04, 0x08,
+	0xff, 0xff
 };
 
 
@@ -488,7 +494,7 @@ void OV2640_InitDMA(void)
 	dmaStreamAllocate(stream, 2, (stm32_dmaisr_t)OV2640_dma_avail, NULL);
 	dmaStreamSetPeripheral(stream, ((uint32_t*)DCMI_REG_DR_ADDRESS));
 	dmaStreamSetMemory0(stream, (uint32_t)ov2640_config->ram_buffer);
-	dmaStreamSetTransactionSize(stream, ov2640_config->ram_size);
+	dmaStreamSetTransactionSize(stream, ov2640_config->ram_size / sizeof(uint32_t));
 	dmaStreamSetMode(stream, STM32_DMA_CR_CHSEL(1) | STM32_DMA_CR_DIR_P2M |
 							 STM32_DMA_CR_MINC | STM32_DMA_CR_PSIZE_WORD |
 							 STM32_DMA_CR_MSIZE_WORD | STM32_DMA_CR_MBURST_SINGLE |

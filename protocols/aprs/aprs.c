@@ -215,7 +215,12 @@ uint32_t aprs_encode_telemetry_configuration(uint8_t* message, mod_t mod, const 
 	chsnprintf(temp, sizeof(temp), "%d", config->ssid);
 	ax25_send_string(&packet, temp);
 
-	ax25_send_string(&packet, " :"); // Message separator
+	// Padding
+	uint8_t length = strlen(config->callsign) + (config->ssid/10);
+	for(uint8_t i=length; i<7; i++)
+		ax25_send_string(&packet, " ");
+
+	ax25_send_string(&packet, ":"); // Message separator
 
 	switch(type) {
 		case CONFIG_PARM: // Telemetry parameter names

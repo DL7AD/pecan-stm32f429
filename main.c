@@ -7,8 +7,9 @@
 #include "debug.h"
 #include "modules.h"
 #include "padc.h"
-#include "drivers/pi2c.h"
-#include "drivers/pac1720.h"
+#include "pi2c.h"
+#include "pac1720.h"
+#include "bme280.h"
 
 static virtual_timer_t vt;
 uint32_t counter = 0;
