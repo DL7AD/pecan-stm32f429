@@ -4,6 +4,21 @@
   * https://github.com/iqyx/ov2640-stm32/blob/master/F4discovery/main.c
   */
 
+/*
+ * ov2640 Camera Driver
+ *
+ * Copyright (C) 2010 Alberto Panizzo <maramaopercheseimorto@gmail.com>
+ *
+ * Based on ov772x, ov9640 drivers and previous non merged implementations.
+ *
+ * Copyright 2005-2009 Freescale Semiconductor, Inc. All Rights Reserved.
+ * Copyright (C) 2006, OmniVision
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+
 #include "ch.h"
 #include "hal.h"
 #include "ov2640.h"
