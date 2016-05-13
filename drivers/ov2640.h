@@ -13,6 +13,7 @@ bool OV2640_Snapshot2RAM(void);
 void OV2640_InitDMA(void);
 void OV2640_DeinitDMA(void);
 void OV2640_InitDCMI(void);
+void OV2640_CaptureDCMI(void);
 void OV2640_DeinitDCMI(void);
 void OV2640_InitGPIO(void);
 uint32_t OV2640_getBuffer(uint8_t** buffer);

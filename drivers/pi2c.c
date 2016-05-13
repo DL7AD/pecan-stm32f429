@@ -8,8 +8,8 @@
 
 const I2CConfig _i2cfg = {
 	OPMODE_I2C,
-	150000,
-	FAST_DUTY_CYCLE_2,
+	75000,
+	STD_DUTY_CYCLE,
 };
 
 mutex_t pi2c_mtx;

@@ -2,8 +2,8 @@
 #include "debug.h"
 
 module_conf_t config[8];
-uint8_t ssdv1_buffer[1024*20];
-uint8_t ssdv2_buffer[1024*80];
+uint8_t ssdv1_buffer[1024*30];
+uint8_t ssdv2_buffer[1024*100];
 
 // Put your configuration settings here
 void initModules(void)
@@ -15,7 +15,7 @@ void initModules(void)
 	config[0].frequency.type = FREQ_DYNAMIC;				// Dynamic frequency allocation
 	config[0].frequency.hz = 144800000;						// Default frequency 144.800 MHz
 	config[0].frequency.method = APRS_REGION_FREQ_2M;		// Determine local APRS frequency on 2m
-	config[0].init_delay = 0;								// Module startup delay in sec
+	config[0].init_delay = 0;								// Module startup delay in msec
 	config[0].trigger.type = TRIG_EVENT;					// Trigger transmission on event
 	config[0].trigger.event = EVENT_NEW_POINT;				// Trigger when new track point released
 	chsnprintf(config[0].aprs_config.callsign, 7, "DL4MDW");// APRS Callsign
@@ -39,7 +39,7 @@ void initModules(void)
 	config[1].protocol = PROT_APRS_2GFSK;					// Protocol APRS, modulation AFSK
 	config[1].frequency.type = FREQ_STATIC;					// Dynamic frequency allocation
 	config[1].frequency.hz = 144860000;						// Default frequency 144.860 MHz
-	config[1].init_delay = 0;								// Module startup delay in sec
+	config[1].init_delay = 0;								// Module startup delay in msec
 	config[1].trigger.type = TRIG_EVENT;					// Trigger transmission on event
 	config[1].trigger.event = EVENT_NEW_POINT;				// Trigger when new track point released
 	chsnprintf(config[1].aprs_config.callsign, 7, "DL4MDW");// APRS Callsign
@@ -63,7 +63,7 @@ void initModules(void)
 	config[2].protocol = PROT_UKHAS_2FSK;					// Protocol UKHAS, modulation 2FSK
 	config[2].frequency.type = FREQ_STATIC;					// Static frequency allocation
 	config[2].frequency.hz = 144860000;						// Transmission frequency 144.860 MHz
-	config[2].init_delay = 2000;							// Module startup delay in sec
+	config[2].init_delay = 2000;							// Module startup delay in msec
 	config[2].trigger.type = TRIG_EVENT;					// Trigger transmission on event
 	config[2].trigger.event = EVENT_NEW_POINT;				// Trigger when new track point released
 	config[2].fsk_config.bits = 8;							// 8bit
@@ -75,46 +75,46 @@ void initModules(void)
 	chsnprintf(config[2].ukhas_config.format, 94, "<CALL>,<ID>,<TIME>,<LAT>,<LON>,<ALT>,<SATS>,<TTFF>,<VBAT>,<DISCHARGE>,<IPRESS>,<ITEMP>,<IHUM>"); // UKHAS Format
 	MODULE_POSITION(&config[2]);
 
-	// Module POSITION, Morse 2m OOK
-	chsnprintf(config[3].name, 11, "POS OOK 2m");			// Instance name
-	config[3].power = 10;									// Power 10 dBm
-	config[3].protocol = PROT_MORSE;						// Protocol Morse, modulation OOK
-	config[3].frequency.type = FREQ_STATIC;					// Static frequency allocation
-	config[3].frequency.hz = 144857400;						// Transmission frequency 144.8574 MHz
-	config[3].init_delay = 50000;							// Module startup delay in sec
-	config[3].trigger.type = TRIG_TIMEOUT;					// Trigger transmission on timeout (Periodic cycling)
-	config[3].trigger.timeout = 900;						// Timeout 900sec
-	config[3].ook_config.speed = 20;						// Speed 20wpm
-	chsnprintf(config[3].morse_config.callsign, 7, "DL4MDW");// Morse Callsign
-	chsnprintf(config[3].morse_config.format, 43, "BALLOON <CALL> <LOC> <ALT>M WWW.TKRAHN.NET"); // Morse Format
-	MODULE_POSITION(&config[3]);
-
 	// Module IMAGE, APRS 2m AFSK low-duty cycle
-	chsnprintf(config[4].name, 12, "IMG AFSK 2m");			// Instance name
-	config[4].power = 20;									// Power 20 dBm
-	config[4].protocol = PROT_APRS_AFSK;					// Protocol APRS SSDV, modulation AFSK
-	config[4].frequency.type = FREQ_DYNAMIC;				// Static frequency allocation
-	config[4].frequency.hz = 144800000;						// Transmission frequency 144.800 MHz
-	config[4].frequency.method = APRS_REGION_FREQ_2M;		// Determine local APRS frequency on 2m
-	config[4].init_delay = 10000;							// Module startup delay in sec
-	config[4].packet_spacing = 20000;						// Packet spacing in ms
-	config[4].trigger.type = TRIG_CONTINOUSLY;				// Trigger transmission on timeout (Periodic cycling)
-	chsnprintf(config[4].aprs_config.callsign, 7, "DL4MDW");// APRS Callsign
-	config[4].aprs_config.ssid = 13;						// APRS SSID
-	chsnprintf(config[4].ssdv_config.callsign, 7, "DL4MDW");// SSDV Callsign
-	config[4].ssdv_config.ram_buffer = ssdv1_buffer;		// Camera buffer
-	config[4].ssdv_config.ram_size = sizeof(ssdv1_buffer);	// Buffer size
-	config[4].ssdv_config.res = RES_QVGA;					// Resolution QVGA
-	MODULE_IMAGE(&config[4]);
+	chsnprintf(config[3].name, 12, "IMG AFSK 2m");			// Instance name
+	config[3].power = 20;									// Power 20 dBm
+	config[3].protocol = PROT_APRS_AFSK;					// Protocol APRS SSDV, modulation AFSK
+	config[3].frequency.type = FREQ_DYNAMIC;				// Static frequency allocation
+	config[3].frequency.hz = 144800000;						// Transmission frequency 144.800 MHz
+	config[3].frequency.method = APRS_REGION_FREQ_2M;		// Determine local APRS frequency on 2m
+	config[3].init_delay = 10000;							// Module startup delay in msec
+	config[3].packet_spacing = 20000;						// Packet spacing in ms
+	config[3].trigger.type = TRIG_CONTINOUSLY;				// Trigger transmission on timeout (Periodic cycling)
+	chsnprintf(config[3].aprs_config.callsign, 7, "DL4MDW");// APRS Callsign
+	config[3].aprs_config.ssid = 13;						// APRS SSID
+	chsnprintf(config[3].ssdv_config.callsign, 7, "DL4MDW");// SSDV Callsign
+	config[3].ssdv_config.ram_buffer = ssdv1_buffer;		// Camera buffer
+	config[3].ssdv_config.ram_size = sizeof(ssdv1_buffer);	// Buffer size
+	config[3].ssdv_config.res = RES_QVGA;					// Resolution QVGA
+	MODULE_IMAGE(&config[3]);
 
-	// Module IMAGE, APRS 70cm 2GFSK
-	/*chsnprintf(config[5].name, 15, "IMG 2GFSK 70cm");		// Instance name
-	config[5].power = 20;									// Power 10 dBm
-	config[5].protocol = PROT_APRS_2GFSK;					// Protocol APRS SSDV, modulation 2GFSK
+	// Module POSITION, Morse 2m OOK
+	chsnprintf(config[4].name, 11, "POS OOK 2m");			// Instance name
+	config[4].power = 10;									// Power 10 dBm
+	config[4].protocol = PROT_MORSE;						// Protocol Morse, modulation OOK
+	config[4].frequency.type = FREQ_STATIC;					// Static frequency allocation
+	config[4].frequency.hz = 144860000;						// Transmission frequency 144.8574 MHz
+	config[4].init_delay = 20000;							// Module startup delay in msec
+	config[4].trigger.type = TRIG_TIMEOUT;					// Trigger transmission on timeout (Periodic cycling)
+	config[4].trigger.timeout = 1200;						// Timeout 1200 sec
+	config[4].ook_config.speed = 20;						// Speed 20wpm
+	chsnprintf(config[4].morse_config.callsign, 7, "DL4MDW");// Morse Callsign
+	chsnprintf(config[4].morse_config.format, 43, "BALLOON <CALL> <LOC> <ALT>M WWW.TKRAHN.NET"); // Morse Format
+	MODULE_POSITION(&config[4]);
+
+	// Module IMAGE, APRS 2m 2FSK
+	/*chsnprintf(config[5].name, 12, "IMG 2FSK 2m");			// Instance name
+	config[5].power = 20;									// Power 20 dBm
+	config[5].protocol = PROT_APRS_AFSK;					// Protocol APRS SSDV, modulation AFSK
 	config[5].frequency.type = FREQ_STATIC;					// Static frequency allocation
 	config[5].frequency.hz = 144860000;						// Transmission frequency 144.860 MHz
-	config[5].init_delay = 75000;							// Module startup delay in sec
-	config[5].packet_spacing = 6500;						// Packet spacing in ms
+	config[5].init_delay = 30000;							// Module startup delay in msec
+	config[5].packet_spacing = 2000;						// Packet spacing in ms
 	config[5].trigger.type = TRIG_TIMEOUT;					// Trigger transmission on timeout (Periodic cycling)
 	config[5].trigger.timeout = 1200;						// Transmit every 1200 sec
 	config[5].aprs_config.preamble = 40;					// APRS Preamble
@@ -127,14 +127,14 @@ void initModules(void)
 
 	// Module IMAGE, SSDV 2m 2FSK
 	chsnprintf(config[6].name, 12, "IMG 2FSK 2m");			// Instance name
-	config[6].power = 20;									// Power 10 dBm
+	config[6].power = 20;									// Power 20 dBm
 	config[6].protocol = PROT_SSDV_2FSK;					// Protocol SSDV, modulation 2FSK
 	config[6].frequency.type = FREQ_STATIC;					// Static frequency allocation
 	config[6].frequency.hz = 144860000;						// Transmission frequency 144.860 MHz
-	config[6].init_delay = 60000;							// Module startup delay in sec
+	config[6].init_delay = 30000;							// Module startup delay in msec
 	config[6].packet_spacing = 6500;						// Packet spacing in ms
 	config[6].trigger.type = TRIG_TIMEOUT;					// Trigger transmission on timeout (Periodic cycling)
-	config[6].trigger.timeout = 900;						// Transmit every 900 sec
+	config[6].trigger.timeout = 1200;						// Transmit every 900 sec
 	config[6].fsk_config.bits = 8;							// 8bit
 	config[6].fsk_config.stopbits = 2;						// 2 Stopbits
 	config[6].fsk_config.predelay = 100;					// Predelay in ms (continuos carrier before actual transmission)

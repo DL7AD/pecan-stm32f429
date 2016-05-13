@@ -253,7 +253,7 @@ THD_FUNCTION(moduleRADIO, arg) {
 			}
 
 			if(radio) { // Radio found
-				TRACE_INFO(	"RAD  > Transmit on radio %d, %d.%03d MHz, %d dBm (%d), %s, %d bits",
+				TRACE_INFO(	"RAD  > Transmit radio %d, %d.%03d MHz, %d dBm (%d), %s, %d bits",
 							radio, msg->freq/1000000, (msg->freq%1000000)/1000, msg->power,
 							dBm2powerLvl(msg->power), VAL2MOULATION(msg->mod), msg->bin_len
 				);
