@@ -54,7 +54,7 @@ bool I2C_send(uint8_t addr, uint8_t *txbuf, uint32_t txbytes, uint8_t *rxbuf, ui
 
 void pi2cInit(void)
 {
-	TRACE_INFO("I2C  > Startup");
+	TRACE_INFO("I2C  > Initialize I2C");
 	i2cStart(&I2CD2, &_i2cfg);
 	chMtxObjectInit(&pi2c_mtx);
 }

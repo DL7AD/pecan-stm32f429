@@ -35,7 +35,7 @@
 #define initEssentialModules() { \
 	chMtxObjectInit(&interference_mtx); \
 	chMtxObjectInit(&camera_mtx); \
-	/*MODULE_TRACKING(CYCLE_TIME);*/ /* Tracker data input */ \
+	MODULE_TRACKING(CYCLE_TIME); /* Tracker data input */ \
 	MODULE_RADIO(); /* Tracker data output */ \
 }
 

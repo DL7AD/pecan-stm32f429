@@ -10,6 +10,7 @@
 #include "pi2c.h"
 #include "pac1720.h"
 #include "bme280.h"
+#include "sd.h"
 
 static virtual_timer_t vt;
 uint32_t counter = 0;
@@ -59,6 +60,7 @@ int main(void) {
 	initEssentialModules();		// Startup required modules (input/output modules)
 	initModules();				// Startup optional modules (eg. POSITION, LOG, ...)
 	pac1720_init();				// Startup current measurement
+	initSD();					// Startup SD
 
 	chThdSleepMilliseconds(100);
 

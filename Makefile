@@ -117,6 +117,7 @@ CSRC = $(STARTUPSRC) \
        $(CHIBIOS)/os/various/syscalls.c \
        $(CHIBIOS)/os/hal/lib/streams/memstreams.c \
        $(CHIBIOS)/os/hal/lib/streams/chprintf.c \
+       $(CHIBIOS)/os/various/fatfs_bindings/fatfs_diskio.c \
        modules/radio.c \
        modules/tracking.c \
        modules/position.c \
@@ -135,6 +136,7 @@ CSRC = $(STARTUPSRC) \
        drivers/ov9655.c \
        drivers/ov2640.c \
        drivers/padc.c \
+       drivers/sd.c \
        drivers/ptime.c \
        jpegant/dct.c \
        jpegant/jpegenc.c \
@@ -145,6 +147,7 @@ CSRC = $(STARTUPSRC) \
        math/sgp4.c \
        math/geofence.c \
        config.c \
+       fatfs/src/ff.c \
        main.c
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
@@ -176,7 +179,7 @@ ASMSRC = $(STARTUPASM) $(PORTASM) $(OSALASM)
 
 INCDIR = $(STARTUPINC) $(KERNINC) $(PORTINC) $(OSALINC) \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) $(TESTINC) \
-         $(CHIBIOS)/os/hal/lib/streams $(CHIBIOS)/os/various
+         $(CHIBIOS)/os/hal/lib/streams $(CHIBIOS)/os/various \
 
 #
 # Project, sources and paths
@@ -233,7 +236,8 @@ UADEFS =
 
 # List all user directories here
 UINCDIR = modules/ drivers protocols/aprs protocols/ssdv \
-          protocols/morse math/ STM32F4xx_StdPeriph_Driver/inc
+          protocols/morse math/ STM32F4xx_StdPeriph_Driver/inc \
+          fatfs/src/
 
 # List the user directory to look for the libraries here
 ULIBDIR =

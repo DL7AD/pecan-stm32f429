@@ -13,8 +13,9 @@
 #include <string.h>
 #include "types.h"
 #include "sleep.h"
+#include "sd.h"
 
-static uint32_t gimage_id;
+static uint32_t gimage_id = 1;
 mutex_t camera_mtx;
 
 void encode_ssdv(uint8_t *image, uint32_t image_len, module_conf_t* config, uint8_t image_id)
@@ -206,8 +207,6 @@ THD_FUNCTION(moduleIMG, arg) {
 						OV2640_init(&config->ssdv_config);
 
 					// Sample data from DCMI through DMA into RAM
-					TRACE_INFO("IMG  > Capture image");
-
 					tries = 5; // Try 5 times at maximum
 					bool status = false;
 					do { // Try capturing image until capture successful
@@ -224,6 +223,12 @@ THD_FUNCTION(moduleIMG, arg) {
 				if(cam_type == 0x2640)
 					image_len = OV2640_getBuffer(&image);
 				TRACE_INFO("IMG  > Image size: %d bytes", image_len);
+
+				// Write image to SD card
+				TRACE_INFO("IMG  > Write to SD card");
+				char filename[16];
+				chsnprintf(filename, sizeof(filename), "image%d.jpg", gimage_id);
+				writeBufferToFile(filename, image, image_len);
 
 				// Switch off camera
 				if(cam_type == 0x9655)
@@ -242,7 +247,7 @@ THD_FUNCTION(moduleIMG, arg) {
 				TRACE_INFO("IMG  > Unlocked camera");
 
 				// Encode/Transmit SSDV
-				TRACE_INFO("IMG  > Encode/Transmit SSDV ID=%d", ++gimage_id);
+				TRACE_INFO("IMG  > Encode/Transmit SSDV ID=%d", gimage_id++);
 				encode_ssdv(image, image_len, config, gimage_id);
 
 			} else {

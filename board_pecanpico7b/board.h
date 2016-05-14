@@ -115,6 +115,9 @@
 #define ADC_VSOLAR                  (GPIOC, 4U)
 #define ADC_VBAT                    (GPIOC, 5U)
 
+// SD Card
+#define SD_CS						(GPIOA, 3U)
+
 
 // Hardware definitions (which cant be changed easily)
 #define OSC_FREQ				25999500U	/* Oscillator frequency */
