@@ -128,16 +128,16 @@ CSRC = $(STARTUPSRC) \
        protocols/aprs/aprs.c \
        protocols/aprs/ax25.c \
        protocols/morse/morse.c \
+       drivers/wrapper/pi2c.c \
+       drivers/wrapper/padc.c \
+       drivers/wrapper/ptime.c \
        drivers/max.c \
        drivers/si4464.c \
        drivers/bme280.c \
        drivers/pac1720.c \
-       drivers/pi2c.c \
        drivers/ov9655.c \
        drivers/ov2640.c \
-       drivers/padc.c \
        drivers/sd.c \
-       drivers/ptime.c \
        jpegant/dct.c \
        jpegant/jpegenc.c \
        debug.c \
@@ -235,9 +235,9 @@ UDEFS =
 UADEFS =
 
 # List all user directories here
-UINCDIR = modules/ drivers protocols/aprs protocols/ssdv \
-          protocols/morse math/ STM32F4xx_StdPeriph_Driver/inc \
-          fatfs/src/
+UINCDIR = modules/ drivers/ drivers/wrapper/ protocols/aprs \
+          protocols/ssdv protocols/morse math/ fatfs/src/ \
+          STM32F4xx_StdPeriph_Driver/inc
 
 # List the user directory to look for the libraries here
 ULIBDIR =

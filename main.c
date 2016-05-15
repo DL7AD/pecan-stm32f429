@@ -12,10 +12,12 @@
 #include "bme280.h"
 #include "sd.h"
 
-static virtual_timer_t vt;
-uint32_t counter = 0;
-uint32_t error = 0;
+static virtual_timer_t vt;			// Virtual timer for LED blinking
+uint32_t counter = 0;				// Main thread counter
+bool error = 0;						// Error LED flag
+systime_t wdg_buffer = S2ST(60);	// Software thread monitor buffer
 
+// Hardware Watchdog configuration
 static const WDGConfig wdgcfg = {
 	STM32_IWDG_PR_256,
 	STM32_IWDG_RL(10000),
@@ -75,23 +77,100 @@ int main(void) {
 	wdgReset(&WDGD1);
 
 	while(true) {
-		// Print time
+		// Print time every 10 sec
 		if(counter % 10 == 0)
-		PRINT_TIME("MAIN");
+			PRINT_TIME("MAIN");
 
-		// Watchdog reset
-		wdgReset(&WDGD1);
+		// Thread monitor
+		bool aerror = false; // Temporary error flag
+		bool healthy;
+		systime_t lu;
 
-		// Software watchdog FIXME
-		/*for(uint8_t i=0; i<moduleCount; i++) {
-			if(ST2S(chVTGetSystemTimeX() - modules[i]->lastCycle) <= (uint32_t)modules[0]->cycle + CYCLE_TIME) {
-				TRACE_INFO("MAIN > Module %s OK", modules[i]->name);
-				error = 0;
-			} else {
-				TRACE_ERROR("MAIN > Module %s CRASHED", modules[i]->name);
-				error = 1; // Let red LED blink in virtual timer
+		for(uint8_t i=0; i<sizeof(config)/sizeof(module_conf_t); i++) {
+			
+			if(config[i].active) { // Is active?
+
+				// Determine health
+				healthy = true;
+				switch(config[i].trigger.type)
+				{
+					case TRIG_ONCE:
+						healthy = true;
+						break;
+
+					case TRIG_EVENT:
+						switch(config[i].trigger.event)
+						{
+							case NO_EVENT:
+								healthy = true;
+								break;
+							case EVENT_NEW_POINT:
+								healthy = config[i].last_update + S2ST(TRACK_CYCLE_TIME) + wdg_buffer > chVTGetSystemTimeX();
+								break;
+						}
+						break;
+
+					case TRIG_TIMEOUT:
+						healthy = config[i].last_update + S2ST(config[i].trigger.timeout) + wdg_buffer > chVTGetSystemTimeX();
+						break;
+
+					case TRIG_CONTINOUSLY:
+						healthy = config[i].last_update + wdg_buffer > chVTGetSystemTimeX();
+						break;
+				}
+				healthy = healthy || config[i].init_delay + wdg_buffer > chVTGetSystemTimeX();
+
+				// Debugging every 10 sec
+				if(counter % 10 == 0) {
+					lu = chVTGetSystemTimeX() - config[i].last_update;
+					if(healthy) {
+						TRACE_INFO("WDG  > Module %s OK (last activity %d.%03d sec ago)", config[i].name, ST2MS(lu)/1000, ST2MS(lu)%1000);
+					} else {
+						TRACE_ERROR("WDG  > Module %s failed (last activity %d.%03d sec ago)", config[i].name, ST2MS(lu)/1000, ST2MS(lu)%1000);
+					}
+				}
+
+				if(!healthy)
+					aerror = true; // Set error flag
+
 			}
-		}*/
+		}
+
+		// Watchdog RADIO
+		healthy = watchdog_radio + wdg_buffer > chVTGetSystemTimeX();
+		lu = chVTGetSystemTimeX() - watchdog_radio;
+
+		if(counter % 10 == 0) {
+			if(healthy) {
+				TRACE_INFO("WDG  > Module RAD OK (last activity %d.%03d sec ago)", ST2MS(lu)/1000, ST2MS(lu)%1000);
+			} else {
+				TRACE_ERROR("WDG  > Module RAD failed (last activity %d.%03d sec ago)", ST2MS(lu)/1000, ST2MS(lu)%1000);
+			}
+		}
+		if(!healthy)
+			aerror = true; // Set error flag
+
+		// Watchdog TRACKING
+		healthy = watchdog_tracking + S2ST(TRACK_CYCLE_TIME) + wdg_buffer > chVTGetSystemTimeX();
+		lu = chVTGetSystemTimeX() - watchdog_radio;
+		if(counter % 10 == 0) {
+			if(healthy) {
+				TRACE_INFO("WDG  > Module TRAC OK (last activity %d.%03d sec ago)", ST2MS(lu)/1000, ST2MS(lu)%1000);
+			} else {
+				TRACE_ERROR("WDG  > Module TRAC failed (last activity %d.%03d sec ago)", ST2MS(lu)/1000, ST2MS(lu)%1000);
+			}
+		}
+		if(!healthy)
+			aerror = true; // Set error flag
+
+		// Update hardware (LED, WDG)
+		error = aerror;			// Update error LED flag
+		if(!error)
+		{
+			wdgReset(&WDGD1);	// Reset hardware watchdog at no error
+		} else {
+			TRACE_ERROR("WDG  > No reset");
+		}
 
 		chThdSleepMilliseconds(1000);
 		counter++;

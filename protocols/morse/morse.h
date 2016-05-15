@@ -1,5 +1,5 @@
-#ifndef __CW_H__
-#define __CW_H__
+#ifndef __MORSE_H__
+#define __MORSE_H__
 
 #include "ch.h"
 #include "hal.h"

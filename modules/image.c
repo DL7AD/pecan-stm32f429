@@ -34,7 +34,7 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_conf_t* config, uint
 
 	while(true)
 	{
-		// parm->lastCycle = chVTGetSystemTimeX(); // Update Watchdog timer FIXME
+		config->last_update = chVTGetSystemTimeX(); // Update Watchdog timer
 
 		while((c = ssdv_enc_get_packet(&ssdv)) == SSDV_FEED_ME)
 		{
@@ -114,14 +114,14 @@ THD_FUNCTION(moduleIMG, arg) {
 	if(config->init_delay)
 		chThdSleepMilliseconds(config->init_delay);
 
-	// Print infos
+	// Print initialization message
 	TRACE_INFO("IMG  > Startup module %s", config->name);
 
 	systime_t time = chVTGetSystemTimeX();
 	while(true)
 	{
-		// TODO: Implement software watchdog
 		TRACE_INFO("IMG  > Do module IMAGE cycle");
+		config->last_update = chVTGetSystemTimeX(); // Update Watchdog timer
 
 		if(!p_sleep(&config->sleep))
 		{
@@ -132,7 +132,6 @@ THD_FUNCTION(moduleIMG, arg) {
 			if(!config->ssdv_config.no_camera)
 			{
 				uint16_t cam_type;
-				//bool jpeg_valid;
 
 				// Lock camera
 				TRACE_INFO("IMG  > Lock camera");
@@ -167,68 +166,69 @@ THD_FUNCTION(moduleIMG, arg) {
 					cam_type = 0x2640;
 				}
 
-				if(!cam_type)
-				{
-					TRACE_ERROR("IMG  > No camera found");
-					continue;
-				}
-
 				uint8_t tries;
+				bool status = false;
 
-				if(config->ssdv_config.res == RES_MAX && cam_type == 0x2640) // Maximum resolution
+				if(cam_type) // Camera available
 				{
 
-					config->ssdv_config.res = RES_UXGA;
+					if(config->ssdv_config.res == RES_MAX && cam_type == 0x2640) // Maximum resolution
+					{
 
-					do {
+						config->ssdv_config.res = RES_UXGA;
+
+						do {
+
+							// Init camera
+							OV2640_init(&config->ssdv_config);
+
+							// Sample data from DCMI through DMA into RAM
+							tries = 5; // Try 5 times at maximum
+							do { // Try capturing image until capture successful
+								status = OV2640_Snapshot2RAM();
+							} while(!status && --tries);
+
+							config->ssdv_config.res--;
+
+						} while(OV2640_BufferOverflow() && config->ssdv_config.res >= RES_QVGA);
+
+						config->ssdv_config.res = RES_MAX;
+
+					} else { // Static resolution
 
 						// Init camera
-						OV2640_init(&config->ssdv_config);
+						if(cam_type == 0x9655)
+							OV9655_init(&config->ssdv_config);
+						if(cam_type == 0x2640)
+							OV2640_init(&config->ssdv_config);
 
 						// Sample data from DCMI through DMA into RAM
 						tries = 5; // Try 5 times at maximum
-						bool status;
 						do { // Try capturing image until capture successful
-							status = OV2640_Snapshot2RAM();
+							if(cam_type == 0x9655)
+								status = OV9655_Snapshot2RAM();
+							if(cam_type == 0x2640)
+								status = OV2640_Snapshot2RAM();
 						} while(!status && --tries);
 
-						config->ssdv_config.res--;
+					}
 
-					} while(OV2640_BufferOverflow() && config->ssdv_config.res >= RES_QVGA);
-
-					config->ssdv_config.res = RES_MAX;
-
-				} else { // Static resolution
-
-					// Init camera
 					if(cam_type == 0x9655)
-						OV9655_init(&config->ssdv_config);
+						image_len = OV9655_getBuffer(&image);
 					if(cam_type == 0x2640)
-						OV2640_init(&config->ssdv_config);
+						image_len = OV2640_getBuffer(&image);
+					TRACE_INFO("IMG  > Image size: %d bytes", image_len);
 
-					// Sample data from DCMI through DMA into RAM
-					tries = 5; // Try 5 times at maximum
-					bool status = false;
-					do { // Try capturing image until capture successful
-						if(cam_type == 0x9655)
-							status = OV9655_Snapshot2RAM();
-						if(cam_type == 0x2640)
-							status = OV2640_Snapshot2RAM();
-					} while(!status && --tries);
+					// Write image to SD card
+					TRACE_INFO("IMG  > Write to SD card");
+					char filename[16];
+					chsnprintf(filename, sizeof(filename), "image%d.jpg", gimage_id);
+					writeBufferToFile(filename, image, image_len);
 
+				} else { // Camera error
+
+					TRACE_ERROR("IMG  > No camera found");
 				}
-
-				if(cam_type == 0x9655)
-					image_len = OV9655_getBuffer(&image);
-				if(cam_type == 0x2640)
-					image_len = OV2640_getBuffer(&image);
-				TRACE_INFO("IMG  > Image size: %d bytes", image_len);
-
-				// Write image to SD card
-				TRACE_INFO("IMG  > Write to SD card");
-				char filename[16];
-				chsnprintf(filename, sizeof(filename), "image%d.jpg", gimage_id);
-				writeBufferToFile(filename, image, image_len);
 
 				// Switch off camera
 				if(cam_type == 0x9655)
@@ -246,9 +246,12 @@ THD_FUNCTION(moduleIMG, arg) {
 				chMtxUnlock(&camera_mtx);
 				TRACE_INFO("IMG  > Unlocked camera");
 
-				// Encode/Transmit SSDV
-				TRACE_INFO("IMG  > Encode/Transmit SSDV ID=%d", gimage_id++);
-				encode_ssdv(image, image_len, config, gimage_id);
+				// Encode/Transmit SSDV if image sampled successfully
+				if(status)
+				{
+					TRACE_INFO("IMG  > Encode/Transmit SSDV ID=%d", gimage_id++);
+					encode_ssdv(image, image_len, config, gimage_id);
+				}
 
 			} else {
 

@@ -9,28 +9,11 @@
 #include "config.h"
 #include "types.h"
 
-#define MODULE_POSITION(CONF) { \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(2048), (CONF)->name, NORMALPRIO, modulePOS, (CONF)); \
-	modules[moduleCount++] = (CONF); \
-}
-
-#define MODULE_IMAGE(CONF) { \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(4096), (CONF)->name, NORMALPRIO, moduleIMG, (CONF)); \
-	modules[moduleCount++] = (CONF); \
-}
-
-#define MODULE_LOG(CONF) { \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), (CONF)->name, NORMALPRIO, moduleLOG, (CONF)); \
-	modules[moduleCount++] = (CONF); \
-}
-
-#define MODULE_TRACKING(CYCLE) { \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(2048), "Tracking", NORMALPRIO, moduleTRACKING, NULL); \
-}
-
-#define MODULE_RADIO() { \
-	chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(2048), "Radio", HIGHPRIO, moduleRADIO, NULL); \
-}
+#define MODULE_POSITION(CONF)	{chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(2048), (CONF)->name, NORMALPRIO, modulePOS,      (CONF)); (CONF)->active=true; }
+#define MODULE_IMAGE(CONF)		{chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(4096), (CONF)->name, NORMALPRIO, moduleIMG,      (CONF)); (CONF)->active=true; }
+#define MODULE_LOG(CONF)		{chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), (CONF)->name, NORMALPRIO, moduleLOG,      (CONF)); (CONF)->active=true; }
+#define MODULE_TRACKING(CYCLE)	 chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(2048), "Tracking",   NORMALPRIO, moduleTRACKING, NULL  );
+#define MODULE_RADIO()			 chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(2048), "Radio",      HIGHPRIO,   moduleRADIO,    NULL  );
 
 #define initEssentialModules() { \
 	chMtxObjectInit(&interference_mtx); \
@@ -46,8 +29,9 @@ extern char *PROTOCOL_STRING[];
 #define VAL2MOULATION(v) MOULATION_STRING[v]	/* Returns modulation as string */
 #define VAL2PROTOCOL(v) PROTOCOL_STRING[v]		/* Returns protocol as string */
 
-extern module_conf_t *modules[16];
-extern uint8_t moduleCount;
-extern mutex_t interference_mtx;
+extern mutex_t interference_mtx;	// HF interference mutex (needed to exclude radio from HF sensitiv components [Camera])
+
+extern systime_t watchdog_radio;	// Last update time for module RADIO
+extern systime_t watchdog_tracking;	// Last update time for module TRACKING
 
 #endif

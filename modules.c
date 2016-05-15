@@ -16,6 +16,8 @@ char *MOULATION_STRING[] = {
 	"OOK", "2FSK", "2GFSK 9k6", "DOMINOEX16", "AFSK 1k2"
 };
 
-mutex_t interference_mtx; // Needed to avoid HF interference
-module_conf_t *modules[16];
-uint8_t moduleCount;
+mutex_t interference_mtx;
+
+systime_t watchdog_radio;
+systime_t watchdog_tracking;
+

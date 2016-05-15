@@ -11,17 +11,19 @@ THD_FUNCTION(moduleLOG, arg) {
 	if(config->init_delay)
 		chThdSleepMilliseconds(config->init_delay);
 
-	// Print infos
+	// Print initialization message
 	TRACE_INFO("LOG  > Startup module %s", config->name);
 
 	systime_t time = chVTGetSystemTimeX();
 	while(true)
 	{
-		// TODO: Implement software watchdog
 		TRACE_INFO("LOG  > Do module LOG cycle");
+		config->last_update = chVTGetSystemTimeX(); // Update Watchdog timer
+
 		TRACE_WARN("LOG  > Module LOG not implemented"); // FIXME
 
-		if(!p_sleep(&config->sleep)) {
+		if(!p_sleep(&config->sleep))
+		{
 			// TODO: Impelemt Log encoding
 		}
 

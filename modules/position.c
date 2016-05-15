@@ -117,7 +117,7 @@ THD_FUNCTION(modulePOS, arg) {
 	if(config->init_delay)
 		chThdSleepMilliseconds(config->init_delay);
 
-	// Print infos
+	// Print initialization message
 	TRACE_INFO("POS  > Startup module %s", config->name);
 
 	trackPoint_t *trackPoint = getLastTrackPoint();
@@ -128,13 +128,14 @@ THD_FUNCTION(modulePOS, arg) {
 
 	while(true)
 	{
-		// TODO: Implement software watchdog
 		TRACE_INFO("POS  > Do module POSITION cycle");
+		config->last_update = chVTGetSystemTimeX(); // Update Watchdog timer
 
 		TRACE_INFO("POS  > Get last track point");
 		trackPoint = getLastTrackPoint();
 
-		if(!p_sleep(&config->sleep)) {
+		if(!p_sleep(&config->sleep))
+		{
 
 			TRACE_INFO("POS  > Transmit GPS position");
 

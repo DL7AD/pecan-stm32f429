@@ -136,15 +136,15 @@ typedef struct {
 } freuquency_config_t;
 
 typedef enum {
-	TRIG_DISABLED,
-	TRIG_EVENT,
-	TRIG_TIMEOUT,
-	TRIG_CONTINOUSLY
+	TRIG_ONCE,				// Trigger once and never again (e.g. transmit specific position packet only at startup)
+	TRIG_EVENT,				// Triggered by specific event (e.g. transmit when new track point available)
+	TRIG_TIMEOUT,			// Triggered by timeout (e.g. trasmit position every 120sec)
+	TRIG_CONTINOUSLY		// Continue continously (e.g. send new image once old image sent completely)
 } trigger_type_t;
 
 typedef enum {
-	NO_EVENT,
-	EVENT_NEW_POINT
+	NO_EVENT,				// No event, triggered once and never again
+	EVENT_NEW_POINT			// Triggered when new track point available
 } event_t;
 
 typedef struct {
@@ -203,6 +203,10 @@ typedef struct {
 	// Satellite
 	char				sat_tle1[70];
 	char				sat_tle2[70];
+
+	// Watchdog
+	systime_t			last_update;
+	bool				active;
 } module_conf_t;
 
 #endif

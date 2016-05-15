@@ -34,7 +34,7 @@ systime_t waitForTrigger(systime_t prev, trigger_config_t *config)
 		case TRIG_CONTINOUSLY: // Immediate trigger
 			return chVTGetSystemTimeX();
 
-		case TRIG_DISABLED: // No trigger defined
+		case TRIG_ONCE: // No trigger defined
 			while(1); // Assert
 	}
 

@@ -216,11 +216,10 @@ void send2GFSK(radio_t radio, radioMSG_t *msg) {
 THD_FUNCTION(moduleRADIO, arg) {
 	(void)arg;
 
-	//module_params_t* parm = (module_params_t*)arg;
 	time_t lastMessage[2]; // Last transmission time (end of transmission)
 	mod_t lastModulation[2]; // Last modulation
 
-	// Print infos
+	// Print initialization message
 	TRACE_INFO("RAD  > Startup module RADIO");
 
 	// Setup mailbox
@@ -233,7 +232,7 @@ THD_FUNCTION(moduleRADIO, arg) {
 
 	while(true)
 	{
-		// parm->lastCycle = chVTGetSystemTimeX(); // Watchdog timer FIXME
+		watchdog_radio = chVTGetSystemTimeX(); // Update watchdog timer
 
 		// Lock interference mutex
 		chMtxLock(&interference_mtx);

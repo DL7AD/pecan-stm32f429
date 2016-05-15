@@ -38,13 +38,8 @@ trackPoint_t* getLastTrackPoint(void) {
 THD_FUNCTION(moduleTRACKING, arg) {
 	(void)arg;
 
-	// Print infos
-	//module_params_t* parm = (module_params_t*)arg;
+	// Print initialization message
 	TRACE_INFO("TRAC > Startup module TRACKING MANAGER");
-	/*TRACE_INFO("TRAC > Module TRACKING MANAGER info\r\n"
-			   "%s Cycle: %d sec",
-			   TRACE_TAB, parm->cycle
-	); FIXME */
 
 	uint32_t id = 1;
 	lastTrackPoint = &trackPoints[0];
@@ -52,8 +47,9 @@ THD_FUNCTION(moduleTRACKING, arg) {
 	systime_t time = chVTGetSystemTimeX();
 	while(true)
 	{
-		//parm->lastCycle = chVTGetSystemTimeX(); // Watchdog timer TODO: Implement software watchdog
 		TRACE_INFO("TRAC > Do module TRACKING MANAGER cycle");
+		watchdog_tracking = chVTGetSystemTimeX(); // Update watchdog timer
+
 		trackPoint_t* tp = &trackPoints[id % (sizeof(trackPoints) / sizeof(trackPoint_t))]; // Current track point
 		trackPoint_t* ltp = &trackPoints[(id-1) % (sizeof(trackPoints) / sizeof(trackPoint_t))]; // Last track point
 
