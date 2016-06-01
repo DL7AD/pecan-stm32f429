@@ -8,7 +8,7 @@
 #include "pi2c.h"
 #include <string.h>
 
-#define PLAYBACK_RATE		601000									/* Samples per second (SYSCLK = 45MHz) */
+#define PLAYBACK_RATE		1290000									/* Samples per second (SYSCLK = 45MHz) */
 #define BAUD_RATE			1200									/* APRS AFSK baudrate */
 #define SAMPLES_PER_BAUD	(PLAYBACK_RATE / BAUD_RATE)				/* Samples per baud */
 #define PHASE_DELTA_1200	(((2 * 1200) << 16) / PLAYBACK_RATE)	/* Delta-phase per sample for 1200Hz tone */
@@ -28,7 +28,7 @@ void initAFSK(radio_t radio, radioMSG_t *msg) {
 	radioTune(radio, msg->freq, 0, msg->power);
 }
 
-void __attribute__((optimize("O0"))) sendAFSK(radio_t radio, radioMSG_t *msg) {
+void sendAFSK(radio_t radio, radioMSG_t *msg) {
 	// Initialize variables for AFSK
 	uint32_t phase_delta = PHASE_DELTA_1200;	// 1200/2200 for standard AX.25
 	uint32_t phase = 0;							// Fixed point 9.7 (2PI = TABLE_SIZE)
