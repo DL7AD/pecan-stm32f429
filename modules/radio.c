@@ -8,7 +8,7 @@
 #include "pi2c.h"
 #include <string.h>
 
-#define PLAYBACK_RATE		1290000									/* Samples per second (SYSCLK = 45MHz) */
+#define PLAYBACK_RATE		5625000									/* Samples per second (SYSCLK = 45MHz) */
 #define BAUD_RATE			1200									/* APRS AFSK baudrate */
 #define SAMPLES_PER_BAUD	(PLAYBACK_RATE / BAUD_RATE)				/* Samples per baud */
 #define PHASE_DELTA_1200	(((2 * 1200) << 16) / PLAYBACK_RATE)	/* Delta-phase per sample for 1200Hz tone */
@@ -183,7 +183,7 @@ void init2GFSK(radio_t radio, radioMSG_t *msg) {
 	chThdSleepMilliseconds(30);
 }
 
-void send2GFSK(radio_t radio, radioMSG_t *msg) {
+void __attribute__((optimize("O0"))) send2GFSK(radio_t radio, radioMSG_t *msg) {
 	// Transmit data
 	uint32_t sample_per_bit = 0;
 	uint32_t bit = 0;
@@ -193,7 +193,7 @@ void send2GFSK(radio_t radio, radioMSG_t *msg) {
 	chSysDisable();
 
 	while(bit < msg->bin_len) {
-		if(sample_per_bit++ > 1550) {
+		if(sample_per_bit++ > 981) {
 			if((bit & 7) == 0) { // Load up next byte
 				current_byte = msg->msg[bit >> 3];
 			} else {
@@ -269,6 +269,7 @@ THD_FUNCTION(moduleRADIO, arg) {
 					case MOD_2GFSK:
 						if(!isRadioInitialized(radio))
 							init2GFSK(radio, msg);
+						send2GFSK(radio, msg);
 						send2GFSK(radio, msg);
 						break;
 					case MOD_AFSK:

@@ -70,16 +70,29 @@ THD_FUNCTION(moduleTRACKING, arg) {
 			TRACE_INFO("TRAC > GPS sampling finished GPS LOCK");
 			TRACE_GPSFIX(&gpsFix);
 
-			// Calibrate RTC
-			setTime(gpsFix.time);
+			
+			if(gpsFix.time.year) {
+				// Calibrate RTC
+				setTime(gpsFix.time);
 
-			// Take time from GPS
-			tp->time.year = gpsFix.time.year;
-			tp->time.month = gpsFix.time.month;
-			tp->time.day = gpsFix.time.day;
-			tp->time.hour = gpsFix.time.hour;
-			tp->time.minute = gpsFix.time.minute;
-			tp->time.second = gpsFix.time.second;
+				// Take time from GPS
+				tp->time.year = gpsFix.time.year;
+				tp->time.month = gpsFix.time.month;
+				tp->time.day = gpsFix.time.day;
+				tp->time.hour = gpsFix.time.hour;
+				tp->time.minute = gpsFix.time.minute;
+				tp->time.second = gpsFix.time.second;
+			} else {
+				// Take time from internal RTC
+				ptime_t time;
+				getTime(&time);
+				tp->time.year = time.year;
+				tp->time.month = time.month;
+				tp->time.day = time.day;
+				tp->time.hour = time.hour;
+				tp->time.minute = time.minute;
+				tp->time.second = time.second;
+			}
 
 			// Set new GPS fix
 			tp->gps_lat = gpsFix.lat;
@@ -159,7 +172,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 					"%s Pos  %d.%07d %d.%07d Alt %dm\r\n"
 					"%s Sats %d  TTFF %dsec\r\n"
 					"%s ADC Vbat=%d.%03dV  Vsol=%d.%03dV Pin=%dmW Pout=%dmW\r\n"
-					"%s INT  p=%6d.%01dPa T=%2d.%02ddegC phi=%2d.%01d%%\r\n"
+					"%s INT p=%6d.%01dPa T=%2d.%02ddegC phi=%2d.%01d%%\r\n"
 					"%s EXT p=%6d.%01dPa T=%2d.%02ddegC phi=%2d.%01d%%",
 					tp->id,
 					TRACE_TAB, tp->time.year, tp->time.month, tp->time.day, tp->time.hour, tp->time.minute, tp->time.day,

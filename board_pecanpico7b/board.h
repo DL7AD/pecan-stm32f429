@@ -137,6 +137,8 @@
 #define RADIO2_MAX_FREQ			450000000		/* Min. Frequency range of Radio 2 */
 #define RADIO2_MAX_PWR			20				/* Max. power of Radio 2 in dBm */
 
+#define GPS_TYPE				MAX6
+
 
 
 /*

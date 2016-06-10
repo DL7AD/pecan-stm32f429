@@ -46,7 +46,7 @@
 #define STM32_PLLSRC                        STM32_PLLSRC_HSE
 #define STM32_PLLM_VALUE                    26					/* Predivider PLLIN = HSI/PPLM = 16MHz/16 = 1MHz */
 #define STM32_PLLN_VALUE                    360					/* Multiplier inPLL = PLLIN*PPLN = 1MHz*360 = 360MHz */
-#define STM32_PLLP_VALUE                    8					/* Divider PLLOUT = inPLL/PLLP = 360MHz/2 = 180MHz */
+#define STM32_PLLP_VALUE                    2					/* Divider PLLOUT = inPLL/PLLP = 360MHz/2 = 180MHz */
 #define STM32_PLLQ_VALUE                    7					/* Divider for USB USB_CLK = PLLOUT/PLLQ = 180MHz/4 = 45MHz */
 #define STM32_HPRE                          STM32_HPRE_DIV1		/* AHB prescaler PLLOUT/HPRE = 360MHz/1 = 360MHz */
 #define STM32_PPRE1                         STM32_PPRE1_DIV4

@@ -18,7 +18,7 @@ void initModules(void)
 	config[0].init_delay = 0;								// Module startup delay in msec
 	config[0].trigger.type = TRIG_EVENT;					// Trigger transmission on event
 	config[0].trigger.event = EVENT_NEW_POINT;				// Trigger when new track point released
-	chsnprintf(config[0].aprs_config.callsign, 7, "DL4MDW");// APRS Callsign
+	chsnprintf(config[0].aprs_config.callsign, 6, "DK0TU");// APRS Callsign
 	config[0].aprs_config.ssid = 11;						// APRS SSID
 	config[0].aprs_config.symbol = SYM_BALLOON;				// APRS Symbol
 	chsnprintf(config[0].aprs_config.path, 16, "WIDE1-1");	// APRS Path
@@ -42,7 +42,7 @@ void initModules(void)
 	config[1].init_delay = 0;								// Module startup delay in msec
 	config[1].trigger.type = TRIG_EVENT;					// Trigger transmission on event
 	config[1].trigger.event = EVENT_NEW_POINT;				// Trigger when new track point released
-	chsnprintf(config[1].aprs_config.callsign, 7, "DL4MDW");// APRS Callsign
+	chsnprintf(config[1].aprs_config.callsign, 6, "DK0TU");// APRS Callsign
 	config[1].aprs_config.ssid = 13;						// APRS SSID
 	config[1].aprs_config.symbol = SYM_BALLOON;				// APRS Symbol
 	chsnprintf(config[1].aprs_config.path, 16, "WIDE1-1");	// APRS Path
@@ -58,7 +58,7 @@ void initModules(void)
 	MODULE_POSITION(&config[1]);*/
 
 	// Module POSITION, UKHAS 2m 2FSK
-	chsnprintf(config[2].name, 13, "POS UKHAS 2m");			// Instance name
+	/*chsnprintf(config[2].name, 13, "POS UKHAS 2m");			// Instance name
 	config[2].power = 20;									// Power 10 dBm
 	config[2].protocol = PROT_UKHAS_2FSK;					// Protocol UKHAS, modulation 2FSK
 	config[2].frequency.type = FREQ_STATIC;					// Static frequency allocation
@@ -71,9 +71,9 @@ void initModules(void)
 	config[2].fsk_config.predelay = 1000;					// Predelay in ms (continuos carrier before actual transmission)
 	config[2].fsk_config.baud = 600;						// Baudrate
 	config[2].fsk_config.shift = 1000;						// Frequency shift in Hz
-	chsnprintf(config[2].ukhas_config.callsign, 7, "DL4MDW");// UKHAS Callsign
+	chsnprintf(config[2].ukhas_config.callsign, 6, "DK0TU");// UKHAS Callsign
 	chsnprintf(config[2].ukhas_config.format, 94, "<CALL>,<ID>,<TIME>,<LAT>,<LON>,<ALT>,<SATS>,<TTFF>,<VBAT>,<DISCHARGE>,<IPRESS>,<ITEMP>,<IHUM>"); // UKHAS Format
-	MODULE_POSITION(&config[2]);
+	MODULE_POSITION(&config[2]);*/
 
 	// Module IMAGE, APRS 2m AFSK low-duty cycle
 	chsnprintf(config[3].name, 12, "IMG AFSK 2m");			// Instance name
@@ -85,17 +85,17 @@ void initModules(void)
 	config[3].init_delay = 10000;							// Module startup delay in msec
 	config[3].packet_spacing = 20000;						// Packet spacing in ms
 	config[3].trigger.type = TRIG_CONTINOUSLY;				// Trigger transmission on timeout (Periodic cycling)
-	chsnprintf(config[3].aprs_config.callsign, 7, "DL4MDW");// APRS Callsign
+	chsnprintf(config[3].aprs_config.callsign, 6, "DK0TU");// APRS Callsign
 	config[3].aprs_config.ssid = 11;						// APRS SSID
 	config[3].aprs_config.preamble = 200;					// APRS Preamble
-	chsnprintf(config[3].ssdv_config.callsign, 7, "DL4MDW");// SSDV Callsign
+	chsnprintf(config[3].ssdv_config.callsign, 6, "DK0TU");// SSDV Callsign
 	config[3].ssdv_config.ram_buffer = ssdv1_buffer;		// Camera buffer
 	config[3].ssdv_config.ram_size = sizeof(ssdv1_buffer);	// Buffer size
 	config[3].ssdv_config.res = RES_QVGA;					// Resolution QVGA
 	MODULE_IMAGE(&config[3]);
 
 	// Module POSITION, Morse 2m OOK
-	chsnprintf(config[4].name, 11, "POS OOK 2m");			// Instance name
+	/*chsnprintf(config[4].name, 11, "POS OOK 2m");			// Instance name
 	config[4].power = 10;									// Power 10 dBm
 	config[4].protocol = PROT_MORSE;						// Protocol Morse, modulation OOK
 	config[4].frequency.type = FREQ_STATIC;					// Static frequency allocation
@@ -104,30 +104,30 @@ void initModules(void)
 	config[4].trigger.type = TRIG_TIMEOUT;					// Trigger transmission on timeout (Periodic cycling)
 	config[4].trigger.timeout = 1200;						// Timeout 1200 sec
 	config[4].ook_config.speed = 20;						// Speed 20wpm
-	chsnprintf(config[4].morse_config.callsign, 7, "DL4MDW");// Morse Callsign
+	chsnprintf(config[4].morse_config.callsign, 6, "DK0TU");// Morse Callsign
 	chsnprintf(config[4].morse_config.format, 43, "BALLOON <CALL> <LOC> <ALT>M WWW.TKRAHN.NET"); // Morse Format
-	MODULE_POSITION(&config[4]);
+	MODULE_POSITION(&config[4]);*/
 
-	// Module IMAGE, APRS 2m 2FSK
-	/*chsnprintf(config[5].name, 12, "IMG 2FSK 2m");			// Instance name
+	// Module IMAGE, APRS 2m 2GFSK
+	chsnprintf(config[5].name, 12, "IMG 2FSK 2m");			// Instance name
 	config[5].power = 20;									// Power 20 dBm
-	config[5].protocol = PROT_APRS_AFSK;					// Protocol APRS SSDV, modulation AFSK
+	config[5].protocol = PROT_APRS_2GFSK;					// Protocol APRS SSDV, modulation 2GFSK
 	config[5].frequency.type = FREQ_STATIC;					// Static frequency allocation
 	config[5].frequency.hz = 144860000;						// Transmission frequency 144.860 MHz
 	config[5].init_delay = 30000;							// Module startup delay in msec
-	config[5].packet_spacing = 2000;						// Packet spacing in ms
-	config[5].trigger.type = TRIG_TIMEOUT;					// Trigger transmission on timeout (Periodic cycling)
-	config[5].trigger.timeout = 1200;						// Transmit every 1200 sec
+	config[5].packet_spacing = 800;							// Packet spacing in ms
+	config[5].trigger.type = TRIG_CONTINOUSLY;				// Transmit continously
+	chsnprintf(config[5].aprs_config.callsign, 6, "DK0TU");// APRS Callsign
+	config[5].aprs_config.ssid = 11;						// APRS SSID
 	config[5].aprs_config.preamble = 40;					// APRS Preamble
-	chsnprintf(config[5].ssdv_config.callsign, 7, "DL4MDW");// SSDV Callsign
+	chsnprintf(config[5].ssdv_config.callsign, 6, "DK0TU");// SSDV Callsign
 	config[5].ssdv_config.ram_buffer = ssdv2_buffer;		// Camera buffer
 	config[5].ssdv_config.ram_size = sizeof(ssdv2_buffer);	// Buffer size
 	config[5].ssdv_config.res = RES_VGA;					// Resolution VGA
-	config[4].ssdv_config.no_camera = TRUE;					// Disable camera (camera buffer shared with other module)
-	MODULE_IMAGE(&config[5]);*/
+	MODULE_IMAGE(&config[5]);
 
 	// Module IMAGE, SSDV 2m 2FSK
-	chsnprintf(config[6].name, 12, "IMG 2FSK 2m");			// Instance name
+	/*chsnprintf(config[6].name, 12, "IMG 2FSK 2m");			// Instance name
 	config[6].power = 20;									// Power 20 dBm
 	config[6].protocol = PROT_SSDV_2FSK;					// Protocol SSDV, modulation 2FSK
 	config[6].frequency.type = FREQ_STATIC;					// Static frequency allocation
@@ -141,10 +141,10 @@ void initModules(void)
 	config[6].fsk_config.predelay = 100;					// Predelay in ms (continuos carrier before actual transmission)
 	config[6].fsk_config.baud = 600;						// Baudrate
 	config[6].fsk_config.shift = 1000;						// Frequency shift in Hz
-	chsnprintf(config[6].ssdv_config.callsign, 7, "DL4MDW");// SSDV Callsign
+	chsnprintf(config[6].ssdv_config.callsign, 6, "DK0TU");// SSDV Callsign
 	config[6].ssdv_config.ram_buffer = ssdv2_buffer;		// Camera buffer
 	config[6].ssdv_config.ram_size = sizeof(ssdv2_buffer);	// Buffer size
 	config[6].ssdv_config.res = RES_VGA;					// Resolution VGA
-	MODULE_IMAGE(&config[6]);
+	MODULE_IMAGE(&config[6]);*/
 }
 
