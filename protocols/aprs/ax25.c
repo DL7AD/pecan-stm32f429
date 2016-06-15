@@ -230,9 +230,6 @@ void scramble(ax25_t *packet) {
   * NRZ-I tone encoding (0: bit change, 1: no bit change)
   */
 void nrzi_encode(ax25_t *packet) {
-	if(packet->mod != MOD_AFSK)
-		return; // NRZ-I encode not necessary
-
 	uint8_t ctone = 0;
 	for(uint32_t i=0; i<packet->size; i++) {
 		if(((packet->data[i >> 3] >> (i & 0x7)) & 0x1) == 0)

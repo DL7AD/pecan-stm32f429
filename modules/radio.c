@@ -183,7 +183,7 @@ void init2GFSK(radio_t radio, radioMSG_t *msg) {
 	chThdSleepMilliseconds(30);
 }
 
-void send2GFSK(radio_t radio, radioMSG_t *msg) {
+void __attribute__((optimize("-O0"))) send2GFSK(radio_t radio, radioMSG_t *msg) {
 	// Transmit data
 	uint32_t sample_per_bit = 0;
 	uint32_t bit = 0;
@@ -193,16 +193,14 @@ void send2GFSK(radio_t radio, radioMSG_t *msg) {
 	chSysDisable();
 
 	while(bit < msg->bin_len) {
-		if(sample_per_bit++ > 1550) {
+		if(sample_per_bit++ > 308) {
 			if((bit & 7) == 0) { // Load up next byte
 				current_byte = msg->msg[bit >> 3];
 			} else {
 				current_byte = current_byte / 2; // Load next bit
 			}
 
-			if((current_byte & 1) == 0)
-				ctone = !ctone; // Switch shifting
-			MOD_GPIO_SET(radio, ctone);
+			MOD_GPIO_SET(radio, current_byte & 0x1);
 			bit++;
 
 			palTogglePad(PORT(LED_2YELLOW), PIN(LED_2YELLOW));

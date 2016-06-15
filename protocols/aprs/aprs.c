@@ -157,8 +157,8 @@ uint32_t aprs_encode_position(uint8_t* message, mod_t mod, const aprs_config_t *
 	ax25_send_byte(&packet, '|');
 
 	ax25_send_footer(&packet);
-	nrzi_encode(&packet);
 	scramble(&packet);
+	nrzi_encode(&packet);
 
 	return packet.size;
 }
@@ -189,8 +189,8 @@ uint32_t aprs_encode_log(uint8_t* message, mod_t mod, const aprs_config_t *confi
 
 	// Send footer
 	ax25_send_footer(&packet);
-	nrzi_encode(&packet);
 	scramble(&packet);
+	nrzi_encode(&packet);
 
 	return packet.size;
 }
@@ -338,8 +338,8 @@ uint32_t aprs_encode_telemetry_configuration(uint8_t* message, mod_t mod, const 
 	}
 
 	ax25_send_footer(&packet); // Footer
-	nrzi_encode(&packet);
 	scramble(&packet);
+	nrzi_encode(&packet);
 	
 	return packet.size;
 }
@@ -361,8 +361,8 @@ uint32_t aprs_encode_image(uint8_t* message, mod_t mod, const aprs_config_t *con
 
 	// Send footer
 	ax25_send_footer(&packet);
-	nrzi_encode(&packet);
 	scramble(&packet);
+	nrzi_encode(&packet);
 
 	return packet.size;
 }
