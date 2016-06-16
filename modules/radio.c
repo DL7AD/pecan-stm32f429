@@ -25,7 +25,7 @@ mutex_t radio_mtx;
 void initAFSK(radio_t radio, radioMSG_t *msg) {
 	// Initialize radio and tune
 	Si4464_Init(radio, MOD_AFSK);
-	radioTune(radio, msg->freq, 0, msg->power);
+	radioTune(radio, msg->freq, 0, msg->power, 0);
 }
 
 void sendAFSK(radio_t radio, radioMSG_t *msg) {
@@ -73,7 +73,7 @@ void sendAFSK(radio_t radio, radioMSG_t *msg) {
 void initOOK(radio_t radio, radioMSG_t *msg) {
 	// Initialize radio and tune
 	Si4464_Init(radio, MOD_OOK);
-	radioTune(radio, msg->freq, 0, msg->power);
+	radioTune(radio, msg->freq, 0, msg->power, 0);
 }
 
 /**
@@ -158,7 +158,7 @@ void init2FSK(radio_t radio, radioMSG_t *msg) {
 	// Initialize radio and tune
 	Si4464_Init(radio, MOD_2FSK);
 	MOD_GPIO_SET(radio, HIGH);
-	radioTune(radio, msg->freq, msg->fsk_config->shift, msg->power);
+	radioTune(radio, msg->freq, msg->fsk_config->shift, msg->power, 0);
 }
 
 void send2FSK(radio_t radio, radioMSG_t *msg) {
@@ -176,39 +176,31 @@ void send2FSK(radio_t radio, radioMSG_t *msg) {
 		chThdSleepMilliseconds(1);		// Wait for routine to finish
 }
 
-void init2GFSK(radio_t radio, radioMSG_t *msg) {
-	// Initialize radio and tune
+void send2GFSK(radio_t radio, radioMSG_t *msg) {
+	uint16_t c = 64;
+	uint16_t all = (msg->bin_len+7)/8;
+
+	// Initialize radio
 	Si4464_Init(radio, MOD_2GFSK);
-	radioTune(radio, msg->freq, 0, msg->power);
-	chThdSleepMilliseconds(30);
-}
 
-void __attribute__((optimize("-O0"))) send2GFSK(radio_t radio, radioMSG_t *msg) {
-	// Transmit data
-	uint32_t sample_per_bit = 0;
-	uint32_t bit = 0;
-	uint8_t ctone = 0;
-	uint8_t current_byte = 0;
+	// Initial FIFO fill
+	Si4464_writeFIFO(radio, msg->msg, c);
 
-	chSysDisable();
+	// Transmit
+	radioTune(radio, msg->freq, 0, msg->power, all);
 
-	while(bit < msg->bin_len) {
-		if(sample_per_bit++ > 308) {
-			if((bit & 7) == 0) { // Load up next byte
-				current_byte = msg->msg[bit >> 3];
-			} else {
-				current_byte = current_byte / 2; // Load next bit
-			}
+	while(c < all) { // Do while bytes not written into FIFO completely
 
-			MOD_GPIO_SET(radio, current_byte & 0x1);
-			bit++;
+		// Determine free memory in Si4464-FIFO
+		uint16_t more = Si4464_freeFIFO(radio);
+		if(more > all-c)
+			more = all-c; // Last bytes in FIFO
 
-			palTogglePad(PORT(LED_2YELLOW), PIN(LED_2YELLOW));
-			sample_per_bit = 0;
-		}
+		Si4464_writeFIFO(radio, &msg->msg[c], more); // Write into FIFO
+
+		c += more;
+		chThdSleepMilliseconds(10);
 	}
-
-	chSysEnable();
 }
 
 THD_FUNCTION(moduleRADIO, arg) {
@@ -265,8 +257,6 @@ THD_FUNCTION(moduleRADIO, arg) {
 						send2FSK(radio, msg);
 						break;
 					case MOD_2GFSK:
-						if(!isRadioInitialized(radio))
-							init2GFSK(radio, msg);
 						send2GFSK(radio, msg);
 						break;
 					case MOD_AFSK:
