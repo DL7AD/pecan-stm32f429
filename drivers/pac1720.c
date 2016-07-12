@@ -23,17 +23,29 @@ static int32_t pac1720_discharge_counter;
 
 int16_t pac1720_getPowerDischarge(void) {
 	int32_t fsp = FSV * FSC;
-	return I2C_read16(PAC1720_ADDRESS, PAC1720_CH2_PWR_RAT_HIGH) * fsp / 65536;
+	uint16_t val;
+	if(I2C_read16(PAC1720_ADDRESS, PAC1720_CH2_PWR_RAT_HIGH, &val))
+		return val * fsp / 65536;
+	else
+		return 0; // PAC1720 not available (maybe Vcc too low)
 }
 
 int16_t pac1720_getPowerCharge(void) {
 	int32_t fsp = FSV * FSC;
-	return I2C_read16(PAC1720_ADDRESS, PAC1720_CH1_PWR_RAT_HIGH) * fsp / 65536;
+	uint16_t val;
+	if(I2C_read16(PAC1720_ADDRESS, PAC1720_CH1_PWR_RAT_HIGH, &val))
+		return val * fsp / 65536;
+	else
+		return 0; // PAC1720 not available (maybe Vcc too low)
 }
 
 int16_t pac1720_getAverageChargePower(void) {
-	// Calculate
-	int16_t ret = pac1720_charge / (pac1720_charge_counter == 0 ? 1 : pac1720_charge_counter);
+	// Return current value if time interval too short
+	if(!pac1720_charge_counter)
+		pac1720_getPowerCharge();
+
+	// Calculate average power
+	int16_t ret = pac1720_charge / pac1720_charge_counter;
 
 	// Reset current measurement
 	pac1720_charge = 0;
@@ -43,8 +55,12 @@ int16_t pac1720_getAverageChargePower(void) {
 }
 
 int16_t pac1720_getAverageDischargePower(void) {
-	// Calculate
-	int16_t ret = pac1720_discharge / (pac1720_discharge_counter == 0 ? 1 : pac1720_discharge_counter);
+	// Return current value if time interval too short
+	if(!pac1720_discharge_counter)
+		pac1720_getPowerDischarge();
+
+	// Calculate average power
+	int16_t ret = pac1720_discharge / pac1720_discharge_counter;
 
 	// Reset current measurement
 	pac1720_discharge = 0;
@@ -54,17 +70,20 @@ int16_t pac1720_getAverageDischargePower(void) {
 }
 
 uint16_t pac1720_getBatteryVoltage(void) {
-	uint16_t reg = I2C_read16(PAC1720_ADDRESS, PAC1720_CH2_VSOURCE_HIGH);
+	uint16_t val;
+	if(!I2C_read16(PAC1720_ADDRESS, PAC1720_CH2_VSOURCE_HIGH, &val))
+		return 0; // PAC1720 not available (maybe Vcc too low)
 
-	uint32_t uv = 0;
-	for(uint32_t i=0, b=20000000; i<11; i++, b/=2)
-		uv += (reg >> (15-i)) & 0x1 ? b : 0;
-	return uv/1000;
+	return (val >> 5) * 20000 / 0x400;
 }
 
 bool pac1720_isAvailable(void)
 {
-	return I2C_read8(PAC1720_ADDRESS, PAC1720_PRODUCT_ID) == 0x57;
+	uint8_t val;
+	if(I2C_read8(PAC1720_ADDRESS, PAC1720_PRODUCT_ID, &val))
+		return val == 0x57;
+	else
+		return false; // PAC1720 not available (maybe Vcc too low)
 }
 
 THD_FUNCTION(pac1720_thd, arg)

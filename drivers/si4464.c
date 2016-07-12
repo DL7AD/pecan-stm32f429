@@ -10,6 +10,7 @@
 #include "modules.h"
 #include "debug.h"
 #include "types.h"
+#include <string.h>
 
 static const SPIConfig ls_spicfg1 = {
 	NULL,
@@ -293,12 +294,16 @@ void setModem2GFSK(radio_t radio) {
 	Si4464_write(radio, setup_oversampling, 8);
 
 	// setup the NCO data rate for 2GFSK
-	uint8_t setup_data_rate[] = {0x11, 0x20, 0x03, 0x03, 0x00, 0x25, 0x80};
+	uint8_t setup_data_rate[] = {0x11, 0x20, 0x03, 0x03, 0x00, 0x09, 0x60};
 	Si4464_write(radio, setup_data_rate, 7);
 
 	// Use 2GFSK from async GPIO0
-	uint8_t use_2gfsk[] = {0x11, 0x20, 0x01, 0x00, 0x0B};
+	uint8_t use_2gfsk[] = {0x11, 0x20, 0x01, 0x00, 0x03};
 	Si4464_write(radio, use_2gfsk, 5);
+
+	// transmit LSB first
+	uint8_t use_lsb_first[] = {0x11, 0x12, 0x01, 0x06, 0x01};
+	Si4464_write(radio, use_lsb_first, 5);
 }
 
 void setPowerLevel(radio_t radio, int8_t level) {
@@ -307,9 +312,9 @@ void setPowerLevel(radio_t radio, int8_t level) {
 	Si4464_write(radio, set_pa_pwr_lvl_property_command, 5);
 }
 
-void startTx(radio_t radio) {
-	uint8_t change_state_command[] = {0x34, 0x07};
-	Si4464_write(radio, change_state_command, 2);
+void startTx(radio_t radio, uint16_t size) {
+	uint8_t change_state_command[] = {0x31, 0x00, 0x30, (size >> 8) & 0x1F, size & 0xFF};
+	Si4464_write(radio, change_state_command, 5);
 }
 
 void stopTx(radio_t radio) {
@@ -329,7 +334,7 @@ void radioShutdown(radio_t radio) {
  * @param shift Shift of FSK in Hz
  * @param level Transmission power level in dBm
  */
-bool radioTune(radio_t radio, uint32_t frequency, uint16_t shift, int8_t level) {
+bool radioTune(radio_t radio, uint32_t frequency, uint16_t shift, int8_t level, uint16_t size) {
 	// Tracing
 	TRACE_INFO("SI %d > Tune Si4464", radio);
 
@@ -349,8 +354,36 @@ bool radioTune(radio_t radio, uint32_t frequency, uint16_t shift, int8_t level) 
 	setShift(radio, shift);					// Set shift
 	setPowerLevel(radio, level);			// Set power level
 
-	startTx(radio);
+	startTx(radio, size);
 	return true;
+}
+
+void Si4464_writeFIFO(radio_t radio, uint8_t *msg, uint8_t size) {
+	uint8_t write_fifo[size+1];
+	write_fifo[0] = 0x66;
+	memcpy(&write_fifo[1], msg, size);
+	Si4464_write(radio, write_fifo, size+1);
+}
+
+/**
+  * Returns free space in FIFO of Si4464
+  */
+uint8_t Si4464_freeFIFO(radio_t radio) {
+	uint8_t fifo_info[2] = {0x15, 0x00};
+	uint8_t rxData[4];
+	Si4464_read(radio, fifo_info, 2, rxData, 4);
+	return rxData[3];
+}
+
+
+/**
+  * Returns internal state of Si4464
+  */
+uint8_t Si4464_getState(radio_t radio) {
+	uint8_t fifo_info[1] = {0x33};
+	uint8_t rxData[4];
+	Si4464_read(radio, fifo_info, 1, rxData, 4);
+	return rxData[2];
 }
 
 int8_t Si4464_getTemperature(radio_t radio) {
@@ -386,3 +419,4 @@ uint8_t dBm2powerLvl(int32_t dBm) {
 bool isRadioInitialized(radio_t radio) {
 	return initialized[radio];
 }
+

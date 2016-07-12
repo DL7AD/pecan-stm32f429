@@ -859,7 +859,11 @@ void OV2640_deinit(void) {
 
 bool OV2640_isAvailable(void)
 {
-	return I2C_read16(OV2640_I2C_ADR, 0x0A) == PID_OV2640;
+	uint16_t val;
+	if(I2C_read16(OV2640_I2C_ADR, 0x0A, &val))
+		return val == PID_OV2640;
+	else
+		return false;
 }
 
 void OV2640_poweron(void)

@@ -2,8 +2,8 @@
 #include "debug.h"
 
 module_conf_t config[8];
-uint8_t ssdv1_buffer[1024*30];
-uint8_t ssdv2_buffer[1024*100];
+uint8_t ssdv1_buffer[1024*20];
+uint8_t ssdv2_buffer[1024*110];
 
 // Put your configuration settings here
 void initModules(void)
@@ -18,16 +18,16 @@ void initModules(void)
 	config[0].init_delay = 0;								// Module startup delay in msec
 	config[0].trigger.type = TRIG_EVENT;					// Trigger transmission on event
 	config[0].trigger.event = EVENT_NEW_POINT;				// Trigger when new track point released
-	chsnprintf(config[0].aprs_config.callsign, 6, "DK0TU");// APRS Callsign
+	chsnprintf(config[0].aprs_config.callsign, 6, "DL7AD");	// APRS Callsign
 	config[0].aprs_config.ssid = 11;						// APRS SSID
 	config[0].aprs_config.symbol = SYM_BALLOON;				// APRS Symbol
 	chsnprintf(config[0].aprs_config.path, 16, "WIDE1-1");	// APRS Path
 	config[0].aprs_config.preamble = 200;					// APRS Preamble
 	config[0].aprs_config.tel[0] = TEL_VBAT;				// APRS Telemetry parameter 1
-	config[0].aprs_config.tel[1] = TEL_IPRESS;				// APRS Telemetry parameter 2
-	config[0].aprs_config.tel[2] = TEL_ITEMP;				// APRS Telemetry parameter 3
-	config[0].aprs_config.tel[3] = TEL_IHUM;				// APRS Telemetry parameter 4
-	config[0].aprs_config.tel[4] = TEL_DISCHARGE;			// APRS Telemetry parameter 5
+	config[0].aprs_config.tel[1] = TEL_VSOL;				// APRS Telemetry parameter 2
+	config[0].aprs_config.tel[2] = TEL_IPRESS;				// APRS Telemetry parameter 3
+	config[0].aprs_config.tel[3] = TEL_ITEMP;				// APRS Telemetry parameter 4
+	config[0].aprs_config.tel[4] = TEL_IHUM;				// APRS Telemetry parameter 5
 	config[0].aprs_config.tel_encoding = TRUE;				// Transmit Telemetry encoding information activated
 	config[0].aprs_config.tel_encoding_cycle = 3600;		// Transmit Telemetry encoding information every 3600sec
 	chsnprintf(config[0].aprs_config.tel_comment, 18, "http://tkrahn.net");// Telemetry comment
@@ -36,14 +36,14 @@ void initModules(void)
 	// Module POSITION, APRS 2m 2GFSK
 	/*chsnprintf(config[1].name, 18, "POS APRS 2m 2GFSK");	// Instance name
 	config[1].power = 20;									// Power 10 dBm
-	config[1].protocol = PROT_APRS_2GFSK;					// Protocol APRS, modulation AFSK
+	config[1].protocol = PROT_APRS_2GFSK;					// Protocol APRS, modulation 2GFSK
 	config[1].frequency.type = FREQ_STATIC;					// Dynamic frequency allocation
-	config[1].frequency.hz = 144860000;						// Default frequency 144.860 MHz
+	config[1].frequency.hz = 432500000;						// Default frequency 432.500 MHz
 	config[1].init_delay = 0;								// Module startup delay in msec
 	config[1].trigger.type = TRIG_EVENT;					// Trigger transmission on event
 	config[1].trigger.event = EVENT_NEW_POINT;				// Trigger when new track point released
-	chsnprintf(config[1].aprs_config.callsign, 6, "DK0TU");// APRS Callsign
-	config[1].aprs_config.ssid = 13;						// APRS SSID
+	chsnprintf(config[1].aprs_config.callsign, 7, "DL4MDW");// APRS Callsign
+	config[1].aprs_config.ssid = 11;						// APRS SSID
 	config[1].aprs_config.symbol = SYM_BALLOON;				// APRS Symbol
 	chsnprintf(config[1].aprs_config.path, 16, "WIDE1-1");	// APRS Path
 	config[1].aprs_config.preamble = 40;					// APRS Preamble
@@ -84,8 +84,11 @@ void initModules(void)
 	config[3].frequency.method = APRS_REGION_FREQ_2M;		// Determine local APRS frequency on 2m
 	config[3].init_delay = 10000;							// Module startup delay in msec
 	config[3].packet_spacing = 20000;						// Packet spacing in ms
-	config[3].trigger.type = TRIG_CONTINOUSLY;				// Trigger transmission on timeout (Periodic cycling)
-	chsnprintf(config[3].aprs_config.callsign, 6, "DK0TU");// APRS Callsign
+	config[3].sleep_config.type = SLEEP_WHEN_VBAT_BELOW_THRES;// Sleeping type
+	config[3].sleep_config.vbat_thres = 4500;				// Sleeping voltage threshold
+	config[3].trigger.type = TRIG_TIMEOUT;					// Trigger transmission on timeout (Periodic cycling)
+	config[3].trigger.timeout = 10;							// Timeout 10 sec
+	chsnprintf(config[3].aprs_config.callsign, 7, "DL4MDW");// APRS Callsign
 	config[3].aprs_config.ssid = 11;						// APRS SSID
 	config[3].aprs_config.preamble = 200;					// APRS Preamble
 	chsnprintf(config[3].ssdv_config.callsign, 6, "DK0TU");// SSDV Callsign
@@ -109,21 +112,24 @@ void initModules(void)
 	MODULE_POSITION(&config[4]);*/
 
 	// Module IMAGE, APRS 2m 2GFSK
-	chsnprintf(config[5].name, 12, "IMG 2FSK 2m");			// Instance name
+	chsnprintf(config[5].name, 13, "IMG 2GFSK 2m");			// Instance name
 	config[5].power = 20;									// Power 20 dBm
 	config[5].protocol = PROT_APRS_2GFSK;					// Protocol APRS SSDV, modulation 2GFSK
-	config[5].frequency.type = FREQ_STATIC;					// Static frequency allocation
+	config[5].frequency.type = FREQ_DYNAMIC;				// Static frequency allocation
 	config[5].frequency.hz = 144860000;						// Transmission frequency 144.860 MHz
-	config[5].init_delay = 30000;							// Module startup delay in msec
-	config[5].packet_spacing = 800;							// Packet spacing in ms
-	config[5].trigger.type = TRIG_CONTINOUSLY;				// Transmit continously
-	chsnprintf(config[5].aprs_config.callsign, 6, "DK0TU");// APRS Callsign
+	config[5].frequency.method = APRS_REGION_FREQ_2M;		// Determine local APRS frequency on 2m
+	config[5].init_delay = 60000;							// Module startup delay in msec
+	config[5].sleep_config.type = SLEEP_WHEN_VBAT_BELOW_THRES;// Sleeping type
+	config[5].sleep_config.vbat_thres = 4500;				// Sleeping voltage threshold
+	config[5].trigger.type = TRIG_TIMEOUT;					// Trigger transmission on timeout (Periodic cycling)
+	config[5].trigger.timeout = 10;							// Timeout 10 sec
+	chsnprintf(config[5].aprs_config.callsign, 6, "DL7AD");	// APRS Callsign
 	config[5].aprs_config.ssid = 11;						// APRS SSID
 	config[5].aprs_config.preamble = 40;					// APRS Preamble
-	chsnprintf(config[5].ssdv_config.callsign, 6, "DK0TU");// SSDV Callsign
+	chsnprintf(config[5].ssdv_config.callsign, 6, "DL7AD");	// SSDV Callsign
 	config[5].ssdv_config.ram_buffer = ssdv2_buffer;		// Camera buffer
 	config[5].ssdv_config.ram_size = sizeof(ssdv2_buffer);	// Buffer size
-	config[5].ssdv_config.res = RES_VGA;					// Resolution VGA
+	config[5].ssdv_config.res = RES_XGA;					// Resolution XGA
 	MODULE_IMAGE(&config[5]);
 
 	// Module IMAGE, SSDV 2m 2FSK

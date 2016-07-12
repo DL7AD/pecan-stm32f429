@@ -10,18 +10,6 @@
 #include "pac1720.h"
 #include "radio.h"
 
-#include "stm32f4xx_rcc.h"
-#define RCC_PLLM_MASK    ((uint32_t)0x0000003F)
-#define RCC_PLLM_POS     0
-#define RCC_PLLN_MASK    ((uint32_t)0x00007FC0)
-#define RCC_PLLN_POS     6
-#define RCC_PLLP_MASK    ((uint32_t)0x00030000)
-#define RCC_PLLP_POS     16
-#define RCC_PLLQ_MASK    ((uint32_t)0x0F000000)
-#define RCC_PLLQ_POS     24
-#define RCC_PLLR_MASK    ((uint32_t)0x70000000)
-#define RCC_PLLR_POS     28
-
 trackPoint_t trackPoints[2];
 trackPoint_t* lastTrackPoint;
 
@@ -44,6 +32,52 @@ THD_FUNCTION(moduleTRACKING, arg) {
 	uint32_t id = 1;
 	lastTrackPoint = &trackPoints[0];
 
+	// Initial fill by PAC1720 and BME280 and RTC
+
+	// Time
+	ptime_t rtc;
+	getTime(&rtc);
+	lastTrackPoint->time.year = rtc.year;
+	lastTrackPoint->time.month = rtc.month;
+	lastTrackPoint->time.day = rtc.day;
+	lastTrackPoint->time.hour = rtc.hour;
+	lastTrackPoint->time.minute = rtc.minute;
+	lastTrackPoint->time.second = rtc.second;
+
+	// Voltage
+	lastTrackPoint->adc_solar = getSolarVoltageMV();
+	lastTrackPoint->adc_battery = getBatteryVoltageMV();
+
+	bme280_t bmeInt;
+	bme280_t bmeExt;
+
+	// Atmosphere condition
+	if(BME280_isAvailable(BME280_ADDRESS_INT)) {
+		BME280_Init(&bmeInt, BME280_ADDRESS_INT);
+		lastTrackPoint->int_press = BME280_getPressure(&bmeInt, 256);
+		lastTrackPoint->int_hum = BME280_getHumidity(&bmeInt);
+		lastTrackPoint->int_temp = BME280_getTemperature(&bmeInt);
+	} else { // No internal BME280 found
+		TRACE_ERROR("TRAC > Internal BME280 not available");
+		lastTrackPoint->int_press = 0;
+		lastTrackPoint->int_hum = 0;
+		lastTrackPoint->int_temp = 0;
+	}
+
+	// External BME280
+	if(BME280_isAvailable(BME280_ADDRESS_EXT)) {
+		BME280_Init(&bmeExt, BME280_ADDRESS_EXT);
+		lastTrackPoint->ext_press = BME280_getPressure(&bmeExt, 256);
+		lastTrackPoint->ext_hum = BME280_getHumidity(&bmeExt);
+		lastTrackPoint->ext_temp = BME280_getTemperature(&bmeExt);
+	} else { // No external BME280 found
+		TRACE_WARN("TRAC > External BME280 not available");
+		lastTrackPoint->ext_press = 0;
+		lastTrackPoint->ext_hum = 0;
+		lastTrackPoint->ext_temp = 0;
+	}
+
+
 	systime_t time = chVTGetSystemTimeX();
 	while(true)
 	{
@@ -55,11 +89,21 @@ THD_FUNCTION(moduleTRACKING, arg) {
 
 		// Search for GPS satellites
 		gpsFix_t gpsFix = {{0,0,0,0,0,0,0},0,0,0,0,0};
-		GPS_Init();
 
-		do {
-			gps_get_fix(&gpsFix);
-		} while(!isGPSLocked(&gpsFix) && chVTGetSystemTimeX() <= time + S2ST(TRACK_CYCLE_TIME-5)); // Do as long no GPS lock and within timeout, timeout=cycle-1sec (-1sec in order to keep synchronization)
+		// Switch on GPS is enough power is available
+		if(getBatteryVoltageMV() >= MIN_GPS_VBAT || !MIN_GPS_VBAT)
+			GPS_Init();
+
+		// Search for lock as long enough power is available
+		uint16_t batt;
+		if(getBatteryVoltageMV() >= MIN_GPS_VBAT || !MIN_GPS_VBAT)
+			do {
+				batt = getBatteryVoltageMV();
+				gps_get_fix(&gpsFix);
+			} while(!isGPSLocked(&gpsFix) && (batt >= MIN_GPS_VBAT || !MIN_GPS_VBAT) && chVTGetSystemTimeX() <= time + S2ST(TRACK_CYCLE_TIME-5)); // Do as long no GPS lock and within timeout, timeout=cycle-1sec (-1sec in order to keep synchronization)
+
+		if(batt < MIN_GPS_VBAT && MIN_GPS_VBAT) // Switch off GPS at low batt
+			GPS_Deinit();
 
 		if(isGPSLocked(&gpsFix)) { // GPS locked
 
@@ -108,14 +152,13 @@ THD_FUNCTION(moduleTRACKING, arg) {
 			TRACE_WARN("TRAC > GPS sampling finished GPS LOSS");
 
 			// Take time from internal RTC
-			ptime_t time;
-			getTime(&time);
-			tp->time.year = time.year;
-			tp->time.month = time.month;
-			tp->time.day = time.day;
-			tp->time.hour = time.hour;
-			tp->time.minute = time.minute;
-			tp->time.second = time.second;
+			getTime(&rtc);
+			tp->time.year = rtc.year;
+			tp->time.month = rtc.month;
+			tp->time.day = rtc.day;
+			tp->time.hour = rtc.hour;
+			tp->time.minute = rtc.minute;
+			tp->time.second = rtc.second;
 
 			// Take GPS fix from old lock
 			tp->gps_lat = ltp->gps_lat;

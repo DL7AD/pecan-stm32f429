@@ -26,12 +26,20 @@ void gps_transmit_string(uint8_t *cmd, uint8_t length)
 
 uint8_t gps_receive_byte(void)
 {
-	return I2C_read8(UBLOX_MAX_ADDRESS, 0xFF);
+	uint8_t val;
+	if(I2C_read8(UBLOX_MAX_ADDRESS, 0xFF, &val))
+		return val;
+	else
+		return 0x00;
 }
 
-uint8_t gps_bytes_avail(void)
+uint16_t gps_bytes_avail(void)
 {
-	return I2C_read16(UBLOX_MAX_ADDRESS, 0xFD);
+	uint16_t val;
+	if(I2C_read16(UBLOX_MAX_ADDRESS, 0xFD, &val))
+		return val;
+	else
+		return 0x00;
 }
 
 /* 

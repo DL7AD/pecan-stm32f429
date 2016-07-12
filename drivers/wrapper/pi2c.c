@@ -21,36 +21,17 @@ bool i2cSendDriver(I2CDriver *driver, uint8_t addr, uint8_t *txbuf, uint32_t txb
 		TRACE_ERROR("I2C  > TIMEOUT > RESTART (ADDR 0x%02x)", addr);
 		i2cStop(driver);
 		i2cStart(driver, &_i2cfg);
-	} else if(i2c_status == MSG_RESET) {
+	} else if(i2c_status == MSG_RESET && addr != 0x4C) { // Prevent PAC1720 to produce message while it doesnt work below 2.5V
 		TRACE_ERROR("I2C  > RESET (ADDR 0x%02x)", addr);
 	}
 	i2cReleaseBus(driver);
 	return i2c_status == MSG_OK;
 }
-
-/*bool i2cReceiveDriver(I2CDriver *driver, uint8_t addr, uint8_t *rxbuf, uint32_t rxbytes, systime_t timeout) {
-	i2cAcquireBus(driver);
-	msg_t i2c_status = i2cMasterTransmitTimeout(driver, addr, rxbuf, rxbytes, timeout);
-	if(i2c_status == MSG_TIMEOUT) { // Restart I2C at timeout
-		TRACE_ERROR("I2C  > TIMEOUT > RESTART (ADDR 0x%02x)", addr);
-		i2cStop(driver);
-		i2cStart(driver, &_i2cfg);
-	} else if(i2c_status == MSG_RESET) {
-		TRACE_ERROR("I2C  > RESET (ADDR 0x%02x)", addr);
-	}
-	i2cReleaseBus(driver);
-	return i2c_status == MSG_OK;
-}*/
 
 bool I2C_send(uint8_t addr, uint8_t *txbuf, uint32_t txbytes, uint8_t *rxbuf, uint32_t rxbytes, systime_t timeout)
 {
 	return i2cSendDriver(&I2CD2, addr, txbuf, txbytes, rxbuf, rxbytes, timeout);
 }
-
-/*bool i2cReceive(uint8_t addr, uint8_t *rxbuf, uint32_t rxbytes, systime_t timeout)
-{
-	return i2cReceiveDriver(&I2CD2, addr, rxbuf, rxbytes, timeout);
-}*/
 
 void pi2cInit(void)
 {
@@ -72,20 +53,22 @@ bool I2C_writeN_locked(uint8_t address, uint8_t *txbuf, uint32_t length)
 	return I2C_send(address, txbuf, length, NULL, 0, MS2ST(100));
 }
 
-uint8_t I2C_read8_locked(uint8_t address, uint8_t reg)
+bool I2C_read8_locked(uint8_t address, uint8_t reg, uint8_t *val)
 {
 	uint8_t txbuf[] = {reg};
 	uint8_t rxbuf[1];
-	I2C_send(address, txbuf, 1, rxbuf, 1, MS2ST(100));
-	return rxbuf[0];
+	bool ret = I2C_send(address, txbuf, 1, rxbuf, 1, MS2ST(100));
+	*val = rxbuf[0];
+	return ret;
 }
 
-uint16_t I2C_read16_locked(uint8_t address, uint8_t reg)
+bool I2C_read16_locked(uint8_t address, uint8_t reg, uint16_t *val)
 {
 	uint8_t txbuf[] = {reg};
 	uint8_t rxbuf[2];
-	I2C_send(address, txbuf, 1, rxbuf, 2, MS2ST(100));
-	return (rxbuf[0] << 8) | rxbuf[1];
+	bool ret = I2C_send(address, txbuf, 1, rxbuf, 2, MS2ST(100));
+	*val =  (rxbuf[0] << 8) | rxbuf[1];
+	return ret;
 }
 
 // I2C Mutex unlocked access functions
@@ -106,35 +89,36 @@ bool I2C_writeN(uint8_t address, uint8_t *txbuf, uint32_t length)
 	return ret;
 }
 
-uint8_t I2C_read8(uint8_t address, uint8_t reg)
+bool I2C_read8(uint8_t address, uint8_t reg, uint8_t *val)
 {
 	I2C_lock();
-	uint8_t ret = I2C_read8_locked(address, reg);
+	bool ret = I2C_read8_locked(address, reg, val);
 	I2C_unlock();
 	return ret;
 }
 
-uint16_t I2C_read16(uint8_t address, uint8_t reg)
+bool I2C_read16(uint8_t address, uint8_t reg, uint16_t *val)
 {
 	I2C_lock();
-	uint16_t ret = I2C_read16_locked(address, reg);
+	bool ret = I2C_read16_locked(address, reg, val);
 	I2C_unlock();
 	return ret;
 }
 
-uint16_t I2C_read16_LE(uint8_t address, uint8_t reg) {
-	uint16_t temp = I2C_read16_locked(address, reg);
-	return (temp >> 8) | (temp << 8);
+bool I2C_read16_LE(uint8_t address, uint8_t reg, uint16_t *val) {
+	bool ret = I2C_read16_locked(address, reg, val);
+	*val = (*val >> 8) | (*val << 8);
+	return ret;
 }
 
-int16_t I2C_readS16(uint8_t address, uint8_t reg)
+bool I2C_readS16(uint8_t address, uint8_t reg, int16_t *val)
 {
-	return (int16_t)I2C_read16(address, reg);
+	return I2C_read16(address, reg, (uint16_t*)val);
 }
 
-int16_t I2C_readS16_LE(uint8_t address, uint8_t reg)
+bool I2C_readS16_LE(uint8_t address, uint8_t reg, int16_t* val)
 {
-	return (int16_t)I2C_read16_LE(address, reg);
+	return I2C_read16_LE(address, reg, (uint16_t*)val);
 }
 
 

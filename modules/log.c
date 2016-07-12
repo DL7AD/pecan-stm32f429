@@ -22,7 +22,7 @@ THD_FUNCTION(moduleLOG, arg) {
 
 		TRACE_WARN("LOG  > Module LOG not implemented"); // FIXME
 
-		if(!p_sleep(&config->sleep))
+		if(!p_sleep(&config->sleep_config))
 		{
 			// TODO: Impelemt Log encoding
 		}
