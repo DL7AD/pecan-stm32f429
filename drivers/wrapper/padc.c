@@ -7,7 +7,10 @@
 #include "debug.h"
 
 #define ADC_GRP1_NUM_CHANNELS	3		/* Amount of channels (solar, battery, temperature) */
-#define VCC_REF					2920	/* mV */
+#define VCC_REF					1836	/* mV */
+
+#define DIVIDER_VSOL			2/1		/* VSol --- 1kOhm -- ADC --- 1kOhm -- GND */
+#define DIVIDER_VBAT			200/64	/* VBat -- 33KOhm -- ADC -- 10kOhm -- GND */
 
 static adcsample_t samples[ADC_GRP1_NUM_CHANNELS*2]; // ADC sample buffer
 
@@ -20,7 +23,7 @@ void adccb(ADCDriver *adcp, adcsample_t *buffer, size_t n) {
 /*
  * ADC conversion group.
  * Mode:        Linear buffer, 4 samples of 3 channels, SW triggered.
- * Channels:    Solar                    ADC12_IN14
+ * Channels:    Solar voltage divider    ADC12_IN14
  *              Battery voltage divider  ADC12_IN15
  *              Temperature sensor       ADC1_IN16
  */
@@ -55,36 +58,30 @@ void deinitADC(void)
 void doConversion(void)
 {
 	initADC();
-	samples[0] = 0;
-	samples[1] = 0;
-	samples[2] = 0;
 	adcStartConversion(&ADCD1, &adcgrpcfg, samples, 1);
-	chThdSleepMilliseconds(50);
-	//while(ADCD1.state != ADC_COMPLETE) // Wait for conversion to be completed TODO: Fix this (wait until finished)
-	//	chThdSleepMilliseconds(1);
+	chThdSleepMilliseconds(35); // Wait until conversion is finished
 	deinitADC();
 }
 
 uint16_t getBatteryVoltageMV(void)
 {
-	return pac1720_getBatteryVoltage(); // Get value from PAC1720
+	doConversion();
+	uint16_t vbat = samples[0] * VCC_REF * DIVIDER_VBAT / 4096;
+
+	// Get voltage from PAC1720 (PAC1720 returns false redings below 2.35V)
+	if(vbat >= 2400)
+		vbat = pac1720_getBatteryVoltage(); // Get value from PAC1720
+
+	return vbat;
 }
 uint16_t getSolarVoltageMV(void)
 {
 	doConversion();
-	return samples[1] * VCC_REF / 4096;
+	return samples[1] * VCC_REF * DIVIDER_VSOL / 4096;
 }
 uint16_t getSTM32Temperature(void)
 {
 	doConversion();
 	return samples[2];
 }
-
-
-
-
-
-
-
-
 
