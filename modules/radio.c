@@ -8,19 +8,21 @@
 #include "pi2c.h"
 #include <string.h>
 
-#define PLAYBACK_RATE		5625000									/* Samples per second (SYSCLK = 45MHz) */
+// AFSK configuration
+#define PLAYBACK_RATE		5282000									/* Samples per second (SYSCLK = 45MHz) */
 #define BAUD_RATE			1200									/* APRS AFSK baudrate */
 #define SAMPLES_PER_BAUD	(PLAYBACK_RATE / BAUD_RATE)				/* Samples per baud */
 #define PHASE_DELTA_1200	(((2 * 1200) << 16) / PLAYBACK_RATE)	/* Delta-phase per sample for 1200Hz tone */
 #define PHASE_DELTA_2200	(((2 * 2200) << 16) / PLAYBACK_RATE)	/* Delta-phase per sample for 2200Hz tone */
 #define MB_SIZE 2													/* Radio mailbox size */
 
-mailbox_t radioMB;
+// Mailbox variables
+mailbox_t radioMB;				// Radio mailbox object
 msg_t mb_pbuffer[MB_SIZE];		// Mailbox pointer buffer (contains radioMSG_t pointer)
 radioMSG_t mb_buffer[MB_SIZE];	// Mailbox data buffer
 uint32_t mb_buffer_index;
 static uint8_t mb_free = MB_SIZE;
-mutex_t radio_mtx;
+mutex_t radio_mtx;				// Radio mailbox mutex
 
 void initAFSK(radio_t radio, radioMSG_t *msg) {
 	// Initialize radio and tune
