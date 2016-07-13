@@ -31,7 +31,7 @@ bool BME280_isAvailable(uint8_t address)
   */
 void BME280_Init(bme280_t *handle, uint8_t address)
 {
-	int8_t tmp1;
+	uint8_t tmp1;
 	uint8_t tmp2;
 
 	handle->address = address;
@@ -54,13 +54,13 @@ void BME280_Init(bme280_t *handle, uint8_t address)
 	I2C_readS16_LE(address, BME280_REGISTER_DIG_H2, &handle->calib.dig_H2);
 	I2C_read8(address, BME280_REGISTER_DIG_H3, &handle->calib.dig_H3);
 
-	I2C_read8(address, BME280_REGISTER_DIG_H4, (uint8_t*)&tmp1);
+	I2C_read8(address, BME280_REGISTER_DIG_H4, &tmp1);
 	I2C_read8(address, BME280_REGISTER_DIG_H5, &tmp2);
-	handle->calib.dig_H4 = (tmp1 << 4) | (tmp2 & 0x0F);
+	handle->calib.dig_H4 = (((int8_t)tmp1) << 4) | (tmp2 & 0x0F);
 
-	I2C_read8(address, BME280_REGISTER_DIG_H6, (uint8_t*)&tmp1);
+	I2C_read8(address, BME280_REGISTER_DIG_H6, &tmp1);
 	I2C_read8(address, BME280_REGISTER_DIG_H5, &tmp2);
-	handle->calib.dig_H5 = (tmp1 << 4) | (tmp2 >> 4 & 0x0F);
+	handle->calib.dig_H5 = (((int8_t)tmp1) << 4) | (tmp2 >> 4 & 0x0F);
 
 	I2C_read8(address, BME280_REGISTER_DIG_H6, (uint8_t*)&handle->calib.dig_H6);
 
@@ -78,12 +78,13 @@ void BME280_Init(bme280_t *handle, uint8_t address)
 int16_t BME280_getTemperature(bme280_t *handle)
 {
 	int32_t var1, var2, adc_T;
-	uint8_t tmp;
+	uint16_t tmp;
 
-	I2C_read16(handle->address, BME280_REGISTER_TEMPDATA, (uint16_t*)&adc_T);
-	I2C_read8(handle->address, BME280_REGISTER_TEMPDATA+2, &tmp);
+	I2C_read16(handle->address, BME280_REGISTER_TEMPDATA, &tmp);
+	adc_T = tmp;
+	I2C_read8(handle->address, BME280_REGISTER_TEMPDATA+2, (uint8_t*)&tmp);
 	adc_T <<= 8;
-	adc_T |= tmp;
+	adc_T |= tmp & 0xFF;
 	adc_T >>= 4;
 
 	var1 = ((((adc_T>>3) - ((int32_t)handle->calib.dig_T1 <<1))) * ((int32_t)handle->calib.dig_T2)) >> 11;
@@ -101,15 +102,16 @@ int16_t BME280_getTemperature(bme280_t *handle)
   */
 uint32_t BME280_getPressure(bme280_t *handle, uint16_t means) {
 	int64_t var1, var2, p;
-	uint8_t tmp;
+	uint16_t tmp;
 
 	uint64_t sum = 0;
 	for(uint16_t i=0; i<means; i++) {
 		int32_t adc_P;
-		I2C_read16(handle->address, BME280_REGISTER_PRESSUREDATA, (uint16_t*)&adc_P);
-		I2C_read8(handle->address, BME280_REGISTER_PRESSUREDATA+2, &tmp);
+		I2C_read16(handle->address, BME280_REGISTER_PRESSUREDATA, &tmp);
+		adc_P = tmp;
+		I2C_read8(handle->address, BME280_REGISTER_PRESSUREDATA+2, (uint8_t*)&tmp);
 		adc_P <<= 8;
-		adc_P |= tmp;
+		adc_P |= tmp & 0xFF;
 		adc_P >>= 4;
 
 		var1 = ((int64_t)handle->t_fine) - 128000;
@@ -139,7 +141,9 @@ uint32_t BME280_getPressure(bme280_t *handle, uint16_t means) {
   */
 uint16_t BME280_getHumidity(bme280_t *handle) {
 	int32_t adc_H;
-	I2C_read16(handle->address, BME280_REGISTER_HUMIDDATA, (uint16_t*)&adc_H);
+	uint16_t tmp;
+	I2C_read16(handle->address, BME280_REGISTER_HUMIDDATA, &tmp);
+	adc_H = tmp;
 
 	int32_t v_x1_u32r;
 
