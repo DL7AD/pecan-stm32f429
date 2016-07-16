@@ -20,6 +20,7 @@
 	chMtxObjectInit(&camera_mtx); \
 	MODULE_TRACKING(CYCLE_TIME); /* Tracker data input */ \
 	MODULE_RADIO(); /* Tracker data output */ \
+	chThdSleepMilliseconds(100); /* Give Tracking manager some time to fill first track point */ \
 }
 
 extern char *SMODE_STRING[];

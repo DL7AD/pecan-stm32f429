@@ -70,7 +70,11 @@ uint16_t getBatteryVoltageMV(void)
 
 	// Get voltage from PAC1720 (PAC1720 returns false redings below 2.35V)
 	if(vbat >= 2400)
-		vbat = pac1720_getBatteryVoltage(); // Get value from PAC1720
+	{
+		uint16_t vbat_pac = pac1720_getBatteryVoltage(); // Get value from PAC1720
+		if(vbat_pac) // Apply it if valid
+			vbat = vbat_pac;
+	}
 
 	return vbat;
 }
