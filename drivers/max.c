@@ -177,6 +177,47 @@ bool gps_get_fix(gpsFix_t *fix) {
 	static uint8_t response[92];
 	bool resp;
 
+	#if GPS_TYPE == MAX7 || GPS_TYPE == MAX8
+	uint8_t pvt[] = {0xB5, 0x62, 0x01, 0x07, 0x00, 0x00, 0x08, 0x19};
+	gps_transmit_string(pvt, sizeof(pvt));
+	resp = gps_receive_payload(0x01, 0x07, response, 5000);
+
+	if(!resp) { // Failed to aquire GPS data
+		TRACE_INFO("GPS  > PVT Polling FAILED");
+		return false;
+	} else {
+		TRACE_INFO("GPS  > PVT Polling OK");
+	}
+
+	fix->num_svs = response[23];
+	fix->type = response[20];
+
+	fix->time.year = response[4] + (response[5] << 8);
+	fix->time.month = response[6];
+	fix->time.day = response[7];
+	fix->time.hour = response[8];
+	fix->time.minute = response[9];
+	fix->time.second = response[10];
+
+	fix->lat = (int32_t) (
+			(uint32_t)(response[28]) + ((uint32_t)(response[29]) << 8) + ((uint32_t)(response[30]) << 16) + ((uint32_t)(response[31]) << 24)
+			);
+	fix->lon = (int32_t) (
+			(uint32_t)(response[24]) + ((uint32_t)(response[25]) << 8) + ((uint32_t)(response[26]) << 16) + ((uint32_t)(response[27]) << 24)
+			);
+	int32_t alt_tmp = (((int32_t) 
+			((uint32_t)(response[36]) + ((uint32_t)(response[37]) << 8) + ((uint32_t)(response[38]) << 16) + ((uint32_t)(response[39]) << 24))
+			) / 1000);
+	if (alt_tmp <= 0) {
+		fix->alt = 1;
+	} else if (alt_tmp > 50000) {
+		fix->alt = 50000;
+	} else {
+		fix->alt = (uint16_t)alt_tmp;
+	}
+
+	#else
+
 	uint8_t posllh[] = {0xB5, 0x62, 0x01, 0x02, 0x00, 0x00, 0x03, 0x0A};
 	for(uint8_t i=0; i<10; i++) gps_transmit_string(posllh, sizeof(posllh));
 	resp = gps_receive_payload(0x01, 0x02, response, 5000);
@@ -223,43 +264,7 @@ bool gps_get_fix(gpsFix_t *fix) {
 	fix->time.minute = response[17];
 	fix->time.second = response[18];
 
-	/*uint8_t pvt[] = {0xB5, 0x62, 0x01, 0x07, 0x00, 0x00, 0x08, 0x19};
-	gps_transmit_string(pvt, sizeof(pvt));
-	resp = gps_receive_payload(0x01, 0x07, response, 5000);
-
-	if(!resp) { // Failed to aquire GPS data
-		TRACE_INFO("GPS  > PVT Polling FAILED");
-		return false;
-	} else {
-		TRACE_INFO("GPS  > PVT Polling OK");
-	}
-
-	fix->num_svs = response[23];
-	fix->type = response[20];
-
-	fix->time.year = response[4] + (response[5] << 8);
-	fix->time.month = response[6];
-	fix->time.day = response[7];
-	fix->time.hour = response[8];
-	fix->time.minute = response[9];
-	fix->time.second = response[10];
-
-	fix->lat = (int32_t) (
-			(uint32_t)(response[28]) + ((uint32_t)(response[29]) << 8) + ((uint32_t)(response[30]) << 16) + ((uint32_t)(response[31]) << 24)
-			);
-	fix->lon = (int32_t) (
-			(uint32_t)(response[24]) + ((uint32_t)(response[25]) << 8) + ((uint32_t)(response[26]) << 16) + ((uint32_t)(response[27]) << 24)
-			);
-	int32_t alt_tmp = (((int32_t) 
-			((uint32_t)(response[36]) + ((uint32_t)(response[37]) << 8) + ((uint32_t)(response[38]) << 16) + ((uint32_t)(response[39]) << 24))
-			) / 1000);
-	if (alt_tmp <= 0) {
-		fix->alt = 1;
-	} else if (alt_tmp > 50000) {
-		fix->alt = 50000;
-	} else {
-		fix->alt = (uint16_t)alt_tmp;
-	}*/
+	#endif
 
 
 	return true;
@@ -485,10 +490,8 @@ bool GPS_Init(void) {
 void GPS_Deinit(void)
 {
 	// Switch MOSFET
-	#if GPS_TYPE == MAX7 || GPS_TYPE == MAX8
 	TRACE_INFO("GPS  > Switch off");
 	palClearPad(PORT(GPS_EN), PIN(GPS_EN));
-	#endif
 }
 
 /**
