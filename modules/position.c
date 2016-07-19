@@ -134,7 +134,7 @@ THD_FUNCTION(modulePOS, arg) {
 		TRACE_INFO("POS  > Get last track point");
 		trackPoint = getLastTrackPoint();
 
-		if(!p_sleep(&config->sleep))
+		if(!p_sleep(&config->sleep_config))
 		{
 
 			TRACE_INFO("POS  > Transmit GPS position");

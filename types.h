@@ -68,7 +68,7 @@ typedef enum {
 } sleep_type_t;
 
 typedef struct {
-	sleep_type_t types[3];
+	sleep_type_t type;
 	uint16_t vbat_thres;
 	uint16_t vsol_thres;
 } sleep_config_t;
@@ -180,7 +180,7 @@ typedef struct {
 	// Timing
 	uint32_t			init_delay;
 	uint32_t			packet_spacing;
-	sleep_config_t		sleep;
+	sleep_config_t		sleep_config;
 	trigger_config_t	trigger;
 
 	// Modulation

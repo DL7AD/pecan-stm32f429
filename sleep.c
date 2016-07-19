@@ -3,13 +3,40 @@
 #include "sleep.h"
 #include "padc.h"
 #include "tracking.h"
+#include "debug.h"
+#include "padc.h"
 
+/**
+  * Sleeping method. Returns true if sleeping condition are given.
+  */
 bool p_sleep(const sleep_config_t *config)
 {
-	(void)config;
+	switch(config->type)
+	{
+		case SLEEP_WHEN_VBAT_BELOW_THRES:
+			return getBatteryVoltageMV() < config->vbat_thres;
 
-	// TODO: Implement this function
+		case SLEEP_WHEN_VSOL_BELOW_THRES:
+			return getSolarVoltageMV() < config->vsol_thres;
 
+		case SLEEP_WHEN_VBAT_ABOVE_THRES:
+			return getBatteryVoltageMV() > config->vbat_thres;
+
+		case SLEEP_WHEN_VSOL_ABOVE_THRES:
+			return getSolarVoltageMV() > config->vsol_thres;
+
+		case SLEEP_WHEN_DISCHARGING:
+		case SLEEP_WHEN_CHARGING:
+		case SLEEP_WHEN_INSIDE_ITU1:
+		case SLEEP_WHEN_INSIDE_ITU2:
+		case SLEEP_WHEN_INSIDE_ITU3:
+		case SLEEP_WHEN_SAT_NOT_VIS:
+			TRACE_WARN("Sleeping method not implemented");
+			return false;
+
+		case SLEEP_DISABLED:
+			return false;
+	}
 	return false;
 }
 

@@ -377,7 +377,7 @@ uint8_t Si4464_freeFIFO(radio_t radio) {
 
 
 /**
-  * Returns free space in FIFO of Si4464
+  * Returns internal state of Si4464
   */
 uint8_t Si4464_getState(radio_t radio) {
 	uint8_t fifo_info[1] = {0x33};

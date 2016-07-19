@@ -3,7 +3,6 @@
 
 #include "debug.h"
 #include "modules.h"
-#include "ov9655.h"
 #include "ov2640.h"
 #include "pi2c.h"
 #include "ssdv.h"
@@ -15,7 +14,7 @@
 #include "sleep.h"
 #include "sd.h"
 
-static uint32_t gimage_id = 1;
+static uint32_t gimage_id;
 mutex_t camera_mtx;
 
 void encode_ssdv(uint8_t *image, uint32_t image_len, module_conf_t* config, uint8_t image_id)
@@ -123,7 +122,7 @@ THD_FUNCTION(moduleIMG, arg) {
 		TRACE_INFO("IMG  > Do module IMAGE cycle");
 		config->last_update = chVTGetSystemTimeX(); // Update Watchdog timer
 
-		if(!p_sleep(&config->sleep))
+		if(!p_sleep(&config->sleep_config))
 		{
 			uint32_t image_len = 0;
 			uint8_t *image;
@@ -131,8 +130,6 @@ THD_FUNCTION(moduleIMG, arg) {
 			// Take photo if camera activated (if camera disabled, camera buffer is probably shared in config file)
 			if(!config->ssdv_config.no_camera)
 			{
-				uint16_t cam_type;
-
 				// Lock camera
 				TRACE_INFO("IMG  > Lock camera");
 				chMtxLock(&camera_mtx);
@@ -149,33 +146,20 @@ THD_FUNCTION(moduleIMG, arg) {
 
 				// Power on camera (power on both options because we dont know which camera is attached)
 				TRACE_INFO("IMG  > Power on camera");
-				OV9655_poweron();
 				OV2640_poweron();
 				chThdSleepMilliseconds(1000);
-
-				// Detect camera
-				cam_type = 0x0000;
-				if(OV9655_isAvailable()) // OV9655 available
-				{
-					TRACE_INFO("IMG  > OV9655 found");
-					cam_type = 0x9655;
-				}
-				if(OV2640_isAvailable()) // OV2640 available
-				{
-					TRACE_INFO("IMG  > OV2640 found");
-					cam_type = 0x2640;
-				}
 
 				uint8_t tries;
 				bool status = false;
 
-				if(cam_type) // Camera available
+				// Detect camera
+				if(OV2640_isAvailable()) // OV2640 available
 				{
+					TRACE_INFO("IMG  > OV2640 found");
 
-					if(config->ssdv_config.res == RES_MAX && cam_type == 0x2640) // Maximum resolution
+					if(config->ssdv_config.res == RES_MAX) // Attempt maximum resolution (limited by memory)
 					{
-
-						config->ssdv_config.res = RES_UXGA;
+						config->ssdv_config.res = RES_UXGA; // Try maximum resolution
 
 						do {
 
@@ -188,35 +172,26 @@ THD_FUNCTION(moduleIMG, arg) {
 								status = OV2640_Snapshot2RAM();
 							} while(!status && --tries);
 
-							config->ssdv_config.res--;
+							config->ssdv_config.res--; // Decrement resolution in next attempt (if status==false)
 
 						} while(OV2640_BufferOverflow() && config->ssdv_config.res >= RES_QVGA);
 
-						config->ssdv_config.res = RES_MAX;
+						config->ssdv_config.res = RES_MAX; // Revert register
 
 					} else { // Static resolution
 
 						// Init camera
-						if(cam_type == 0x9655)
-							OV9655_init(&config->ssdv_config);
-						if(cam_type == 0x2640)
-							OV2640_init(&config->ssdv_config);
+						OV2640_init(&config->ssdv_config);
 
 						// Sample data from DCMI through DMA into RAM
 						tries = 5; // Try 5 times at maximum
 						do { // Try capturing image until capture successful
-							if(cam_type == 0x9655)
-								status = OV9655_Snapshot2RAM();
-							if(cam_type == 0x2640)
-								status = OV2640_Snapshot2RAM();
+							status = OV2640_Snapshot2RAM();
 						} while(!status && --tries);
 
 					}
 
-					if(cam_type == 0x9655)
-						image_len = OV9655_getBuffer(&image);
-					if(cam_type == 0x2640)
-						image_len = OV2640_getBuffer(&image);
+					image_len = OV2640_getBuffer(&image);
 					TRACE_INFO("IMG  > Image size: %d bytes", image_len);
 
 					// Write image to SD card
@@ -231,10 +206,7 @@ THD_FUNCTION(moduleIMG, arg) {
 				}
 
 				// Switch off camera
-				if(cam_type == 0x9655)
-					OV9655_deinit();
-				if(cam_type == 0x2640)
-					OV2640_deinit();
+				OV2640_deinit();
 
 				// Unlock radio
 				TRACE_INFO("IMG  > Unlock radio");
@@ -251,6 +223,7 @@ THD_FUNCTION(moduleIMG, arg) {
 				{
 					TRACE_INFO("IMG  > Encode/Transmit SSDV ID=%d", gimage_id++);
 					encode_ssdv(image, image_len, config, gimage_id);
+					encode_ssdv(image, image_len, config, gimage_id); // Transmit packets twice for redundancy
 				}
 
 			} else {

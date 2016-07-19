@@ -193,14 +193,24 @@ void send2GFSK(radio_t radio, radioMSG_t *msg) {
 
 		// Determine free memory in Si4464-FIFO
 		uint16_t more = Si4464_freeFIFO(radio);
-		if(more > all-c)
-			more = all-c; // Last bytes in FIFO
 
-		Si4464_writeFIFO(radio, &msg->msg[c], more); // Write into FIFO
+		if(more > 12) // Do not bother the chip too much
+		{
+			more -= 6; // Dont fill the buffer completly
+			if(more > all-c)
+				more = all-c; // Last bytes in FIFO
 
-		c += more;
-		chThdSleepMilliseconds(10);
+			Si4464_writeFIFO(radio, &msg->msg[c], more); // Write into FIFO
+
+			c += more;
+		}
+		chThdSleepMilliseconds(5);
 	}
+
+	// Wait until radio leaved TX_STATE
+	chThdSleepMilliseconds(10);
+	while(Si4464_getState(radio) == 7)
+		chThdSleepMilliseconds(1);
 }
 
 THD_FUNCTION(moduleRADIO, arg) {

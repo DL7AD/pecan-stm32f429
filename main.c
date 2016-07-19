@@ -15,6 +15,7 @@
 static virtual_timer_t vt;			// Virtual timer for LED blinking
 uint32_t counter = 0;				// Main thread counter
 bool error = 0;						// Error LED flag
+bool led_on = false;
 systime_t wdg_buffer = S2ST(60);	// Software thread monitor buffer
 
 // Hardware Watchdog configuration
@@ -31,6 +32,23 @@ static const WDGConfig wdgcfg = {
   * YELLOW LED: Camera takes a photo (See image.c)
   */
 static void led_cb(void *led_sw) {
+	#if MIN_LED_VBAT != 0
+	// Switch off LEDs below battery threshold
+	if(!led_on)
+	{
+		palSetPad(PORT(LED_1RED), PIN(LED_1RED));
+		palSetPad(PORT(LED_2YELLOW), PIN(LED_2YELLOW));
+		palSetPad(PORT(LED_3GREEN), PIN(LED_3GREEN));
+		palSetPad(PORT(LED_4GREEN), PIN(LED_4GREEN));
+
+		chSysLockFromISR();
+		chVTSetI(&vt, MS2ST(500), led_cb, led_sw);
+		chSysUnlockFromISR();
+
+		return;
+	}
+	#endif
+
 	// Switch LEDs
 	palWritePad(PORT(LED_3GREEN), PIN(LED_3GREEN), (bool)led_sw);	// Show I'M ALIVE
 	if(error) {
@@ -171,6 +189,8 @@ int main(void) {
 		} else {
 			TRACE_ERROR("WDG  > No reset");
 		}
+
+		led_on = getBatteryVoltageMV() >= MIN_LED_VBAT; // Switch on LEDs if battery voltage above threshold
 
 		chThdSleepMilliseconds(1000);
 		counter++;
