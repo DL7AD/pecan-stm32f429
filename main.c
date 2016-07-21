@@ -71,8 +71,6 @@ int main(void) {
 	halInit();					// Startup HAL
 	chSysInit();				// Startup RTOS
 
-	palClearPad(PORT(LED_4GREEN), PIN(LED_4GREEN)); // Show I'M ALIVE
-
 	DEBUG_INIT();				// Debug Init (Serial debug port, LEDs)
 	TRACE_INFO("MAIN > Startup");
 

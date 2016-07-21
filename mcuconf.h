@@ -42,15 +42,15 @@
 #define STM32_HSE_ENABLED                   TRUE
 #define STM32_LSE_ENABLED                   FALSE
 #define STM32_CLOCK48_REQUIRED              FALSE
-#define STM32_SW                            STM32_SW_PLL
+#define STM32_SW                            STM32_SW_HSE
 #define STM32_PLLSRC                        STM32_PLLSRC_HSE
 #define STM32_PLLM_VALUE                    26					/* Predivider PLLIN = HSI/PPLM = 16MHz/16 = 1MHz */
 #define STM32_PLLN_VALUE                    360					/* Multiplier inPLL = PLLIN*PPLN = 1MHz*360 = 360MHz */
 #define STM32_PLLP_VALUE                    8					/* Divider PLLOUT = inPLL/PLLP = 360MHz/2 = 180MHz */
 #define STM32_PLLQ_VALUE                    7					/* Divider for USB USB_CLK = PLLOUT/PLLQ = 180MHz/4 = 45MHz */
 #define STM32_HPRE                          STM32_HPRE_DIV1		/* AHB prescaler PLLOUT/HPRE = 360MHz/1 = 360MHz */
-#define STM32_PPRE1                         STM32_PPRE1_DIV4
-#define STM32_PPRE2                         STM32_PPRE2_DIV2
+#define STM32_PPRE1                         STM32_PPRE1_DIV1
+#define STM32_PPRE2                         STM32_PPRE2_DIV1
 #define STM32_RTCSEL                        STM32_RTCSEL_LSI
 #define STM32_RTCPRE_VALUE                  8
 #define STM32_MCO1SEL                       STM32_MCO1SEL_HSI

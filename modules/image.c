@@ -144,11 +144,6 @@ THD_FUNCTION(moduleIMG, arg) {
 				radioShutdown(RADIO_2M);
 				radioShutdown(RADIO_70CM);
 
-				// Power on camera (power on both options because we dont know which camera is attached)
-				TRACE_INFO("IMG  > Power on camera");
-				OV2640_poweron();
-				chThdSleepMilliseconds(1000);
-
 				uint8_t tries;
 				bool status = false;
 
