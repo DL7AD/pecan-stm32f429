@@ -298,7 +298,6 @@ THD_FUNCTION(moduleRADIO, arg) {
 						break;
 					case MOD_2GFSK:
 						send2GFSK(radio, msg);
-						send2GFSK(radio, msg);
 						break;
 					case MOD_AFSK:
 						if(!isRadioInitialized(radio))
