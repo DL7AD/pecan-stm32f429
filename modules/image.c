@@ -186,6 +186,10 @@ THD_FUNCTION(moduleIMG, arg) {
 
 					}
 
+					// Switch off camera
+					OV2640_deinit();
+
+					// Get image
 					image_len = OV2640_getBuffer(&image);
 					TRACE_INFO("IMG  > Image size: %d bytes", image_len);
 
@@ -198,10 +202,8 @@ THD_FUNCTION(moduleIMG, arg) {
 				} else { // Camera error
 
 					TRACE_ERROR("IMG  > No camera found");
-				}
 
-				// Switch off camera
-				OV2640_deinit();
+				}
 
 				// Unlock radio
 				TRACE_INFO("IMG  > Unlock radio");
