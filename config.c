@@ -19,7 +19,7 @@ void initModules(void)
 	config[0].trigger.type = TRIG_EVENT;					// Trigger transmission on event
 	config[0].trigger.event = EVENT_NEW_POINT;				// Trigger when new track point released
 	chsnprintf(config[0].aprs_config.callsign, 6, "DL7AD");	// APRS Callsign
-	config[0].aprs_config.ssid = 12;						// APRS SSID
+	config[0].aprs_config.ssid = 14;						// APRS SSID
 	config[0].aprs_config.symbol = SYM_BALLOON;				// APRS Symbol
 	chsnprintf(config[0].aprs_config.path, 16, "WIDE1-1");	// APRS Path
 	config[0].aprs_config.preamble = 200;					// APRS Preamble
@@ -85,11 +85,11 @@ void initModules(void)
 	config[3].init_delay = 10000;							// Module startup delay in msec
 	config[3].packet_spacing = 20000;						// Packet spacing in ms
 	config[3].sleep_config.type = SLEEP_WHEN_VBAT_BELOW_THRES;// Sleeping type
-	config[3].sleep_config.vbat_thres = 4500;				// Sleeping voltage threshold
+	config[3].sleep_config.vbat_thres = 4000;				// Sleeping voltage threshold
 	config[3].trigger.type = TRIG_TIMEOUT;					// Trigger transmission on timeout (Periodic cycling)
 	config[3].trigger.timeout = 10;							// Timeout 10 sec
 	chsnprintf(config[3].aprs_config.callsign, 6, "DL7AD");// APRS Callsign
-	config[3].aprs_config.ssid = 12;						// APRS SSID
+	config[3].aprs_config.ssid = 14;						// APRS SSID
 	config[3].aprs_config.preamble = 200;					// APRS Preamble
 	chsnprintf(config[3].ssdv_config.callsign, 6, "DL7AD");// SSDV Callsign
 	config[3].ssdv_config.ram_buffer = ssdv1_buffer;		// Camera buffer
@@ -120,11 +120,11 @@ void initModules(void)
 	config[5].frequency.method = APRS_REGION_FREQ_2M;		// Determine local APRS frequency on 2m
 	config[5].init_delay = 60000;							// Module startup delay in msec
 	config[5].sleep_config.type = SLEEP_WHEN_VBAT_BELOW_THRES;// Sleeping type
-	config[5].sleep_config.vbat_thres = 4500;				// Sleeping voltage threshold
+	config[5].sleep_config.vbat_thres = 4000;				// Sleeping voltage threshold
 	config[5].trigger.type = TRIG_TIMEOUT;					// Trigger transmission on timeout (Periodic cycling)
 	config[5].trigger.timeout = 10;							// Timeout 10 sec
 	chsnprintf(config[5].aprs_config.callsign, 6, "DL7AD");	// APRS Callsign
-	config[5].aprs_config.ssid = 12;						// APRS SSID
+	config[5].aprs_config.ssid = 14;						// APRS SSID
 	config[5].aprs_config.preamble = 40;					// APRS Preamble
 	chsnprintf(config[5].ssdv_config.callsign, 6, "DL7AD");	// SSDV Callsign
 	config[5].ssdv_config.ram_buffer = ssdv2_buffer;		// Camera buffer
@@ -153,4 +153,5 @@ void initModules(void)
 	config[6].ssdv_config.res = RES_VGA;					// Resolution VGA
 	MODULE_IMAGE(&config[6]);*/
 }
+
 

@@ -8,8 +8,7 @@
 #include "pi2c.h"
 #include <string.h>
 
-// AFSK configuration
-#define PLAYBACK_RATE		5282000									/* Samples per second (SYSCLK = 45MHz) */
+#define PLAYBACK_RATE		129000									/* Samples per second (SYSCLK = 45MHz) */
 #define BAUD_RATE			1200									/* APRS AFSK baudrate */
 #define SAMPLES_PER_BAUD	(PLAYBACK_RATE / BAUD_RATE)				/* Samples per baud */
 #define PHASE_DELTA_1200	(((2 * 1200) << 16) / PLAYBACK_RATE)	/* Delta-phase per sample for 1200Hz tone */
@@ -30,46 +29,75 @@ void initAFSK(radio_t radio, radioMSG_t *msg) {
 	radioTune(radio, msg->freq, 0, msg->power, 0);
 }
 
+// Initialize variables for AFSK
+static uint32_t phase_delta = PHASE_DELTA_1200;	// 1200/2200 for standard AX.25
+static uint32_t phase = 0;						// Fixed point 9.7 (2PI = TABLE_SIZE)
+static uint32_t packet_pos = 0;					// Next bit to be sent out
+static uint32_t current_sample_in_baud = 0;		// 1 bit = SAMPLES_PER_BAUD samples
+static uint8_t current_byte = 0;
+static radioMSG_t *afsk_msg;
+static radio_t afsk_radio;
+
 void sendAFSK(radio_t radio, radioMSG_t *msg) {
-	// Initialize variables for AFSK
-	uint32_t phase_delta = PHASE_DELTA_1200;	// 1200/2200 for standard AX.25
-	uint32_t phase = 0;							// Fixed point 9.7 (2PI = TABLE_SIZE)
-	uint32_t packet_pos = 0;					// Next bit to be sent out
-	uint32_t current_sample_in_baud = 0;		// 1 bit = SAMPLES_PER_BAUD samples
-	uint8_t current_byte = 0;
+	afsk_msg = msg;
+	afsk_radio = radio;
 
-	chSysDisable();
+	phase_delta = PHASE_DELTA_1200;
+	phase = 0;
+	packet_pos = 0;
+	current_sample_in_baud = 0;
+	current_byte = 0;
 
-	// Modulate
-	while(true)
-	{
-		if(packet_pos == msg->bin_len) { // Packet transmission finished
-			chSysEnable();
-			return;
-		}
+	uint32_t initial_interval = 100; /// in timer ticks
+	RCC->APB1ENR |= RCC_APB1ENR_TIM7EN;
+	nvicEnableVector(TIM7_IRQn, 1/*priority*/);
+	TIM7->ARR = initial_interval; /* Timer's period */
+	TIM7->PSC = 1;
+	TIM7->CR1 &= ~STM32_TIM_CR1_ARPE; /* ARR register is NOT buffered, allows to update timer's period on-fly. */
+	TIM7->DIER |= STM32_TIM_DIER_UIE; /* Interrupt enable */
+	TIM7->CR1 |= STM32_TIM_CR1_CEN; /* Counter enable */
 
-		if(current_sample_in_baud == 0) {
-			if((packet_pos & 7) == 0) { // Load up next byte
-				current_byte = msg->msg[packet_pos >> 3];
-			} else { // Load up next bit
-				current_byte = current_byte / 2;
-			}
-		}
+	// Block execution while timer is running
+	while(TIM7->CR1 & STM32_TIM_CR1_CEN)
+		chThdSleepMilliseconds(10);
+}
 
-		// Toggle tone (1200 <> 2200)
-		phase_delta = (current_byte & 1) ? PHASE_DELTA_1200 : PHASE_DELTA_2200;
 
-		phase += phase_delta;								// Add delta-phase (delta-phase tone dependent)
-		MOD_GPIO_SET(radio, (phase >> 16) & 1);				// Set modulaton pin (connected to Si4464)
+/**
+  * Fast interrupt handler for AFSK (1200baud) modulation. It has has the
+  * highest priority in order to provide an accurate low jitter modulation.
+  */
+CH_FAST_IRQ_HANDLER(STM32_TIM7_HANDLER)
+{
+	if(packet_pos == afsk_msg->bin_len) { // Packet transmission finished
+		TIM7->CR1 &= ~STM32_TIM_CR1_CEN;	// Disable timer
+		TIM7->SR &= ~STM32_TIM_SR_UIF;		// Reset interrupt flag
+		return;
+	}
 
-		current_sample_in_baud++;
-
-		if(current_sample_in_baud == SAMPLES_PER_BAUD) {	// Old bit consumed, load next bit
-			palTogglePad(PORT(LED_2YELLOW), PIN(LED_2YELLOW));
-			current_sample_in_baud = 0;
-			packet_pos++;
+	if(current_sample_in_baud == 0) {
+		if((packet_pos & 7) == 0) { // Load up next byte
+			current_byte = afsk_msg->msg[packet_pos >> 3];
+		} else { // Load up next bit
+			current_byte = current_byte / 2;
 		}
 	}
+
+	// Toggle tone (1200 <> 2200)
+	phase_delta = (current_byte & 1) ? PHASE_DELTA_1200 : PHASE_DELTA_2200;
+
+	phase += phase_delta;								// Add delta-phase (delta-phase tone dependent)
+	MOD_GPIO_SET(afsk_radio, (phase >> 16) & 1);		// Set modulaton pin (connected to Si4464)
+
+	current_sample_in_baud++;
+
+	if(current_sample_in_baud == SAMPLES_PER_BAUD) {	// Old bit consumed, load next bit
+		palTogglePad(PORT(LED_2YELLOW), PIN(LED_2YELLOW));
+		current_sample_in_baud = 0;
+		packet_pos++;
+	}
+
+	TIM7->SR &= ~STM32_TIM_SR_UIF;						// Reset interrupt flag
 }
 
 void initOOK(radio_t radio, radioMSG_t *msg) {
