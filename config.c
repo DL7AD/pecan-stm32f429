@@ -85,7 +85,7 @@ void initModules(void)
 	config[3].init_delay = 10000;							// Module startup delay in msec
 	config[3].packet_spacing = 20000;						// Packet spacing in ms
 	config[3].sleep_config.type = SLEEP_WHEN_VBAT_BELOW_THRES;// Sleeping type
-	config[3].sleep_config.vbat_thres = 2000;				// Sleeping voltage threshold
+	config[3].sleep_config.vbat_thres = 4000;				// Sleeping voltage threshold
 	config[3].trigger.type = TRIG_TIMEOUT;					// Trigger transmission on timeout (Periodic cycling)
 	config[3].trigger.timeout = 10;							// Timeout 10 sec
 	chsnprintf(config[3].aprs_config.callsign, 6, "DL7AD");// APRS Callsign
@@ -120,7 +120,7 @@ void initModules(void)
 	config[5].frequency.method = APRS_REGION_FREQ_2M;		// Determine local APRS frequency on 2m
 	config[5].init_delay = 60000;							// Module startup delay in msec
 	config[5].sleep_config.type = SLEEP_WHEN_VBAT_BELOW_THRES;// Sleeping type
-	config[5].sleep_config.vbat_thres = 2000;				// Sleeping voltage threshold
+	config[5].sleep_config.vbat_thres = 4000;				// Sleeping voltage threshold
 	config[5].trigger.type = TRIG_TIMEOUT;					// Trigger transmission on timeout (Periodic cycling)
 	config[5].trigger.timeout = 10;							// Timeout 10 sec
 	chsnprintf(config[5].aprs_config.callsign, 6, "DL7AD");	// APRS Callsign
