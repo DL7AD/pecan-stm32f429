@@ -2,8 +2,8 @@
 #include "debug.h"
 
 module_conf_t config[8];
-uint8_t ssdv1_buffer[1024*20];
-uint8_t ssdv2_buffer[1024*110];
+uint8_t ssdv1_buffer[1024*50];
+uint8_t ssdv2_buffer[1024*50];
 
 // Put your configuration settings here
 void initModules(void)
@@ -85,7 +85,7 @@ void initModules(void)
 	config[3].init_delay = 10000;							// Module startup delay in msec
 	config[3].packet_spacing = 20000;						// Packet spacing in ms
 	config[3].sleep_config.type = SLEEP_WHEN_VBAT_BELOW_THRES;// Sleeping type
-	config[3].sleep_config.vbat_thres = 4000;				// Sleeping voltage threshold
+	config[3].sleep_config.vbat_thres = 2700;				// Sleeping voltage threshold
 	config[3].trigger.type = TRIG_TIMEOUT;					// Trigger transmission on timeout (Periodic cycling)
 	config[3].trigger.timeout = 10;							// Timeout 10 sec
 	chsnprintf(config[3].aprs_config.callsign, 6, "DL7AD");// APRS Callsign
@@ -129,7 +129,7 @@ void initModules(void)
 	chsnprintf(config[5].ssdv_config.callsign, 6, "DL7AD");	// SSDV Callsign
 	config[5].ssdv_config.ram_buffer = ssdv2_buffer;		// Camera buffer
 	config[5].ssdv_config.ram_size = sizeof(ssdv2_buffer);	// Buffer size
-	config[5].ssdv_config.res = RES_XGA;					// Resolution XGA
+	config[5].ssdv_config.res = RES_QVGA;					// Resolution QVGA
 	MODULE_IMAGE(&config[5]);
 
 	// Module IMAGE, SSDV 2m 2FSK
