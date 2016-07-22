@@ -11,10 +11,10 @@
 extern module_conf_t config[8];
 
 #define RADIO_TIMEOUT			300				/* Radio transmission timeout in milliseconds (radio switched off after x ms in idling) */
-#define TRACK_CYCLE_TIME		120				/* Tracking cycle (all peripheral data [airpressure, GPS, temperature, ...] is collected each x seconds */
+#define TRACK_CYCLE_TIME		60				/* Tracking cycle (all peripheral data [airpressure, GPS, temperature, ...] is collected each x seconds */
 
-#define MIN_GPS_VBAT			3000			/* Battery voltage threshold for GPS usage, if below GPS will be switched off, 0 will disable feature */
-#define MIN_LED_VBAT			4600			/* Battery voltage threshold for LED usage, if below all debug LEDs will be switched off, 0 will disable feature */
+#define MIN_GPS_VBAT			2800			/* Battery voltage threshold for GPS usage, if below GPS will be switched off, 0 will disable feature */
+#define MIN_LED_VBAT			4500			/* Battery voltage threshold for LED usage, if below all debug LEDs will be switched off, 0 will disable feature */
 
 void initModules(void);
 
