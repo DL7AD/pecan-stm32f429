@@ -9,11 +9,11 @@
 #include "config.h"
 #include "types.h"
 
-#define MODULE_POSITION(CONF)	{chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(2048), (CONF)->name, NORMALPRIO, modulePOS,      (CONF)); (CONF)->active=true; }
-#define MODULE_IMAGE(CONF)		{chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(4096), (CONF)->name, NORMALPRIO, moduleIMG,      (CONF)); (CONF)->active=true; }
-#define MODULE_LOG(CONF)		{chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1024), (CONF)->name, NORMALPRIO, moduleLOG,      (CONF)); (CONF)->active=true; }
-#define MODULE_TRACKING(CYCLE)	 chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(2048), "Tracking",   NORMALPRIO, moduleTRACKING, NULL  );
-#define MODULE_RADIO()			 chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(2048), "Radio",      HIGHPRIO,   moduleRADIO,    NULL  );
+#define MODULE_POSITION(CONF)	{chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(2*1024), (CONF)->name, NORMALPRIO, modulePOS,      (CONF)); (CONF)->active=true; }
+#define MODULE_IMAGE(CONF)		{chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(6*1024), (CONF)->name, NORMALPRIO, moduleIMG,      (CONF)); (CONF)->active=true; }
+#define MODULE_LOG(CONF)		{chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1*1024), (CONF)->name, NORMALPRIO, moduleLOG,      (CONF)); (CONF)->active=true; }
+#define MODULE_TRACKING(CYCLE)	 chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(2*1024), "Tracking",   NORMALPRIO, moduleTRACKING, NULL  );
+#define MODULE_RADIO()			 chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(2*1024), "Radio",      HIGHPRIO,   moduleRADIO,    NULL  );
 
 #define initEssentialModules() { \
 	chMtxObjectInit(&interference_mtx); \
