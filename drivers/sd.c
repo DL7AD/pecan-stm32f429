@@ -12,10 +12,17 @@ bool initSD(void)
 	TRACE_INFO("SD   > Initialize SD card");
 
 	// Maximum speed SPI configuration
-	static SPIConfig hs_spicfg = {NULL, PORT(SD_CS), PIN(SD_CS), 0};
+	static SPIConfig hs_spicfg = {
+		.ssport	= PORT(SD_CS),
+		.sspad	= PIN(SD_CS)
+	};
 
 	// Low speed SPI configuration
-	static SPIConfig ls_spicfg = {NULL, PORT(SD_CS), PIN(SD_CS), SPI_CR1_BR_2 | SPI_CR1_BR_1};
+	static SPIConfig ls_spicfg = {
+		.ssport	= PORT(SD_CS),
+		.sspad	= PIN(SD_CS),
+		.cr1	= SPI_CR1_BR_2 | SPI_CR1_BR_1
+	};
 
 	// MMC/SD over SPI driver configuration
 	static MMCConfig mmccfg = {&SPID2, &ls_spicfg, &hs_spicfg};

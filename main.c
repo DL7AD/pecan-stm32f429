@@ -15,19 +15,21 @@
 static virtual_timer_t vt;			// Virtual timer for LED blinking
 uint32_t counter = 0;				// Main thread counter
 bool error = 0;						// Error LED flag
-bool led_on = false;
-systime_t wdg_buffer = S2ST(60);	// Software thread monitor buffer
+bool led_on = false;				// LED switch on flag (controled by MIN_LED_VBAT)
+systime_t wdg_buffer = S2ST(60);	// Software thread monitor buffer, this is the time margin for
+									// a thread to react after its actual window expired, after
+									// expiration watchdog will not reset anymore which will reset
+									// the complete MCU
 
 // Hardware Watchdog configuration
 static const WDGConfig wdgcfg = {
-	STM32_IWDG_PR_256,
-	STM32_IWDG_RL(10000),
-	STM32_IWDG_WIN_DISABLED
+	.pr =	STM32_IWDG_PR_256,
+	.rlr =	STM32_IWDG_RL(10000)
 };
 
 /**
   * LED blinking routine
-  * RED LED blinks: One or more modules crashed (software watchdog)
+  * RED LED blinks: One or more modules crashed (software watchdog) INFO: Due to hardware bug, the LED cannot be used (pin = OSC_OUT => must be left floating)
   * GREEN LED blinks: I'm alive! (STM32 crashed if not blinking)
   * YELLOW LED: Camera takes a photo (See image.c)
   */
