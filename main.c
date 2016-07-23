@@ -74,6 +74,11 @@ int main(void) {
 	DEBUG_INIT();				// Debug Init (Serial debug port, LEDs)
 	TRACE_INFO("MAIN > Startup");
 
+	// Initialize Watchdog
+	TRACE_INFO("MAIN > Initialize Watchdog");
+	wdgStart(&WDGD1, &wdgcfg);
+	wdgReset(&WDGD1);
+
 	pi2cInit();					// Startup I2C
 	initEssentialModules();		// Startup required modules (input/output modules)
 	initModules();				// Startup optional modules (eg. POSITION, LOG, ...)
@@ -87,10 +92,6 @@ int main(void) {
 	chVTSet(&vt, MS2ST(500), led_cb, 0);
 
 	chThdSleepMilliseconds(1000);
-
-	// Initialize Watchdog
-	wdgStart(&WDGD1, &wdgcfg);
-	wdgReset(&WDGD1);
 
 	while(true) {
 		// Print time every 10 sec
