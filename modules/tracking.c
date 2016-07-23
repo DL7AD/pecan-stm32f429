@@ -114,29 +114,16 @@ THD_FUNCTION(moduleTRACKING, arg) {
 			TRACE_INFO("TRAC > GPS sampling finished GPS LOCK");
 			TRACE_GPSFIX(&gpsFix);
 
-			
-			if(gpsFix.time.year) {
-				// Calibrate RTC
-				setTime(gpsFix.time);
+			// Calibrate RTC
+			setTime(gpsFix.time);
 
-				// Take time from GPS
-				tp->time.year = gpsFix.time.year;
-				tp->time.month = gpsFix.time.month;
-				tp->time.day = gpsFix.time.day;
-				tp->time.hour = gpsFix.time.hour;
-				tp->time.minute = gpsFix.time.minute;
-				tp->time.second = gpsFix.time.second;
-			} else {
-				// Take time from internal RTC
-				ptime_t time;
-				getTime(&time);
-				tp->time.year = time.year;
-				tp->time.month = time.month;
-				tp->time.day = time.day;
-				tp->time.hour = time.hour;
-				tp->time.minute = time.minute;
-				tp->time.second = time.second;
-			}
+			// Take time from GPS
+			tp->time.year = gpsFix.time.year;
+			tp->time.month = gpsFix.time.month;
+			tp->time.day = gpsFix.time.day;
+			tp->time.hour = gpsFix.time.hour;
+			tp->time.minute = gpsFix.time.minute;
+			tp->time.second = gpsFix.time.second;
 
 			// Set new GPS fix
 			tp->gps_lat = gpsFix.lat;
@@ -241,22 +228,4 @@ void waitForNewTrackPoint(void)
 	while(old_id == getLastTrackPoint()->id)
 		chThdSleepMilliseconds(1000);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

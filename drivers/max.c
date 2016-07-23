@@ -170,24 +170,29 @@ uint16_t gps_receive_payload(uint8_t class_id, uint8_t msg_id, unsigned char *pa
  * retrieves a GPS fix from the module. if validity flag is not set, date/time and position/altitude are 
  * assumed not to be reliable!
  *
+ * This method divides MAX7/8 and MAX6 modules since the protocol changed at MAX7 series. MAX6 requires
+ * NAV-POSLLH NAV-TIMEUTC and NAV-SOL to get all information about the GPS. With implementation of the
+ * NAV-PVT message at the MAX7 series, all information can be aquired by only one message. Although
+ * MAX7 is backward compatible, MAX7/8 will use NAV-PVT rather than the old protocol.
+ *
  * argument is call by reference to avoid large stack allocations
  *
  */
 bool gps_get_fix(gpsFix_t *fix) {
 	static uint8_t response[92];
-	bool resp;
 
 	#if GPS_TYPE == MAX7 || GPS_TYPE == MAX8
+
+	// Transmit request
 	uint8_t pvt[] = {0xB5, 0x62, 0x01, 0x07, 0x00, 0x00, 0x08, 0x19};
 	gps_transmit_string(pvt, sizeof(pvt));
-	resp = gps_receive_payload(0x01, 0x07, response, 5000);
 
-	if(!resp) { // Failed to aquire GPS data
+	if(!gps_receive_payload(0x01, 0x07, response, 5000)) { // Receive request
 		TRACE_INFO("GPS  > PVT Polling FAILED");
 		return false;
-	} else {
-		TRACE_INFO("GPS  > PVT Polling OK");
 	}
+
+	TRACE_INFO("GPS  > PVT Polling OK");
 
 	fix->num_svs = response[23];
 	fix->type = response[20];
@@ -216,14 +221,21 @@ bool gps_get_fix(gpsFix_t *fix) {
 		fix->alt = (uint16_t)alt_tmp;
 	}
 
+	return true;
+
 	#else
 
+	bool respall = true; // Validity over all GPS requests
+	bool resp;
+
+	// POSLLH (Geodetic Position Solution)
 	uint8_t posllh[] = {0xB5, 0x62, 0x01, 0x02, 0x00, 0x00, 0x03, 0x0A};
-	for(uint8_t i=0; i<10; i++) gps_transmit_string(posllh, sizeof(posllh));
+	gps_transmit_string(posllh, sizeof(posllh));
+
 	resp = gps_receive_payload(0x01, 0x02, response, 5000);
 	if(!resp) { // Failed to aquire GPS data
-		TRACE_INFO("GPS  > POSLLH Polling FAILED");
-		return false;
+		TRACE_ERROR("GPS  > POSLLH Polling FAILED");
+		respall = false;
 	} else {
 		TRACE_INFO("GPS  > POSLLH Polling OK");
 	}
@@ -245,14 +257,29 @@ bool gps_get_fix(gpsFix_t *fix) {
 		fix->alt = (uint16_t)alt_tmp;
 	}
 
-	fix->type = fix->lat != 0 && fix->lon != 0 ? 3 : 0;
-	fix->num_svs = 5;
-	
-	uint8_t timeutc[] = {0xB5, 0x62, 0x01, 0x21, 0x00, 0x00, 0x22, 0x67};
-	for(uint8_t i=0; i<10; i++) gps_transmit_string(timeutc, sizeof(timeutc));
-	resp = gps_receive_payload(0x01, 0x21, response, 10000);
+	// SOL (Navigation Solution Information)
+	uint8_t sol[] = {0xB5, 0x62, 0x01, 0x06, 0x00, 0x00, 0x07, 0x16};
+	gps_transmit_string(sol, sizeof(sol));
+
+	resp = gps_receive_payload(0x01, 0x06, response, 5000);
 	if(!resp) { // Failed to aquire GPS data
-		TRACE_INFO("GPS  > TIMEUTC Polling FAILED");
+		TRACE_ERROR("GPS  > SOL Polling FAILED");
+		respall = false;
+	} else {
+		TRACE_INFO("GPS  > SOL Polling OK");
+	}
+
+	fix->type = response[10];
+	fix->num_svs = response[47];
+
+	// TIMEUTC (UTC Time Solution)
+	uint8_t timeutc[] = {0xB5, 0x62, 0x01, 0x21, 0x00, 0x00, 0x22, 0x67};
+	gps_transmit_string(timeutc, sizeof(timeutc));
+
+	resp = gps_receive_payload(0x01, 0x21, response, 5000);
+	if(!resp) { // Failed to aquire GPS data
+		TRACE_ERROR("GPS  > TIMEUTC Polling FAILED");
+		respall = false;
 	} else {
 		TRACE_INFO("GPS  > TIMEUTC Polling OK");
 	}
@@ -264,10 +291,9 @@ bool gps_get_fix(gpsFix_t *fix) {
 	fix->time.minute = response[17];
 	fix->time.second = response[18];
 
+	return respall;
+
 	#endif
-
-
-	return true;
 }
 
 /* 
