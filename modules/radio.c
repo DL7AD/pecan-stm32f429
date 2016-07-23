@@ -15,12 +15,13 @@
 #define PHASE_DELTA_2200	(((2 * 2200) << 16) / PLAYBACK_RATE)	/* Delta-phase per sample for 2200Hz tone */
 #define MB_SIZE 2													/* Radio mailbox size */
 
-mailbox_t radioMB;
+// Mailbox variables
+mailbox_t radioMB;                             // Radio mailbox object
 msg_t mb_pbuffer[MB_SIZE];		// Mailbox pointer buffer (contains radioMSG_t pointer)
 radioMSG_t mb_buffer[MB_SIZE];	// Mailbox data buffer
 uint32_t mb_buffer_index;
 static uint8_t mb_free = MB_SIZE;
-mutex_t radio_mtx;
+mutex_t radio_mtx;                             // Radio mailbox mutex
 
 void initAFSK(radio_t radio, radioMSG_t *msg) {
 	// Initialize radio and tune
