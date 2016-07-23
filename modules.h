@@ -13,13 +13,12 @@
 #define MODULE_IMAGE(CONF)		{chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(6*1024), (CONF)->name, NORMALPRIO, moduleIMG,      (CONF)); (CONF)->active=true; }
 #define MODULE_LOG(CONF)		{chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(1*1024), (CONF)->name, NORMALPRIO, moduleLOG,      (CONF)); (CONF)->active=true; }
 #define MODULE_TRACKING(CYCLE)	 chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(2*1024), "Tracking",   NORMALPRIO, moduleTRACKING, NULL  );
-#define MODULE_RADIO()			 chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(2*1024), "Radio",      HIGHPRIO,   moduleRADIO,    NULL  );
 
 #define initEssentialModules() { \
 	chMtxObjectInit(&interference_mtx); \
 	chMtxObjectInit(&camera_mtx); \
+	chMtxObjectInit(&radio_mtx); \
 	MODULE_TRACKING(CYCLE_TIME); /* Tracker data input */ \
-	MODULE_RADIO(); /* Tracker data output */ \
 	chThdSleepMilliseconds(1000); /* Give Tracking manager some time to fill first track point */ \
 }
 
@@ -32,7 +31,6 @@ extern char *PROTOCOL_STRING[];
 
 extern mutex_t interference_mtx;	// HF interference mutex (needed to exclude radio from HF sensitiv components [Camera])
 
-extern systime_t watchdog_radio;	// Last update time for module RADIO
 extern systime_t watchdog_tracking;	// Last update time for module TRACKING
 
 #endif

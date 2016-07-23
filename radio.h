@@ -24,7 +24,7 @@
 #define APRS_FREQ_ARGENTINA			144930000
 #define APRS_FREQ_BRAZIL			145575000
 
-extern mutex_t radio_image_mtx;
+extern mutex_t radio_mtx;
 
 uint32_t getAPRSRegionFrequency2m(void);
 uint32_t getAPRSRegionFrequency70cm(void);

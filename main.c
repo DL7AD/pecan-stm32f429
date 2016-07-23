@@ -155,23 +155,9 @@ int main(void) {
 			}
 		}
 
-		// Watchdog RADIO
-		healthy = watchdog_radio + wdg_buffer > chVTGetSystemTimeX();
-		lu = chVTGetSystemTimeX() - watchdog_radio;
-
-		if(counter % 10 == 0) {
-			if(healthy) {
-				TRACE_INFO("WDG  > Module RAD OK (last activity %d.%03d sec ago)", ST2MS(lu)/1000, ST2MS(lu)%1000);
-			} else {
-				TRACE_ERROR("WDG  > Module RAD failed (last activity %d.%03d sec ago)", ST2MS(lu)/1000, ST2MS(lu)%1000);
-			}
-		}
-		if(!healthy)
-			aerror = true; // Set error flag
-
 		// Watchdog TRACKING
 		healthy = watchdog_tracking + S2ST(TRACK_CYCLE_TIME) + wdg_buffer > chVTGetSystemTimeX();
-		lu = chVTGetSystemTimeX() - watchdog_radio;
+		lu = chVTGetSystemTimeX() - watchdog_tracking;
 		if(counter % 10 == 0) {
 			if(healthy) {
 				TRACE_INFO("WDG  > Module TRAC OK (last activity %d.%03d sec ago)", ST2MS(lu)/1000, ST2MS(lu)%1000);

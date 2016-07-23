@@ -18,6 +18,5 @@ char *MOULATION_STRING[] = {
 
 mutex_t interference_mtx;
 
-systime_t watchdog_radio;
 systime_t watchdog_tracking;
 

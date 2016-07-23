@@ -13,15 +13,8 @@
 #define SAMPLES_PER_BAUD	(PLAYBACK_RATE / BAUD_RATE)				/* Samples per baud */
 #define PHASE_DELTA_1200	(((2 * 1200) << 16) / PLAYBACK_RATE)	/* Delta-phase per sample for 1200Hz tone */
 #define PHASE_DELTA_2200	(((2 * 2200) << 16) / PLAYBACK_RATE)	/* Delta-phase per sample for 2200Hz tone */
-#define MB_SIZE 2													/* Radio mailbox size */
 
-// Mailbox variables
-mailbox_t radioMB;                             // Radio mailbox object
-msg_t mb_pbuffer[MB_SIZE];		// Mailbox pointer buffer (contains radioMSG_t pointer)
-radioMSG_t mb_buffer[MB_SIZE];	// Mailbox data buffer
-uint32_t mb_buffer_index;
-static uint8_t mb_free = MB_SIZE;
-mutex_t radio_mtx;                             // Radio mailbox mutex
+mutex_t radio_mtx;                             // Radio mutex
 
 void initAFSK(radio_t radio, radioMSG_t *msg) {
 	// Initialize radio and tune
@@ -185,6 +178,9 @@ static void serial_cb(void *arg) {
 }
 
 void init2FSK(radio_t radio, radioMSG_t *msg) {
+	// Initialize virtual timer
+	chVTObjectInit(&vt);
+
 	// Initialize radio and tune
 	Si4464_Init(radio, MOD_2FSK);
 	MOD_GPIO_SET(radio, HIGH);
@@ -241,105 +237,6 @@ void send2GFSK(radio_t radio, radioMSG_t *msg) {
 	chThdSleepMilliseconds(10);
 	while(Si4464_getState(radio) == 7)
 		chThdSleepMilliseconds(1);
-}
-
-THD_FUNCTION(moduleRADIO, arg) {
-	(void)arg;
-
-	time_t lastMessage[2]; // Last transmission time (end of transmission)
-	mod_t lastModulation[2]; // Last modulation
-
-	// Print initialization message
-	TRACE_INFO("RAD  > Startup module RADIO");
-
-	// Setup mailbox
-	TRACE_INFO("RAD  > Setup radio mailbox");
-	chMBObjectInit(&radioMB, mb_pbuffer, MB_SIZE);
-	chMtxObjectInit(&radio_mtx);
-
-	// Setup timer
-	chVTObjectInit(&vt);
-
-	while(true)
-	{
-		watchdog_radio = chVTGetSystemTimeX(); // Update watchdog timer
-
-		// Lock interference mutex
-		chMtxLock(&interference_mtx);
-
-		// Receive message
-		radioMSG_t *msg;
-		msg_t status = chMBFetch(&radioMB, (msg_t*)&msg, 0);
-
-		if(status == MSG_OK) { // Message available
-
-			// Determine suitable radio
-			radio_t radio = 0;
-			if(inRadio1band(msg->freq)) {
-				radio = RADIO_2M;
-			} else if(inRadio2band(msg->freq)) {
-				radio = RADIO_70CM;
-			}
-
-			if(radio) { // Radio found
-				TRACE_INFO(	"RAD  > Transmit radio %d, %d.%03d MHz, %d dBm (%d), %s, %d bits",
-							radio, msg->freq/1000000, (msg->freq%1000000)/1000, msg->power,
-							dBm2powerLvl(msg->power), VAL2MOULATION(msg->mod), msg->bin_len
-				);
-
-				if(msg->mod != lastModulation[radio-1]) // Modulation of last msg was different
-					radioShutdown(radio); // Shutdown radio for reinitialization
-
-				switch(msg->mod) {
-					case MOD_2FSK:
-						if(!isRadioInitialized(radio))
-							init2FSK(radio, msg);
-						send2FSK(radio, msg);
-						break;
-					case MOD_2GFSK:
-						send2GFSK(radio, msg);
-						break;
-					case MOD_AFSK:
-						if(!isRadioInitialized(radio))
-							initAFSK(radio, msg);
-						sendAFSK(radio, msg);
-						break;
-					case MOD_OOK:
-						if(!isRadioInitialized(radio))
-							initOOK(radio, msg);
-						sendOOK(radio, msg);
-						break;
-					case MOD_DOMINOEX16:
-						TRACE_ERROR("RAD  > Unimplemented modulation DominoEX16"); // TODO: Implement this
-						break;
-				}
-
-				lastMessage[radio-1] = chVTGetSystemTimeX(); // Mark time for radio shutdown
-				lastModulation[radio-1] = msg->mod;
-
-			} else { // Error
-
-				TRACE_ERROR("RAD  > No radio available for this frequency, %d.%03d MHz, %d dBm (%d), %s, %d bits",
-							radio, msg->freq/1000000, (msg->freq%1000000)/1000, msg->power,
-							dBm2powerLvl(msg->power), VAL2MOULATION(msg->mod), msg->bin_len
-				);
-
-			}
-
-			chMtxLock(&radio_mtx);
-			mb_free++;
-			chMtxUnlock(&radio_mtx);
-
-		} else {
-			for(uint8_t i=0; i<2; i++) {
-				if(ST2MS(chVTGetSystemTimeX() - lastMessage[i]) >= RADIO_TIMEOUT) // Timeout reached
-					radioShutdown(i+1); // Shutdown radio
-			}
-		}
-		chMtxUnlock(&interference_mtx); // Heavy interference finished (HF)
-
-		chThdSleepMilliseconds(1);
-	}
 }
 
 /**
@@ -406,17 +303,67 @@ uint32_t getAPRSISSFrequency(void) {
   * Sends radio message into message box. This method will return false if message box is full.
   */
 bool transmitOnRadio(radioMSG_t *msg) {
+	// Lock radio
 	chMtxLock(&radio_mtx);
-	if(mb_free > 0) { // Buffer is free
-		chMBPost(&radioMB, (msg_t)&mb_buffer[mb_buffer_index % MB_SIZE], TIME_IMMEDIATE);	// Post pointer into messagebox
-		memcpy(&mb_buffer[mb_buffer_index % MB_SIZE], msg, sizeof(radioMSG_t));				// Copy buffer into messagebox-buffer
-		mb_buffer_index++;																	// Increment buffer index
-		mb_free--;																			// Decrement free counter
-		chMtxUnlock(&radio_mtx);
-		return true;
+
+	// Determine suitable radio
+	radio_t radio = 0;
+	if(inRadio1band(msg->freq)) {
+		radio = RADIO_2M;
+	} else if(inRadio2band(msg->freq)) {
+		radio = RADIO_70CM;
 	}
+
+	if(radio) { // Radio found
+
+		// Lock interference mutex
+		chMtxLock(&interference_mtx);
+
+		TRACE_INFO(	"RAD  > Transmit radio %d, %d.%03d MHz, %d dBm (%d), %s, %d bits",
+					radio, msg->freq/1000000, (msg->freq%1000000)/1000, msg->power,
+					dBm2powerLvl(msg->power), VAL2MOULATION(msg->mod), msg->bin_len
+		);
+		
+		switch(msg->mod) {
+			case MOD_2FSK:
+				if(!isRadioInitialized(radio))
+					init2FSK(radio, msg);
+				send2FSK(radio, msg);
+				break;
+			case MOD_2GFSK:
+				send2GFSK(radio, msg);
+				break;
+			case MOD_AFSK:
+				if(!isRadioInitialized(radio))
+					initAFSK(radio, msg);
+				sendAFSK(radio, msg);
+				break;
+			case MOD_OOK:
+				if(!isRadioInitialized(radio))
+					initOOK(radio, msg);
+				sendOOK(radio, msg);
+				break;
+			case MOD_DOMINOEX16:
+				TRACE_ERROR("RAD  > Unimplemented modulation DominoEX16"); // TODO: Implement this
+				break;
+		}
+
+		radioShutdown(radio); // Shutdown radio for reinitialization
+		chMtxUnlock(&interference_mtx); // Heavy interference finished (HF)
+
+	} else { // Error
+
+		TRACE_ERROR("RAD  > No radio available for this frequency, %d.%03d MHz, %d dBm (%d), %s, %d bits",
+					radio, msg->freq/1000000, (msg->freq%1000000)/1000, msg->power,
+					dBm2powerLvl(msg->power), VAL2MOULATION(msg->mod), msg->bin_len
+		);
+
+	}
+
+	// Unlock radio
 	chMtxUnlock(&radio_mtx);
-	return false;
+
+	return true;
 }
 
 uint32_t getFrequency(freuquency_config_t *config)

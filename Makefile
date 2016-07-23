@@ -118,7 +118,6 @@ CSRC = $(STARTUPSRC) \
        $(CHIBIOS)/os/hal/lib/streams/memstreams.c \
        $(CHIBIOS)/os/hal/lib/streams/chprintf.c \
        $(CHIBIOS)/os/various/fatfs_bindings/fatfs_diskio.c \
-       modules/radio.c \
        modules/tracking.c \
        modules/position.c \
        modules/image.c \
@@ -140,6 +139,7 @@ CSRC = $(STARTUPSRC) \
        jpegant/dct.c \
        jpegant/jpegenc.c \
        debug.c \
+       radio.c \
        sleep.c \
        modules.c \
        math/base.c \
