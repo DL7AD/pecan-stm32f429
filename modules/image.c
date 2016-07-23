@@ -220,7 +220,6 @@ THD_FUNCTION(moduleIMG, arg) {
 				{
 					TRACE_INFO("IMG  > Encode/Transmit SSDV ID=%d", gimage_id++);
 					encode_ssdv(image, image_len, config, gimage_id);
-					encode_ssdv(image, image_len, config, gimage_id); // Transmit packets twice for redundancy
 				}
 
 			} else {
