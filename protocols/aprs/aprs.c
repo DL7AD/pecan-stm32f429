@@ -339,26 +339,3 @@ uint32_t aprs_encode_telemetry_configuration(uint8_t* message, mod_t mod, const 
 	return packet.size;
 }
 
-uint32_t aprs_encode_image(uint8_t* message, mod_t mod, const aprs_config_t *config, uint8_t *image, size_t size)
-{
-	ax25_t packet;
-	packet.data = message;
-	packet.max_size = 512; // TODO: replace 512 with real size
-	packet.mod = mod;
-
-	// Encode APRS header (No path)
-	ax25_send_header(&packet, config->callsign, config->ssid, NULL, config->preamble);
-	ax25_send_string(&packet, "{{I");
-
-	// Encode image message
-	for(uint16_t i=0; i<size; i++)
-		ax25_send_byte(&packet, image[i]);
-
-	// Send footer
-	ax25_send_footer(&packet);
-	scramble(&packet);
-	nrzi_encode(&packet);
-
-	return packet.size;
-}
-
