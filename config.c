@@ -152,6 +152,22 @@ void initModules(void)
 	config[6].ssdv_config.ram_size = sizeof(ssdv2_buffer);	// Buffer size
 	config[6].ssdv_config.res = RES_VGA;					// Resolution VGA
 	MODULE_IMAGE(&config[6]);*/
+
+	// Module LOG, APRS 2m AFSK
+	chsnprintf(config[7].name, 17, "LOG APRS 2m AFSK");		// Instance name
+	config[7].power = 20;									// Power 20 dBm
+	config[7].protocol = PROT_APRS_AFSK;					// Protocol APRS, modulation AFSK
+	config[7].frequency.type = FREQ_DYNAMIC;				// Dynamic frequency allocation
+	config[7].frequency.hz = 144800000;						// Default frequency 144.800 MHz
+	config[7].frequency.method = APRS_REGION_FREQ_2M;		// Determine local APRS frequency on 2m
+	config[7].init_delay = 60000;							// Module startup delay in msec
+	config[7].trigger.type = TRIG_TIMEOUT;					// Trigger transmission on timeout (Periodic cycling)
+	config[7].trigger.timeout = 600;						// Timeout 600 sec
+	chsnprintf(config[7].aprs_config.callsign, 6, "DL7AD");	// APRS Callsign
+	config[7].aprs_config.ssid = 11;						// APRS SSID
+	chsnprintf(config[7].aprs_config.path, 16, "WIDE1-1");	// APRS Path
+	config[7].aprs_config.preamble = 200;					// APRS Preamble
+	MODULE_LOG(&config[7]);
 }
 
 

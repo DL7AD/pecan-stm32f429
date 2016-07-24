@@ -6,6 +6,7 @@
 #include "chprintf.h"
 #include "ptime.h"
 #include "config.h"
+#include "log.h"
 #include <string.h>
 
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
@@ -45,7 +46,10 @@ extern const SerialConfig uart_config;
 #define TRACE_DEBUG(format, args...) TRACE_BASE(format, "DEBUG", ##args)
 #define TRACE_INFO(format, args...)  TRACE_BASE(format, "     ", ##args)
 #define TRACE_WARN(format, args...) TRACE_BASE(format, "WARN ", ##args)
-#define TRACE_ERROR(format, args...) TRACE_BASE(format, "ERROR", ##args)
+#define TRACE_ERROR(format, args...) { \
+	TRACE_BASE(format, "ERROR", ##args); \
+	log_error(__FILENAME__, __LINE__); \
+}
 
 #if TRACE_TIME && TRACE_FILE
 #define TRACE_TAB "                                             "

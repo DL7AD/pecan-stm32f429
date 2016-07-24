@@ -71,7 +71,7 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_conf_t* config, uint
 				msg.gfsk_config = &(config->gfsk_config);
 
 				// Deleting buffer
-				for(int t=0; t<256; t++)
+				for(uint16_t t=0; t<256; t++)
 					pkt_base91[t] = 0;
 
 				base91_encode(&pkt[1], pkt_base91, sizeof(pkt)-37); // Sync byte, CRC and FEC of SSDV not transmitted

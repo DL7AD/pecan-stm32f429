@@ -136,8 +136,6 @@ CSRC = $(STARTUPSRC) \
        drivers/pac1720.c \
        drivers/ov2640.c \
        drivers/sd.c \
-       jpegant/dct.c \
-       jpegant/jpegenc.c \
        debug.c \
        radio.c \
        sleep.c \

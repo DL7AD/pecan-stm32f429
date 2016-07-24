@@ -11,6 +11,7 @@
 extern module_conf_t config[8];
 
 #define TRACK_CYCLE_TIME		60				/* Tracking cycle (all peripheral data [airpressure, GPS, temperature, ...] is collected each x seconds */
+#define ERRORLOG_SIZE			25				/* Amount of error messages being sent in one error log packet */
 
 #define MIN_GPS_VBAT			2800			/* Battery voltage threshold for GPS usage, if below GPS will be switched off, 0 will disable feature */
 #define MIN_LED_VBAT			4500			/* Battery voltage threshold for LED usage, if below all debug LEDs will be switched off, 0 will disable feature */
