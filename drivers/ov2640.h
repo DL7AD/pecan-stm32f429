@@ -22,6 +22,5 @@ void OV2640_TransmitConfig(void);
 void OV2640_init(ssdv_config_t *config);
 void OV2640_deinit(void);
 bool OV2640_isAvailable(void);
-void OV2640_poweron(void);
 
 #endif

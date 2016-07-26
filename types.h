@@ -209,5 +209,10 @@ typedef struct {
 	bool				active;
 } module_conf_t;
 
+typedef struct {
+	uint32_t time;	// Time of occurance in seconds
+	uint16_t error;
+} error_t;
+
 #endif
 

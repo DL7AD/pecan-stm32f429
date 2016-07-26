@@ -15,19 +15,21 @@
 static virtual_timer_t vt;			// Virtual timer for LED blinking
 uint32_t counter = 0;				// Main thread counter
 bool error = 0;						// Error LED flag
-bool led_on = false;
-systime_t wdg_buffer = S2ST(60);	// Software thread monitor buffer
+bool led_on = false;				// LED switch on flag (controled by MIN_LED_VBAT)
+systime_t wdg_buffer = S2ST(60);	// Software thread monitor buffer, this is the time margin for
+									// a thread to react after its actual window expired, after
+									// expiration watchdog will not reset anymore which will reset
+									// the complete MCU
 
 // Hardware Watchdog configuration
 static const WDGConfig wdgcfg = {
-	STM32_IWDG_PR_256,
-	STM32_IWDG_RL(10000),
-	STM32_IWDG_WIN_DISABLED
+	.pr =	STM32_IWDG_PR_256,
+	.rlr =	STM32_IWDG_RL(10000)
 };
 
 /**
   * LED blinking routine
-  * RED LED blinks: One or more modules crashed (software watchdog)
+  * RED LED blinks: One or more modules crashed (software watchdog) INFO: Due to hardware bug, the LED cannot be used (pin = OSC_OUT => must be left floating)
   * GREEN LED blinks: I'm alive! (STM32 crashed if not blinking)
   * YELLOW LED: Camera takes a photo (See image.c)
   */
@@ -71,10 +73,13 @@ int main(void) {
 	halInit();					// Startup HAL
 	chSysInit();				// Startup RTOS
 
-	palClearPad(PORT(LED_4GREEN), PIN(LED_4GREEN)); // Show I'M ALIVE
-
 	DEBUG_INIT();				// Debug Init (Serial debug port, LEDs)
 	TRACE_INFO("MAIN > Startup");
+
+	// Initialize Watchdog
+	TRACE_INFO("MAIN > Initialize Watchdog");
+	wdgStart(&WDGD1, &wdgcfg);
+	wdgReset(&WDGD1);
 
 	pi2cInit();					// Startup I2C
 	initEssentialModules();		// Startup required modules (input/output modules)
@@ -89,10 +94,6 @@ int main(void) {
 	chVTSet(&vt, MS2ST(500), led_cb, 0);
 
 	chThdSleepMilliseconds(1000);
-
-	// Initialize Watchdog
-	wdgStart(&WDGD1, &wdgcfg);
-	wdgReset(&WDGD1);
 
 	while(true) {
 		// Print time every 10 sec
@@ -154,23 +155,9 @@ int main(void) {
 			}
 		}
 
-		// Watchdog RADIO
-		healthy = watchdog_radio + wdg_buffer > chVTGetSystemTimeX();
-		lu = chVTGetSystemTimeX() - watchdog_radio;
-
-		if(counter % 10 == 0) {
-			if(healthy) {
-				TRACE_INFO("WDG  > Module RAD OK (last activity %d.%03d sec ago)", ST2MS(lu)/1000, ST2MS(lu)%1000);
-			} else {
-				TRACE_ERROR("WDG  > Module RAD failed (last activity %d.%03d sec ago)", ST2MS(lu)/1000, ST2MS(lu)%1000);
-			}
-		}
-		if(!healthy)
-			aerror = true; // Set error flag
-
 		// Watchdog TRACKING
 		healthy = watchdog_tracking + S2ST(TRACK_CYCLE_TIME) + wdg_buffer > chVTGetSystemTimeX();
-		lu = chVTGetSystemTimeX() - watchdog_radio;
+		lu = chVTGetSystemTimeX() - watchdog_tracking;
 		if(counter % 10 == 0) {
 			if(healthy) {
 				TRACE_INFO("WDG  > Module TRAC OK (last activity %d.%03d sec ago)", ST2MS(lu)/1000, ST2MS(lu)%1000);

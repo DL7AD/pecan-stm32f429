@@ -164,9 +164,9 @@ uint32_t aprs_encode_position(uint8_t* message, mod_t mod, const aprs_config_t *
 }
 
 /**
- * Transmit APRS log packet
+ * Transmit custom experimental packet
  */
-uint32_t aprs_encode_log(uint8_t* message, mod_t mod, const aprs_config_t *config, uint8_t length)
+uint32_t aprs_encode_experimental(char packetType, uint8_t* message, mod_t mod, const aprs_config_t *config, uint8_t *data, size_t size)
 {
 	ax25_t packet;
 	packet.data = message;
@@ -175,17 +175,12 @@ uint32_t aprs_encode_log(uint8_t* message, mod_t mod, const aprs_config_t *confi
 
 	// Encode APRS header
 	ax25_send_header(&packet, config->callsign, config->ssid, config->path, config->preamble);
-	ax25_send_string(&packet, "{{L");
+	ax25_send_string(&packet, "{{");
+	ax25_send_byte(&packet, packetType);
 
-	// Encode log message
-	uint8_t i;
-	for(i=0; i<length; i++) {
-		gpsFix_t dummy;
-		gpsFix_t *data = &dummy; // TODO: Implement getNextLogPoint() for this assignment
-		uint8_t base91[BASE91LEN(sizeof(gpsFix_t))+1];
-		base91_encode((uint8_t*)data, base91, sizeof(gpsFix_t));
-		ax25_send_string(&packet, (char*)base91);
-	}
+	// Encode message
+	for(uint16_t i=0; i<size; i++)
+		ax25_send_byte(&packet, data[i]);
 
 	// Send footer
 	ax25_send_footer(&packet);
@@ -341,29 +336,6 @@ uint32_t aprs_encode_telemetry_configuration(uint8_t* message, mod_t mod, const 
 	scramble(&packet);
 	nrzi_encode(&packet);
 	
-	return packet.size;
-}
-
-uint32_t aprs_encode_image(uint8_t* message, mod_t mod, const aprs_config_t *config, uint8_t *image, size_t size)
-{
-	ax25_t packet;
-	packet.data = message;
-	packet.max_size = 512; // TODO: replace 512 with real size
-	packet.mod = mod;
-
-	// Encode APRS header
-	ax25_send_header(&packet, config->callsign, config->ssid, NULL, config->preamble);
-	ax25_send_string(&packet, "{{I");
-
-	// Encode image message
-	for(uint16_t i=0; i<size; i++)
-		ax25_send_byte(&packet, image[i]);
-
-	// Send footer
-	ax25_send_footer(&packet);
-	scramble(&packet);
-	nrzi_encode(&packet);
-
 	return packet.size;
 }
 

@@ -71,11 +71,11 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_conf_t* config, uint
 				msg.gfsk_config = &(config->gfsk_config);
 
 				// Deleting buffer
-				for(int t=0; t<256; t++)
+				for(uint16_t t=0; t<256; t++)
 					pkt_base91[t] = 0;
 
 				base91_encode(&pkt[1], pkt_base91, sizeof(pkt)-37); // Sync byte, CRC and FEC of SSDV not transmitted
-				msg.bin_len = aprs_encode_image(msg.msg, msg.mod, &config->aprs_config, pkt_base91, strlen((char*)pkt_base91));
+				msg.bin_len = aprs_encode_experimental('I', msg.msg, msg.mod, &config->aprs_config, pkt_base91, strlen((char*)pkt_base91));
 
 				while(!transmitOnRadio(&msg)) // Try to insert message into message box less aggressively
 					chThdSleepMilliseconds(100);
@@ -144,11 +144,6 @@ THD_FUNCTION(moduleIMG, arg) {
 				radioShutdown(RADIO_2M);
 				radioShutdown(RADIO_70CM);
 
-				// Power on camera (power on both options because we dont know which camera is attached)
-				TRACE_INFO("IMG  > Power on camera");
-				OV2640_poweron();
-				chThdSleepMilliseconds(1000);
-
 				uint8_t tries;
 				bool status = false;
 
@@ -191,6 +186,10 @@ THD_FUNCTION(moduleIMG, arg) {
 
 					}
 
+					// Switch off camera
+					OV2640_deinit();
+
+					// Get image
 					image_len = OV2640_getBuffer(&image);
 					TRACE_INFO("IMG  > Image size: %d bytes", image_len);
 
@@ -203,10 +202,8 @@ THD_FUNCTION(moduleIMG, arg) {
 				} else { // Camera error
 
 					TRACE_ERROR("IMG  > No camera found");
-				}
 
-				// Switch off camera
-				OV2640_deinit();
+				}
 
 				// Unlock radio
 				TRACE_INFO("IMG  > Unlock radio");
@@ -223,7 +220,6 @@ THD_FUNCTION(moduleIMG, arg) {
 				{
 					TRACE_INFO("IMG  > Encode/Transmit SSDV ID=%d", gimage_id++);
 					encode_ssdv(image, image_len, config, gimage_id);
-					encode_ssdv(image, image_len, config, gimage_id); // Transmit packets twice for redundancy
 				}
 
 			} else {

@@ -5,6 +5,11 @@
 #include "hal.h"
 #include "chprintf.h"
 #include "ptime.h"
+#include "config.h"
+#include "log.h"
+#include <string.h>
+
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 
 extern mutex_t trace_mtx;
 extern const SerialConfig uart_config;
@@ -27,7 +32,12 @@ extern const SerialConfig uart_config;
 
 #define TRACE_BASE(format, type, args...) { \
 	chMtxLock(&trace_mtx); \
-	chprintf((BaseSequentialStream*)&SD4, "[%8d.%03d][%s] ", chVTGetSystemTimeX()/CH_CFG_ST_FREQUENCY, (chVTGetSystemTimeX()*1000/CH_CFG_ST_FREQUENCY)%1000, type); \
+	if(TRACE_TIME) \
+		chprintf((BaseSequentialStream*)&SD4, "[%8d.%03d]", chVTGetSystemTimeX()/CH_CFG_ST_FREQUENCY, (chVTGetSystemTimeX()*1000/CH_CFG_ST_FREQUENCY)%1000); \
+	chprintf((BaseSequentialStream*)&SD4, "[%s]", type); \
+	if(TRACE_FILE) \
+		chprintf((BaseSequentialStream*)&SD4, "[%10s %04d]", __FILENAME__, __LINE__); \
+	chprintf((BaseSequentialStream*)&SD4, " "); \
 	chprintf((BaseSequentialStream*)&SD4, (format), ##args); \
 	chprintf((BaseSequentialStream*)&SD4, "\r\n"); \
 	chMtxUnlock(&trace_mtx); \
@@ -36,9 +46,20 @@ extern const SerialConfig uart_config;
 #define TRACE_DEBUG(format, args...) TRACE_BASE(format, "DEBUG", ##args)
 #define TRACE_INFO(format, args...)  TRACE_BASE(format, "     ", ##args)
 #define TRACE_WARN(format, args...) TRACE_BASE(format, "WARN ", ##args)
-#define TRACE_ERROR(format, args...) TRACE_BASE(format, "ERROR", ##args)
+#define TRACE_ERROR(format, args...) { \
+	TRACE_BASE(format, "ERROR", ##args); \
+	log_error(__FILENAME__, __LINE__); \
+}
 
+#if TRACE_TIME && TRACE_FILE
+#define TRACE_TAB "                                             "
+#elif TRACE_TIME && !TRACE_FILE
 #define TRACE_TAB "                            "
+#elif !TRACE_TIME && TRACE_FILE
+#define TRACE_TAB "                               "
+#else
+#define TRACE_TAB "              "
+#endif
 
 #define TRACE_GPSFIX(fix) { \
 	TRACE_INFO("GPS  > New GPS Fix\r\n"\

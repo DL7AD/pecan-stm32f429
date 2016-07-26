@@ -23,5 +23,9 @@
 #define SYM_SMALLAIRCRAFT	0x2F27
 #define SYM_SATELLITE		0x5C53
 
+#define MAX6				6
+#define MAX7				7
+#define MAX8				8
+
 #endif
 

@@ -825,6 +825,10 @@ void OV2640_init(ssdv_config_t *config) {
 	TRACE_INFO("CAM  > Init pins");
 	OV2640_InitGPIO();
 
+	// Power on OV2640
+	TRACE_INFO("CAM  > Switch on");
+	palSetPad(PORT(CAM_EN), PIN(CAM_EN)); // Switch off camera
+
 	// Send settings to OV2640
 	TRACE_INFO("CAM  > Transmit config to camera");
 	OV2640_TransmitConfig();
@@ -859,15 +863,21 @@ void OV2640_deinit(void) {
 
 bool OV2640_isAvailable(void)
 {
-	uint16_t val;
-	if(I2C_read16(OV2640_I2C_ADR, 0x0A, &val))
-		return val == PID_OV2640;
-	else
-		return false;
-}
-
-void OV2640_poweron(void)
-{
+	I2C_lock();
 	palSetPad(PORT(CAM_EN), PIN(CAM_EN)); // Switch on camera
+
+	chThdSleepMilliseconds(100);
+
+	uint16_t val;
+	bool ret;
+	if(I2C_read16_locked(OV2640_I2C_ADR, 0x0A, &val))
+		ret = val == PID_OV2640;
+	else
+		ret = false;
+
+	palClearPad(PORT(CAM_EN), PIN(CAM_EN)); // Switch off camera
+	I2C_unlock();
+
+	return ret;
 }
 

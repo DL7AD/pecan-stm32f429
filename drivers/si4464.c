@@ -13,16 +13,14 @@
 #include <string.h>
 
 static const SPIConfig ls_spicfg1 = {
-	NULL,
-	PORT(RADIO1_CS),
-	PIN(RADIO1_CS),
-	SPI_CR1_MSTR
+	.ssport	= PORT(RADIO1_CS),
+	.sspad	= PIN(RADIO1_CS),
+	.cr1	= SPI_CR1_MSTR
 };
 static const SPIConfig ls_spicfg2 = {
-	NULL,
-	PORT(RADIO2_CS),
-	PIN(RADIO2_CS),
-	SPI_CR1_MSTR
+	.ssport	= PORT(RADIO2_CS),
+	.sspad	= PIN(RADIO2_CS),
+	.cr1	= SPI_CR1_MSTR
 };
 #define getSPIDriver(radio) (radio == RADIO_2M ? &ls_spicfg1 : &ls_spicfg2)
 

@@ -15,6 +15,8 @@
 */
 
 #include "hal.h"
+#include "board.h"
+#include "defines.h"
 
 #if HAL_USE_PAL || defined(__DOXYGEN__)
 /**
@@ -121,4 +123,6 @@ bool mmc_lld_is_write_protected(MMCDriver *mmcp) {
  * @todo    Add your board-specific code, if any.
  */
 void boardInit(void) {
+	palClearPad(PORT(LED_4GREEN), PIN(LED_4GREEN));	// Show I'M ALIVE
+	palClearPad(PORT(CAM_EN), PIN(CAM_EN));			// Disable camera
 }

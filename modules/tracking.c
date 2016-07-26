@@ -202,7 +202,7 @@ THD_FUNCTION(moduleTRACKING, arg) {
 					"%s Pos  %d.%07d %d.%07d Alt %dm\r\n"
 					"%s Sats %d  TTFF %dsec\r\n"
 					"%s ADC Vbat=%d.%03dV  Vsol=%d.%03dV Pin=%dmW Pout=%dmW\r\n"
-					"%s INT  p=%6d.%01dPa T=%2d.%02ddegC phi=%2d.%01d%%\r\n"
+					"%s INT p=%6d.%01dPa T=%2d.%02ddegC phi=%2d.%01d%%\r\n"
 					"%s EXT p=%6d.%01dPa T=%2d.%02ddegC phi=%2d.%01d%%",
 					tp->id,
 					TRACE_TAB, tp->time.year, tp->time.month, tp->time.day, tp->time.hour, tp->time.minute, tp->time.day,
@@ -228,22 +228,4 @@ void waitForNewTrackPoint(void)
 	while(old_id == getLastTrackPoint()->id)
 		chThdSleepMilliseconds(1000);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

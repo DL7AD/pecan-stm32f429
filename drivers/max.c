@@ -10,6 +10,10 @@
 #include "config.h"
 #include "defines.h"
 
+#if GPS_TYPE != MAX6 && GPS_TYPE != MAX7 && GPS_TYPE != MAX8
+#error No valid GPS type set (Choose MAX6, MAX7 or MAX8 in board.h)
+#endif
+
 /* 
  * gps_transmit_string
  *
@@ -166,24 +170,29 @@ uint16_t gps_receive_payload(uint8_t class_id, uint8_t msg_id, unsigned char *pa
  * retrieves a GPS fix from the module. if validity flag is not set, date/time and position/altitude are 
  * assumed not to be reliable!
  *
+ * This method divides MAX7/8 and MAX6 modules since the protocol changed at MAX7 series. MAX6 requires
+ * NAV-POSLLH NAV-TIMEUTC and NAV-SOL to get all information about the GPS. With implementation of the
+ * NAV-PVT message at the MAX7 series, all information can be aquired by only one message. Although
+ * MAX7 is backward compatible, MAX7/8 will use NAV-PVT rather than the old protocol.
+ *
  * argument is call by reference to avoid large stack allocations
  *
  */
 bool gps_get_fix(gpsFix_t *fix) {
-	static uint8_t response[92];	/* PVT response length is 92 bytes */
+	static uint8_t response[92];
+
+	#if GPS_TYPE == MAX7 || GPS_TYPE == MAX8
+
+	// Transmit request
 	uint8_t pvt[] = {0xB5, 0x62, 0x01, 0x07, 0x00, 0x00, 0x08, 0x19};
-	int32_t alt_tmp;
-
-	// Read GPS data
 	gps_transmit_string(pvt, sizeof(pvt));
-	bool resp = gps_receive_payload(0x01, 0x07, response, 5000);
 
-	if(!resp) { // Failed to aquire GPS data
+	if(!gps_receive_payload(0x01, 0x07, response, 5000)) { // Receive request
 		TRACE_INFO("GPS  > PVT Polling FAILED");
 		return false;
-	} else {
-		TRACE_INFO("GPS  > PVT Polling OK");
 	}
+
+	TRACE_INFO("GPS  > PVT Polling OK");
 
 	fix->num_svs = response[23];
 	fix->type = response[20];
@@ -201,7 +210,7 @@ bool gps_get_fix(gpsFix_t *fix) {
 	fix->lon = (int32_t) (
 			(uint32_t)(response[24]) + ((uint32_t)(response[25]) << 8) + ((uint32_t)(response[26]) << 16) + ((uint32_t)(response[27]) << 24)
 			);
-	alt_tmp = (((int32_t) 
+	int32_t alt_tmp = (((int32_t) 
 			((uint32_t)(response[36]) + ((uint32_t)(response[37]) << 8) + ((uint32_t)(response[38]) << 16) + ((uint32_t)(response[39]) << 24))
 			) / 1000);
 	if (alt_tmp <= 0) {
@@ -209,9 +218,82 @@ bool gps_get_fix(gpsFix_t *fix) {
 	} else if (alt_tmp > 50000) {
 		fix->alt = 50000;
 	} else {
-		fix->alt = (uint16_t) alt_tmp;
+		fix->alt = (uint16_t)alt_tmp;
 	}
+
 	return true;
+
+	#else
+
+	bool respall = true; // Validity over all GPS requests
+	bool resp;
+
+	// POSLLH (Geodetic Position Solution)
+	uint8_t posllh[] = {0xB5, 0x62, 0x01, 0x02, 0x00, 0x00, 0x03, 0x0A};
+	gps_transmit_string(posllh, sizeof(posllh));
+
+	resp = gps_receive_payload(0x01, 0x02, response, 5000);
+	if(!resp) { // Failed to aquire GPS data
+		TRACE_ERROR("GPS  > POSLLH Polling FAILED");
+		respall = false;
+	} else {
+		TRACE_INFO("GPS  > POSLLH Polling OK");
+	}
+
+	fix->lat = (int32_t) (
+			(uint32_t)(response[8]) + ((uint32_t)(response[9]) << 8) + ((uint32_t)(response[10]) << 16) + ((uint32_t)(response[11]) << 24)
+			);
+	fix->lon = (int32_t) (
+			(uint32_t)(response[4]) + ((uint32_t)(response[5]) << 8) + ((uint32_t)(response[6]) << 16) + ((uint32_t)(response[7]) << 24)
+			);
+	int32_t alt_tmp = (((int32_t) 
+			((uint32_t)(response[16]) + ((uint32_t)(response[17]) << 8) + ((uint32_t)(response[18]) << 16) + ((uint32_t)(response[19]) << 24))
+			) / 1000);
+	if (alt_tmp <= 0) {
+		fix->alt = 1;
+	} else if (alt_tmp > 50000) {
+		fix->alt = 50000;
+	} else {
+		fix->alt = (uint16_t)alt_tmp;
+	}
+
+	// SOL (Navigation Solution Information)
+	uint8_t sol[] = {0xB5, 0x62, 0x01, 0x06, 0x00, 0x00, 0x07, 0x16};
+	gps_transmit_string(sol, sizeof(sol));
+
+	resp = gps_receive_payload(0x01, 0x06, response, 5000);
+	if(!resp) { // Failed to aquire GPS data
+		TRACE_ERROR("GPS  > SOL Polling FAILED");
+		respall = false;
+	} else {
+		TRACE_INFO("GPS  > SOL Polling OK");
+	}
+
+	fix->type = response[10];
+	fix->num_svs = response[47];
+
+	// TIMEUTC (UTC Time Solution)
+	uint8_t timeutc[] = {0xB5, 0x62, 0x01, 0x21, 0x00, 0x00, 0x22, 0x67};
+	gps_transmit_string(timeutc, sizeof(timeutc));
+
+	resp = gps_receive_payload(0x01, 0x21, response, 5000);
+	if(!resp) { // Failed to aquire GPS data
+		TRACE_ERROR("GPS  > TIMEUTC Polling FAILED");
+		respall = false;
+	} else {
+		TRACE_INFO("GPS  > TIMEUTC Polling OK");
+	}
+
+	fix->time.year = response[12] + (response[13] << 8);
+	fix->time.month = response[14];
+	fix->time.day = response[15];
+	fix->time.hour = response[16];
+	fix->time.minute = response[17];
+	fix->time.second = response[18];
+
+	return respall;
+
+	#endif
 }
 
 /* 
@@ -398,12 +480,17 @@ bool GPS_Init(void) {
 		TRACE_ERROR("GPS  > Disable NMEA output FAILED");
 		status = 0;
 	}
+
+	#if GPS_TYPE == MAX7 || GPS_TYPE == MAX8
+	// MAX6 does not support anything else than GPS
 	if(gps_set_gps_only()) {
 		TRACE_INFO("GPS  > Set GPS only OK");
 	} else {
 		TRACE_ERROR("GPS  > Set GPS only FAILED");
 		status = 0;
 	}
+	#endif
+
 	if(gps_set_airborne_model()) {
 		TRACE_INFO("GPS  > Set airborne model OK");
 	} else {
@@ -431,7 +518,6 @@ void GPS_Deinit(void)
 	// Switch MOSFET
 	TRACE_INFO("GPS  > Switch off");
 	palClearPad(PORT(GPS_EN), PIN(GPS_EN));
-
 }
 
 /**
