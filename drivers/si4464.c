@@ -232,7 +232,7 @@ void setModemAFSK(radio_t radio) {
 	Si4464_write(radio, disable_preamble, 5);
 
 	// Do not transmit sync word
-	uint8_t no_sync_word[] = {0x11, 0x11, 0x01, 0x11, (0x01 << 7)};
+	uint8_t no_sync_word[] = {0x11, 0x11, 0x01, 0x00, (0x01 << 7)};
 	Si4464_write(radio, no_sync_word, 5);
 
 	// Setup the NCO modulo and oversampling mode
