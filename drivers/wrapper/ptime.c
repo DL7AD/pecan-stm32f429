@@ -5,10 +5,11 @@ const uint16_t nonLeapYear[] = {0,31,59,90,120,151,181,212,243,273,304,334,365};
 const uint16_t leapYear[] = {0,31,60,91,121,152,182,213,244,274,305,335,366};
 
 /**
- * Calculates UNIX timestamp and writes it to internal interrupt controlled RTC.
- * Calculation valid until 2100 due to missing leapyear in 2100.
- * @param time Date to be converted
- */
+  * Calculates UNIX timestamp from Julian calendar based format.
+  * Calculation valid until 2100 due to missing leapyear in 2100.
+  * @param time Date to be converted
+  * @return UNIX timestamp in milliseconds
+  */
 uint64_t date2UnixTimestamp(ptime_t time) {
 	uint64_t timeC = 0;
 	timeC  = time.second;
@@ -30,10 +31,15 @@ uint64_t date2UnixTimestamp(ptime_t time) {
 			timeC += 31536000;
 		}
 	}
-	TRACE_DEBUG("Return %d", (timeC * 1000 + time.millisecond));
 	return timeC * 1000 + time.millisecond;
 }
 
+/**
+  * Calculates Julian calendar based date/time from UNIX timestamp.
+  * Calculation valid until 2100 due to missing leapyear in 2100.
+  * @param UNIX timestamp in milliseconds
+  * @return Date in Julian calendar format
+  */
 ptime_t unixTimestamp2Date(uint64_t time) {
 	ptime_t date;
 	uint64_t dateRaw = time / 1000;
@@ -62,6 +68,10 @@ ptime_t unixTimestamp2Date(uint64_t time) {
 	return date;
 }
 
+/**
+  * Reads the time from the STM32 internal RTC
+  * @return Date in Julian calendar format
+  */
 void getTime(ptime_t *date) {
 	RTCDateTime timespec;
 	rtcGetTime(&RTCD1, &timespec);
@@ -75,6 +85,10 @@ void getTime(ptime_t *date) {
 	date->millisecond = timespec.millisecond % 1000;
 }
 
+/**
+  * Sets the STM32 internal time (RTC)
+  * @param date Date in Julian calendar format
+  */
 void setTime(ptime_t date) {
 	RTCDateTime timespec;
 	timespec.year = date.year - 2000;
