@@ -27,6 +27,7 @@
 #define METER_TO_FEET(m) (((m)*26876) / 8192)
 
 static uint16_t loss_of_gps_counter = 0;
+static uint16_t msg_id;
 
 /**
  * Transmit APRS position packet. The comments are filled with:
@@ -181,6 +182,39 @@ uint32_t aprs_encode_experimental(char packetType, uint8_t* message, mod_t mod, 
 	// Encode message
 	for(uint16_t i=0; i<size; i++)
 		ax25_send_byte(&packet, data[i]);
+
+	// Send footer
+	ax25_send_footer(&packet);
+	scramble(&packet);
+	nrzi_encode(&packet);
+
+	return packet.size;
+}
+
+/**
+ * Transmit message packet
+ */
+uint32_t aprs_encode_message(uint8_t* message, mod_t mod, const aprs_config_t *config, const char *receiver, const char *text)
+{
+	ax25_t packet;
+	packet.data = message;
+	packet.max_size = 512; // TODO: replace 512 with real size
+	packet.mod = mod;
+
+	// Encode APRS header
+	char temp[10];
+	ax25_send_header(&packet, config->callsign, config->ssid, config->path, config->preamble);
+	ax25_send_byte(&packet, ':');
+
+	chsnprintf(temp, sizeof(temp), "%-9s", receiver);
+	ax25_send_string(&packet, temp);
+
+	ax25_send_byte(&packet, ':');
+	ax25_send_string(&packet, text);
+	ax25_send_byte(&packet, '{');
+
+	chsnprintf(temp, sizeof(temp), "%d", ++msg_id);
+	ax25_send_string(&packet, temp);
 
 	// Send footer
 	ax25_send_footer(&packet);

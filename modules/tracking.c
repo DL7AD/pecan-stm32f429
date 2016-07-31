@@ -9,15 +9,61 @@
 #include "padc.h"
 #include "pac1720.h"
 #include "radio.h"
+#include "flash.h"
 
-trackPoint_t trackPoints[2];
-trackPoint_t* lastTrackPoint;
+static trackPoint_t trackPoints[2];
+static trackPoint_t* lastTrackPoint;
+static uint32_t logEntryCounter;
+static systime_t nextLogEntryTimer;
 
 /**
   * Returns most recent track point witch is complete.
   */
-trackPoint_t* getLastTrackPoint(void) {
+trackPoint_t* getLastTrackPoint(void)
+{
 	return lastTrackPoint;
+}
+
+void getLogTrackPoints(logTrackPoint_t* log, uint32_t id, uint8_t size)
+{
+	uint32_t address = LOG_FLASH_ADDR + (id % (LOG_FLASH_SIZE/sizeof(logTrackPoint_t))) * sizeof(logTrackPoint_t);
+	flashRead(address, (char*)log, sizeof(logTrackPoint_t) * size);
+}
+
+static void writeLogTrackPoint(trackPoint_t* tp)
+{
+	// Create Log track point
+	logTrackPoint_t ltp;
+	ltp.time = date2UnixTimestamp(tp->time);
+	ltp.gps_lat = tp->gps_lat;
+	ltp.gps_lon = tp->gps_lon;
+	ltp.gps_alt = tp->gps_alt < 0 ? 0 : (uint16_t)tp->gps_alt & 0xFFFF;
+
+	// Erase flash if start of new sector is reached
+	uint32_t address = LOG_FLASH_ADDR + logEntryCounter * sizeof(logTrackPoint_t);
+	if(address % LOG_FLASH_PAGE_SIZE == 0) // Found start of flash sector
+	{
+		if(!flashIsErased(address, LOG_FLASH_PAGE_SIZE))
+		{
+			TRACE_INFO("TRAC > Erase flash %08x", address);
+			flashErase(address, LOG_FLASH_PAGE_SIZE);
+		}
+	}
+
+	// Write data into flash
+	TRACE_INFO("TRAC > Flash write (ADDR=%08x)", address);
+	flashSectorBegin(flashSectorAt(address));
+	flashWrite(address, (char*)&ltp, sizeof(logTrackPoint_t));
+	flashSectorEnd(flashSectorAt(address));
+
+	// Verify
+	if(flashCompare(address, (char*)&ltp, sizeof(logTrackPoint_t)))
+		TRACE_INFO("TRAC > Flash write OK")
+	else
+		TRACE_ERROR("TRAC > Flash write failed");
+
+	// Increment log counter
+	logEntryCounter = (logEntryCounter+1) % (LOG_FLASH_SIZE/sizeof(logTrackPoint_t));
 }
 
 /**
@@ -32,6 +78,18 @@ THD_FUNCTION(moduleTRACKING, arg) {
 	uint32_t id = 1;
 	lastTrackPoint = &trackPoints[0];
 
+	// Find next free log entry
+	for(uint32_t address = LOG_FLASH_ADDR; address < LOG_FLASH_ADDR+LOG_FLASH_SIZE; address += sizeof(logTrackPoint_t))
+	{
+		logTrackPoint_t pt;
+		flashRead(address, (char*)&pt, sizeof(logTrackPoint_t));
+		if(pt.time == 0xFFFFFFFF)
+			break;
+		logEntryCounter++;
+	}
+	TRACE_WARN("TRAC > Next log entry ID=%d", logEntryCounter);
+
+
 	// Initial fill by PAC1720 and BME280 and RTC
 
 	// Time
@@ -44,9 +102,39 @@ THD_FUNCTION(moduleTRACKING, arg) {
 	lastTrackPoint->time.minute = rtc.minute;
 	lastTrackPoint->time.second = rtc.second;
 
-	// Voltage
+	// Get last GPS fix from memory
+	logTrackPoint_t lastLogPoint;
+	uint32_t address = LOG_FLASH_ADDR + ((logEntryCounter-1) % (LOG_FLASH_SIZE/sizeof(logTrackPoint_t))) * sizeof(logTrackPoint_t);
+	flashRead(address, (char*)&lastLogPoint, sizeof(logTrackPoint_t));
+
+	// Last GPS fix
+	lastTrackPoint->gps_lock = 0;
+	lastTrackPoint->gps_lat = lastLogPoint.gps_lat;
+	lastTrackPoint->gps_lon = lastLogPoint.gps_lon;
+	lastTrackPoint->gps_alt = lastLogPoint.gps_alt;
+	lastTrackPoint->gps_sats = 0;
+	lastTrackPoint->gps_ttff = 0;
+
+	// Debug last stored GPS position
+	if(lastLogPoint.time != 0xFFFFFFFF) {
+		TRACE_INFO(
+			"TRAC > Last GPS position (from memory)\r\n"
+			"%s Latitude: %d.%07ddeg\r\n"
+			"%s Longitude: %d.%07ddeg\r\n"
+			"%s Altitude: %d Meter",
+			TRACE_TAB, lastTrackPoint->gps_lat/10000000, (lastTrackPoint->gps_lat > 0 ? 1:-1)*lastTrackPoint->gps_lat%10000000,
+			TRACE_TAB, lastTrackPoint->gps_lon/10000000, (lastTrackPoint->gps_lon > 0 ? 1:-1)*lastTrackPoint->gps_lon%10000000,
+			TRACE_TAB, lastTrackPoint->gps_alt
+		);
+	} else {
+		TRACE_INFO("TRAC > No GPS position in memory");
+	}
+
+	// Voltage/Current
 	lastTrackPoint->adc_solar = getSolarVoltageMV();
 	lastTrackPoint->adc_battery = getBatteryVoltageMV();
+	lastTrackPoint->adc_charge = pac1720_getPowerCharge();
+	lastTrackPoint->adc_discharge = pac1720_getPowerDischarge();
 
 	bme280_t bmeInt;
 	bme280_t bmeExt;
@@ -76,7 +164,6 @@ THD_FUNCTION(moduleTRACKING, arg) {
 		lastTrackPoint->ext_hum = 0;
 		lastTrackPoint->ext_temp = 0;
 	}
-
 
 	systime_t time = chVTGetSystemTimeX();
 	while(true)
@@ -213,6 +300,12 @@ THD_FUNCTION(moduleTRACKING, arg) {
 					TRACE_TAB, tp->ext_press/10, tp->ext_press%10, tp->ext_temp/100, tp->ext_temp%100, tp->ext_hum/10, tp->ext_hum%10
 		);
 
+		// Append logging (timeout)
+		if(nextLogEntryTimer <= chVTGetSystemTimeX() && isGPSLocked(&gpsFix))
+		{
+			writeLogTrackPoint(tp);
+			nextLogEntryTimer += S2ST(LOG_CYCLE_TIME);
+		}
 
 		// Switch last recent track point
 		lastTrackPoint = tp;

@@ -5,6 +5,10 @@
 #include "hal.h"
 #include "ptime.h"
 
+#define LOG_FLASH_ADDR		0x080C0000	/* Log flash memory address */
+#define LOG_FLASH_SIZE		(256*1024)	/* Log flash memory size */
+#define LOG_FLASH_PAGE_SIZE	(128*1024)	/* Log memory sector size */
+
 typedef struct {
 	uint32_t id;			// Serial ID
 	ptime_t time;			// GPS time
@@ -34,8 +38,16 @@ typedef struct {
 	int16_t ext_temp;		// Temperature in K*100 in balloon (in 0.01°C)
 } trackPoint_t;
 
+typedef struct {
+	uint32_t time;			// GPS time (UNIX timestamp)
+	int32_t gps_lat;		// Latitude in °*10^7
+	int32_t gps_lon;		// Longitude in °*10^7
+	int32_t gps_alt;		// Altitude in meter
+} logTrackPoint_t; // !!! IMPORTANT sizeof(logTrackPoint_t) must be multiple of 128*1024 (address is used for flash erase trigger)
+
 void waitForNewTrackPoint(void);
 trackPoint_t* getLastTrackPoint(void);
+void getLogTrackPoints(logTrackPoint_t* log, uint32_t id, uint8_t size);
 THD_FUNCTION(moduleTRACKING, arg);
 
 #endif

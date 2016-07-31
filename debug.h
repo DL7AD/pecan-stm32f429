@@ -6,7 +6,7 @@
 #include "chprintf.h"
 #include "ptime.h"
 #include "config.h"
-#include "log.h"
+#include "error.h"
 #include <string.h>
 
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)

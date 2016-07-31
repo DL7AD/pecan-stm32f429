@@ -101,7 +101,7 @@ include $(CHIBIOS)/os/common/ports/ARMCMx/compilers/GCC/mk/port_v7m.mk
 #include $(CHIBIOS)/test/rt/test.mk
 
 # Define linker script file here
-LDSCRIPT= $(STARTUPLD)/STM32F429xI.ld
+LDSCRIPT= board_pecanpico7b/STM32F429xI.ld
 
 # C sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
@@ -122,6 +122,7 @@ CSRC = $(STARTUPSRC) \
        modules/position.c \
        modules/image.c \
        modules/log.c \
+       modules/error.c \
        protocols/ssdv/ssdv.c \
        protocols/ssdv/rs8.c \
        protocols/aprs/aprs.c \
@@ -136,6 +137,10 @@ CSRC = $(STARTUPSRC) \
        drivers/pac1720.c \
        drivers/ov2640.c \
        drivers/sd.c \
+       drivers/flash/flash.c \
+       drivers/flash/helper.c \
+       drivers/flash/ihex.c \
+       drivers/flash/ihexhelper.c \
        debug.c \
        radio.c \
        sleep.c \
@@ -236,7 +241,7 @@ UADEFS =
 # List all user directories here
 UINCDIR = modules/ drivers/ drivers/wrapper/ protocols/aprs \
           protocols/ssdv protocols/morse math/ fatfs/src/ \
-          STM32F4xx_StdPeriph_Driver/inc
+          drivers/flash/
 
 # List the user directory to look for the libraries here
 ULIBDIR =
@@ -251,6 +256,14 @@ ULIBS = -lm
 RULESPATH = $(CHIBIOS)/os/common/startup/ARMCMx/compilers/GCC
 include $(RULESPATH)/rules.mk
 
-flash:
+burn:
 	st-flash write build/$(PROJECT).bin 0x8000000
+
+eraselog:
+	dd if=/dev/zero ibs=256k count=1 | tr "\000" "\377" > /tmp/erase.bin
+	st-flash write /tmp/erase.bin 0x080C0000
+
+readlog:
+	st-flash read /tmp/log.bin 0x080C0000 0x40000
+	hexdump -e '4/4 "%u " "\n"' /tmp/log.bin | grep '[0-9]* [0-9]* [0-9]* [0-9]*'
 
