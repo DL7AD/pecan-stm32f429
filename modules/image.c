@@ -77,8 +77,7 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_conf_t* config, uint
 				base91_encode(&pkt[1], pkt_base91, sizeof(pkt)-37); // Sync byte, CRC and FEC of SSDV not transmitted
 				msg.bin_len = aprs_encode_experimental('I', msg.msg, msg.mod, &config->aprs_config, pkt_base91, strlen((char*)pkt_base91));
 
-				while(!transmitOnRadio(&msg)) // Try to insert message into message box less aggressively
-					chThdSleepMilliseconds(100);
+				transmitOnRadio(&msg);
 				break;
 
 			case PROT_SSDV_2FSK:
@@ -88,8 +87,7 @@ void encode_ssdv(uint8_t *image, uint32_t image_len, module_conf_t* config, uint
 				memcpy(msg.msg, pkt, sizeof(pkt));
 				msg.bin_len = 8*sizeof(pkt);
 
-				while(!transmitOnRadio(&msg)) // Try to insert message into message box less aggressively
-					chThdSleepMilliseconds(100);
+				transmitOnRadio(&msg);
 				break;
 
 			default:

@@ -28,12 +28,13 @@ static uint32_t phase = 0;						// Fixed point 9.7 (2PI = TABLE_SIZE)
 static uint32_t packet_pos = 0;					// Next bit to be sent out
 static uint32_t current_sample_in_baud = 0;		// 1 bit = SAMPLES_PER_BAUD samples
 static uint8_t current_byte = 0;
-static radioMSG_t *afsk_msg;
-static radio_t afsk_radio;
+static radioMSG_t *tim_msg;
+static radio_t tim_radio;
+static uint32_t gfsk_bit = 0;
 
 void sendAFSK(radio_t radio, radioMSG_t *msg) {
-	afsk_msg = msg;
-	afsk_radio = radio;
+	tim_msg = msg;
+	tim_radio = radio;
 
 	phase_delta = PHASE_DELTA_1200;
 	phase = 0;
@@ -41,7 +42,7 @@ void sendAFSK(radio_t radio, radioMSG_t *msg) {
 	current_sample_in_baud = 0;
 	current_byte = 0;
 
-	uint32_t initial_interval = 100; /// in timer ticks
+	uint32_t initial_interval = 100; // in timer ticks
 	RCC->APB1ENR |= RCC_APB1ENR_TIM7EN;
 	nvicEnableVector(TIM7_IRQn, 1/*priority*/);
 	TIM7->ARR = initial_interval; /* Timer's period */
@@ -62,32 +63,55 @@ void sendAFSK(radio_t radio, radioMSG_t *msg) {
   */
 CH_FAST_IRQ_HANDLER(STM32_TIM7_HANDLER)
 {
-	if(packet_pos == afsk_msg->bin_len) { // Packet transmission finished
-		TIM7->CR1 &= ~STM32_TIM_CR1_CEN;	// Disable timer
-		TIM7->SR &= ~STM32_TIM_SR_UIF;		// Reset interrupt flag
-		return;
-	}
+	if(tim_msg->mod == MOD_AFSK) {
 
-	if(current_sample_in_baud == 0) {
-		if((packet_pos & 7) == 0) { // Load up next byte
-			current_byte = afsk_msg->msg[packet_pos >> 3];
-		} else { // Load up next bit
-			current_byte = current_byte / 2;
+		if(packet_pos == tim_msg->bin_len) { // Packet transmission finished
+			TIM7->CR1 &= ~STM32_TIM_CR1_CEN;	// Disable timer
+			TIM7->SR &= ~STM32_TIM_SR_UIF;		// Reset interrupt flag
+			return;
 		}
-	}
 
-	// Toggle tone (1200 <> 2200)
-	phase_delta = (current_byte & 1) ? PHASE_DELTA_1200 : PHASE_DELTA_2200;
+		if(current_sample_in_baud == 0) {
+			if((packet_pos & 7) == 0) { // Load up next byte
+				current_byte = tim_msg->msg[packet_pos >> 3];
+			} else { // Load up next bit
+				current_byte = current_byte / 2;
+			}
+		}
 
-	phase += phase_delta;								// Add delta-phase (delta-phase tone dependent)
-	MOD_GPIO_SET(afsk_radio, (phase >> 16) & 1);		// Set modulaton pin (connected to Si4464)
+		// Toggle tone (1200 <> 2200)
+		phase_delta = (current_byte & 1) ? PHASE_DELTA_1200 : PHASE_DELTA_2200;
 
-	current_sample_in_baud++;
+		phase += phase_delta;								// Add delta-phase (delta-phase tone dependent)
+		MOD_GPIO_SET(tim_radio, (phase >> 16) & 1);		// Set modulaton pin (connected to Si4464)
 
-	if(current_sample_in_baud == SAMPLES_PER_BAUD) {	// Old bit consumed, load next bit
-		palTogglePad(PORT(LED_2YELLOW), PIN(LED_2YELLOW));
-		current_sample_in_baud = 0;
-		packet_pos++;
+		current_sample_in_baud++;
+
+		if(current_sample_in_baud == SAMPLES_PER_BAUD) {	// Old bit consumed, load next bit
+			//palTogglePad(PORT(LED_2YELLOW), PIN(LED_2YELLOW));
+			current_sample_in_baud = 0;
+			packet_pos++;
+		}
+
+	} else if(tim_msg->mod == MOD_2GFSK) {
+
+		if(gfsk_bit >= tim_msg->bin_len) { // Packet transmission finished
+			TIM7->CR1 &= ~STM32_TIM_CR1_CEN;	// Disable timer
+			TIM7->SR &= ~STM32_TIM_SR_UIF;		// Reset interrupt flag
+			return;
+		}
+
+		if((gfsk_bit & 7) == 0) { // Load up next byte
+			current_byte = tim_msg->msg[gfsk_bit >> 3];
+		} else {
+			current_byte = current_byte / 2; // Load next bit
+		}
+
+		MOD_GPIO_SET(tim_radio, current_byte & 0x1);
+		gfsk_bit++;
+
+		//palTogglePad(PORT(LED_2YELLOW), PIN(LED_2YELLOW));
+
 	}
 
 	TIM7->SR &= ~STM32_TIM_SR_UIF;						// Reset interrupt flag
@@ -203,40 +227,28 @@ void send2FSK(radio_t radio, radioMSG_t *msg) {
 }
 
 void send2GFSK(radio_t radio, radioMSG_t *msg) {
-	uint16_t c = 64;
-	uint16_t all = (msg->bin_len+7)/8;
+	tim_msg = msg;
+	tim_radio = radio;
+	gfsk_bit = 0;
+	current_byte = 0;
 
-	// Initialize radio
+	// Initialize radio and tune
 	Si4464_Init(radio, MOD_2GFSK);
+	radioTune(radio, msg->freq, 0, msg->power, 0);
+	chThdSleepMilliseconds(30);
 
-	// Initial FIFO fill
-	Si4464_writeFIFO(radio, msg->msg, c);
+	uint32_t initial_interval = 1355; // in timer ticks
+	RCC->APB1ENR |= RCC_APB1ENR_TIM7EN;
+	nvicEnableVector(TIM7_IRQn, 1/*priority*/);
+	TIM7->ARR = initial_interval; /* Timer's period */
+	TIM7->PSC = 1;
+	TIM7->CR1 &= ~STM32_TIM_CR1_ARPE; /* ARR register is NOT buffered, allows to update timer's period on-fly. */
+	TIM7->DIER |= STM32_TIM_DIER_UIE; /* Interrupt enable */
+	TIM7->CR1 |= STM32_TIM_CR1_CEN; /* Counter enable */
 
-	// Transmit
-	radioTune(radio, msg->freq, 0, msg->power, all);
-
-	while(c < all) { // Do while bytes not written into FIFO completely
-
-		// Determine free memory in Si4464-FIFO
-		uint16_t more = Si4464_freeFIFO(radio);
-
-		if(more > 12) // Do not bother the chip too much
-		{
-			more -= 6; // Dont fill the buffer completly
-			if(more > all-c)
-				more = all-c; // Last bytes in FIFO
-
-			Si4464_writeFIFO(radio, &msg->msg[c], more); // Write into FIFO
-
-			c += more;
-		}
-		chThdSleepMilliseconds(5);
-	}
-
-	// Wait until radio leaved TX_STATE
-	chThdSleepMilliseconds(10);
-	while(Si4464_getState(radio) == 7)
-		chThdSleepMilliseconds(1);
+	// Block execution while timer is running
+	while(TIM7->CR1 & STM32_TIM_CR1_CEN)
+		chThdSleepMilliseconds(10);
 }
 
 /**

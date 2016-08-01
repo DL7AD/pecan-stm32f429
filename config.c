@@ -2,8 +2,8 @@
 #include "debug.h"
 
 module_conf_t config[9];
-uint8_t ssdv1_buffer[1024*50];
-uint8_t ssdv2_buffer[1024*50];
+//uint8_t ssdv1_buffer[1024*20];
+uint8_t ssdv2_buffer[1024*130];
 
 // Put your configuration settings here
 void initModules(void)
@@ -76,7 +76,7 @@ void initModules(void)
 	MODULE_POSITION(&config[2]);*/
 
 	// Module IMAGE, APRS 2m AFSK low-duty cycle
-	chsnprintf(config[3].name, 12, "IMG AFSK 2m");			// Instance name
+	/*chsnprintf(config[3].name, 12, "IMG AFSK 2m");			// Instance name
 	config[3].power = 20;									// Power 20 dBm
 	config[3].protocol = PROT_APRS_AFSK;					// Protocol APRS SSDV, modulation AFSK
 	config[3].frequency.type = FREQ_DYNAMIC;				// Static frequency allocation
@@ -95,7 +95,7 @@ void initModules(void)
 	config[3].ssdv_config.ram_buffer = ssdv1_buffer;		// Camera buffer
 	config[3].ssdv_config.ram_size = sizeof(ssdv1_buffer);	// Buffer size
 	config[3].ssdv_config.res = RES_QVGA;					// Resolution QVGA
-	MODULE_IMAGE(&config[3]);
+	MODULE_IMAGE(&config[3]);*/
 
 	// Module POSITION, Morse 2m OOK
 	/*chsnprintf(config[4].name, 11, "POS OOK 2m");			// Instance name
@@ -118,9 +118,9 @@ void initModules(void)
 	config[5].frequency.type = FREQ_STATIC;					// Static frequency allocation
 	config[5].frequency.hz = 144860000;						// Transmission frequency 144.860 MHz
 	config[5].frequency.method = APRS_REGION_FREQ_2M;		// Determine local APRS frequency on 2m
-	config[5].init_delay = 60000;							// Module startup delay in msec
+	config[5].init_delay = 20000;							// Module startup delay in msec
 	config[5].sleep_config.type = SLEEP_WHEN_VBAT_BELOW_THRES;// Sleeping type
-	config[5].sleep_config.vbat_thres = 4000;				// Sleeping voltage threshold
+	config[5].sleep_config.vbat_thres = 3000;				// Sleeping voltage threshold
 	config[5].trigger.type = TRIG_TIMEOUT;					// Trigger transmission on timeout (Periodic cycling)
 	config[5].trigger.timeout = 10;							// Timeout 10 sec
 	chsnprintf(config[5].aprs_config.callsign, 6, "DL7AD");	// APRS Callsign
@@ -129,7 +129,7 @@ void initModules(void)
 	chsnprintf(config[5].ssdv_config.callsign, 6, "DL7AD");	// SSDV Callsign
 	config[5].ssdv_config.ram_buffer = ssdv2_buffer;		// Camera buffer
 	config[5].ssdv_config.ram_size = sizeof(ssdv2_buffer);	// Buffer size
-	config[5].ssdv_config.res = RES_QVGA;					// Resolution QVGA
+	config[5].ssdv_config.res = RES_XGA;					// Resolution XGA
 	MODULE_IMAGE(&config[5]);
 
 	// Module IMAGE, SSDV 2m 2FSK

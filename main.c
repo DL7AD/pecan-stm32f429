@@ -177,7 +177,11 @@ int main(void) {
 			TRACE_ERROR("WDG  > No reset");
 		}
 
+		#if MIN_LED_VBAT > 0
 		led_on = getBatteryVoltageMV() >= MIN_LED_VBAT; // Switch on LEDs if battery voltage above threshold
+		#else
+		led_on = true;
+		#endif
 
 		chThdSleepMilliseconds(1000);
 		counter++;

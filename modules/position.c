@@ -153,8 +153,7 @@ THD_FUNCTION(modulePOS, arg) {
 					msg.afsk_config = &(config->afsk_config);
 
 					msg.bin_len = aprs_encode_position(msg.msg, msg.mod, &(config->aprs_config), trackPoint); // Encode packet
-					while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively (transmission)
-						chThdSleepMilliseconds(10);
+					transmitOnRadio(&msg);
 
 					// Telemetry encoding parameter transmission
 					if(config->aprs_config.tel_encoding)
@@ -173,8 +172,7 @@ THD_FUNCTION(modulePOS, arg) {
 
 							const telemetry_config_t tel_config[] = {CONFIG_PARM, CONFIG_UNIT, CONFIG_EQNS, CONFIG_BITS};
 							msg.bin_len = aprs_encode_telemetry_configuration(msg.msg, msg.mod, &(config->aprs_config), tel_config[current_config_count]); // Encode packet
-							while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively (transmission)
-								chThdSleepMilliseconds(10);
+							transmitOnRadio(&msg);
 
 							current_config_count++;
 						}
@@ -194,8 +192,7 @@ THD_FUNCTION(modulePOS, arg) {
 					msg.bin_len = 8*chsnprintf((char*)msg.msg, sizeof(fskmsg), "$$$$$%s*%04X\n", fskmsg, crc16(fskmsg));
 
 					// Transmit message
-					while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively (transmission)
-						chThdSleepMilliseconds(10);
+					transmitOnRadio(&msg);
 					break;
 
 				case PROT_MORSE: // Encode Morse
@@ -210,8 +207,7 @@ THD_FUNCTION(modulePOS, arg) {
 
 					// Transmit message
 					msg.bin_len = morse_encode(msg.msg, morse); // Convert message to binary stream
-					while(!transmitOnRadio(&msg)) // Try to insert message into message box aggressively (transmission)
-						chThdSleepMilliseconds(10);
+					transmitOnRadio(&msg);
 					break;
 
 				default:

@@ -136,8 +136,7 @@ THD_FUNCTION(moduleERROR, arg)
 					base91_encode((uint8_t*)pkt, pkt_base91, 4*size+4);
 					msg.bin_len = aprs_encode_experimental('E', msg.msg, msg.mod, &config->aprs_config, pkt_base91, strlen((char*)pkt_base91));
 
-					while(!transmitOnRadio(&msg)) // Try to insert message into message box less aggressively
-						chThdSleepMilliseconds(100);
+					transmitOnRadio(&msg);
 					break;
 
 				default:
