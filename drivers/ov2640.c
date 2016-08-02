@@ -482,7 +482,7 @@ static const struct regval_list ov2640_init_regs[] = {
 	{ 0xe5,   0x1f },
 	{ 0xe1,   0x77 },
 	{ 0xdd,   0x7f },
-	{ QS,     0x05 },
+	{ QS,     0x0C },
 	{ CTRL0,  CTRL0_YUV422 | CTRL0_YUV_EN },
 	ENDMARKER,
 };
