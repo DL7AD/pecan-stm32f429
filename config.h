@@ -16,7 +16,8 @@ extern module_conf_t config[9];
 #define LOG_CYCLE_TIME			1800			/* Log cycle in seconds */
 #define LOG_TRANSMISSION_TIME	16				/* Amount of log positions being transmitted once */
 
-#define MIN_GPS_VBAT			5000			/* Battery voltage threshold for GPS usage, if below GPS will be switched off, 0 will disable feature */
+#define GPS_ON_VBAT				3000			/* Battery voltage threshold at which GPS is switched on */
+#define GPS_OFF_VBAT			2200			/* Battery voltage threshold at which GPS is switched off */
 
 #define TRACE_TIME				TRUE			/* Enables time tracing on serial connection */
 #define TRACE_FILE				TRUE			/* Enables file and line tracing on serial connection */

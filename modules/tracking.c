@@ -178,19 +178,21 @@ THD_FUNCTION(moduleTRACKING, arg) {
 		gpsFix_t gpsFix = {{0,0,0,0,0,0,0},0,0,0,0,0};
 
 		// Switch on GPS is enough power is available
-		if(getBatteryVoltageMV() >= MIN_GPS_VBAT || !MIN_GPS_VBAT)
+		uint16_t batt = getBatteryVoltageMV();
+		if(batt >= GPS_ON_VBAT)
+		{
+			// Switch on GPS
 			GPS_Init();
 
-		// Search for lock as long enough power is available
-		uint16_t batt;
-		if(getBatteryVoltageMV() >= MIN_GPS_VBAT || !MIN_GPS_VBAT)
+			// Search for lock as long enough power is available
 			do {
 				batt = getBatteryVoltageMV();
 				gps_get_fix(&gpsFix);
-			} while(!isGPSLocked(&gpsFix) && (batt >= MIN_GPS_VBAT || !MIN_GPS_VBAT) && chVTGetSystemTimeX() <= time + S2ST(TRACK_CYCLE_TIME-5)); // Do as long no GPS lock and within timeout, timeout=cycle-1sec (-1sec in order to keep synchronization)
+			} while(!isGPSLocked(&gpsFix) && batt >= GPS_OFF_VBAT && chVTGetSystemTimeX() <= time + S2ST(TRACK_CYCLE_TIME-5)); // Do as long no GPS lock and within timeout, timeout=cycle-1sec (-1sec in order to keep synchronization)
 
-		if(batt < MIN_GPS_VBAT && MIN_GPS_VBAT) // Switch off GPS at low batt
-			GPS_Deinit();
+			if(batt < GPS_OFF_VBAT) // Switch off GPS at low batt
+				GPS_Deinit();
+		}
 
 		if(isGPSLocked(&gpsFix)) { // GPS locked
 
