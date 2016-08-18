@@ -290,7 +290,7 @@ uint32_t getAPRSRegionFrequency2m(void) {
 	if(isPointInAustralia(point->gps_lat, point->gps_lon))
 		freq = APRS_FREQ_AUSTRALIA;
 
-	// Australia 144.525 MHz
+	// Australia 144.575 MHz
 	if(isPointInNewZealand(point->gps_lat, point->gps_lon))
 		freq = APRS_FREQ_NEWZEALAND;
 
